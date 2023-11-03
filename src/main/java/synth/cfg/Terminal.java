@@ -26,7 +26,7 @@ public class Terminal extends Symbol {
     public boolean equals(Object o) {
         if (!(o instanceof Terminal)) return false;
         Terminal other = (Terminal) o;
-        return Objects.equals(name, other.name);
+        return name == other.name;
     }
 
     @Override

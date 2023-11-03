@@ -4,7 +4,7 @@ public abstract class Symbol {
     protected final String name;
 
     public Symbol(String name) {
-        this.name = name;
+        this.name = name.intern();
     }
 
     public String getName() {

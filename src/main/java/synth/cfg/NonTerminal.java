@@ -26,7 +26,7 @@ public class NonTerminal extends Symbol {
     public boolean equals(Object o) {
         if (!(o instanceof NonTerminal)) return false;
         NonTerminal other = (NonTerminal) o;
-        return Objects.equals(name, other.name);
+        return name == other.name;
     }
 
     @Override
