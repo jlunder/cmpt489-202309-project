@@ -7,6 +7,7 @@ module Main where
 import Control.Monad.Random.Lazy
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
+-- import Debug.Trace (trace)
 import System.IO (writeFile)
 import Text.Printf (printf)
 
@@ -33,7 +34,30 @@ data BoolNode
 data Env = Env {getX :: Integer, getY :: Integer, getZ :: Integer}
   deriving (Eq, Ord, Show)
 
+programDepth :: ExprNode -> Int
+programDepth =
+  exprDepth
+  where
+    exprDepth :: ExprNode -> Int
+    exprDepth Const1 = 1
+    exprDepth Const2 = 1
+    exprDepth Const3 = 1
+    exprDepth VarX = 1
+    exprDepth VarY = 1
+    exprDepth VarZ = 1
+    exprDepth (Ite b t e) = 1 + foldl max (boolDepth b) [exprDepth t, exprDepth e]
+    exprDepth (Add e1 e2) = 1 + max (exprDepth e1) (exprDepth e2)
+    exprDepth (Multiply e1 e2) = 1 + max (exprDepth e1) (exprDepth e2)
+
+    boolDepth :: BoolNode -> Int
+    boolDepth (Lt e1 e2) = 1 + max (exprDepth e1) (exprDepth e2)
+    boolDepth (Eq e1 e2) = 1 + max (exprDepth e1) (exprDepth e2)
+    boolDepth (And b1 b2) = 1 + max (boolDepth b1) (boolDepth b2)
+    boolDepth (Or b1 b2) = 1 + max (boolDepth b1) (boolDepth b2)
+    boolDepth (Not b) = 1 + boolDepth b
+
 evalExpr :: Env -> ExprNode -> Integer
+-- evalExpr env expr | trace (printf "evalExpr %s %s" (show env) (describeExpr expr)) False = undefined
 evalExpr env Const1 = 1
 evalExpr env Const2 = 2
 evalExpr env Const3 = 3
@@ -51,8 +75,8 @@ evalBool env (And b1 b2) = evalBool env b1 && evalBool env b2
 evalBool env (Or b1 b2) = evalBool env b1 || evalBool env b2
 evalBool env (Not b) = not (evalBool env b)
 
-{-
 foldExpr :: ExprNode -> Either ExprNode Integer
+-- foldExpr e | trace ("foldExpr " ++ describeExpr e) False = undefined
 foldExpr Const1 = Right 1
 foldExpr Const2 = Right 2
 foldExpr Const3 = Right 3
@@ -63,9 +87,9 @@ foldExpr (Ite b t e) =
   let cb = foldBool b
       ct = foldExpr t
       ce = foldExpr e
-   in case cb of
-        Right bv -> if bv then ct else ce
-        Left bf -> Left $ Ite bf (unfoldExpr ct) (unfoldExpr ce)
+   in case tryEvalBool cb of
+        Just bv -> if bv then ct else ce
+        Nothing -> Left $ Ite cb (unfoldExpr ct) (unfoldExpr ce)
 foldExpr (Add e1 e2) =
   let ce1 = foldExpr e1
       ce2 = foldExpr e2
@@ -84,51 +108,40 @@ foldExpr (Multiply e1 e2) =
         (Left ef1, Left ef2) -> Left $ Multiply ef1 ef2
 
 unfoldExpr :: Either ExprNode Integer -> ExprNode
+-- unfoldExpr e | trace ("unfoldExpr " ++ show e) False = undefined
 unfoldExpr (Left e) = e
 unfoldExpr (Right 1) = Const1
 unfoldExpr (Right 2) = Const2
 unfoldExpr (Right 3) = Const3
 unfoldExpr (Right v) | v > 3 = Add (unfoldExpr $ Right (v - 3)) Const3
 
-foldBool :: BoolNode -> Either BoolNode Bool
-foldBool (Lt e1 e2) =
-  let ce1 = foldExpr e1
-      ce2 = foldExpr e2
-   in case (ce1, ce2) of
-        (Right v1, Right v2) -> Right (v1 < v2)
-        (Left ef1, Right v2) -> Left $ Lt ef1 (unfoldExpr $ Right v2)
-        (Right v1, Left ef2) -> Left $ Lt (unfoldExpr $ Right v1) ef2
-        (Left ef1, Left ef2) -> Left $ Lt ef1 ef2
-foldBool (Eq e1 e2) =
-  let ce1 = foldExpr e1
-      ce2 = foldExpr e2
-   in case (ce1, ce2) of
-        (Right v1, Right v2) -> Right (v1 == v2)
-        (Left ef1, Right v2) -> Left $ Eq ef1 (unfoldExpr $ Right v2)
-        (Right v1, Left ef2) -> Left $ Eq (unfoldExpr $ Right v1) ef2
-        (Left ef1, Left ef2) -> Left $ Eq ef1 ef2
-foldBool (And b1 b2) =
-  let cb1 = foldBool b1
-      cb2 = foldBool b2
-   in case (cb1, cb2) of
-        (Right v1, Right v2) -> Right (v1 == v2)
-        (Left ef1, Right v2) -> Left $ Eq ef1 (unfoldExpr $ Right v2)
-        (Right v1, Left ef2) -> Left $ Eq (unfoldExpr $ Right v1) ef2
-        (Left ef1, Left ef2) -> Left $ Eq ef1 ef2
-foldBool (Or b1 b2) =
-  let cb1 = foldBool b1
-      cb2 = foldBool b2
-   in case (cb1, cb2) of
-        (Right v1, Right v2) -> Right (v1 == v2)
-        (Left ef1, Right v2) -> Left $ Eq ef1 (unfoldExpr $ Right v2)
-        (Right v1, Left ef2) -> Left $ Eq (unfoldExpr $ Right v1) ef2
-        (Left ef1, Left ef2) -> Left $ Eq ef1 ef2
-foldBool (Not b) =
-  let cb = foldBool b
-   in case cb of
-        Right v -> Right (not v)
-        Left bf -> Left $ Not bf
--}
+foldBool :: BoolNode -> BoolNode
+-- foldBool b | trace ("foldBool " ++ describeBool b) False = undefined
+foldBool (Lt e1 e2) = Lt (unfoldExpr $ foldExpr e1) (unfoldExpr $ foldExpr e2)
+foldBool (Eq e1 e2) = Eq (unfoldExpr $ foldExpr e1) (unfoldExpr $ foldExpr e2)
+foldBool (And b1 b2) = And (foldBool b1) (foldBool b2)
+foldBool (Or b1 b2) = Or (foldBool b1) (foldBool b2)
+foldBool (Not (Not b)) = b
+foldBool (Not b) = Not (foldBool b)
+
+tryEvalBool :: BoolNode -> Maybe Bool
+tryEvalBool (Lt e1 e2) = do
+  v1 <- either (const Nothing) Just (foldExpr e1)
+  v2 <- either (const Nothing) Just (foldExpr e2)
+  return $ v1 < v2
+tryEvalBool (Eq e1 e2) = do
+  v1 <- either (const Nothing) Just (foldExpr e1)
+  v2 <- either (const Nothing) Just (foldExpr e2)
+  return $ v1 == v2
+tryEvalBool (And b1 b2) =
+  case tryEvalBool b1 of
+    Just False -> Just False
+    _ -> tryEvalBool b2
+tryEvalBool (Or b1 b2) =
+  case tryEvalBool b1 of
+    Just True -> Just True
+    _ -> tryEvalBool b2
+tryEvalBool (Not b) = not <$> tryEvalBool b
 
 describeExpr :: ExprNode -> String
 describeExpr Const1 = "1"
@@ -156,31 +169,21 @@ randomExpr minDepth maxDepth
     minDepth <= maxDepth = do
       let newMinDepth = max 0 (minDepth - 1)
           newMaxDepth = maxDepth - 1
-      exprGens0 <- if minDepth == 0 then exprGenDepth0 newMinDepth newMaxDepth else return []
-      exprGens1 <- if minDepth == 1 then exprGenDepth1 newMinDepth newMaxDepth else return []
+      exprGens1 <- if minDepth <= 1 then exprGenDepth1 newMinDepth newMaxDepth else return []
       exprGens2 <- if maxDepth >= 2 then exprGenDepth2P newMinDepth newMaxDepth else return []
       exprGens3 <- if maxDepth >= 3 then exprGenDepth3P newMinDepth newMaxDepth else return []
-      let exprGens = exprGens0 ++ exprGens1 ++ exprGens2 ++ exprGens3
+      let exprGens = exprGens1 ++ exprGens2 ++ exprGens3
       i <- getRandomR (0, length exprGens - 1)
       exprGens !! i
 
-exprGenDepth0 :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
-exprGenDepth0 0 newMaxDepth
+exprGenDepth1 :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
+exprGenDepth1 0 newMaxDepth
   | newMaxDepth >= 0 =
       return
         [ return Const1,
           return Const2,
           return Const3,
           return VarX,
-          return VarY,
-          return VarZ
-        ]
-
-exprGenDepth1 :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
-exprGenDepth1 1 newMaxDepth
-  | newMaxDepth >= 0 =
-      return
-        [ return VarX,
           return VarY,
           return VarZ
         ]
@@ -267,8 +270,6 @@ boolGenDepth3P newMinDepth newMaxDepth
             return (Not b)
         ]
 
-depths = [1, 1, 2, 2, 3, 3, 4, 5, 6, 7]
-
 allEnvs :: Integer -> Integer -> [Env]
 allEnvs rangeMin rangeMax =
   let range = [rangeMin .. rangeMax]
@@ -282,6 +283,7 @@ randomEnv rangeMin rangeMax = do
   return Env {getX = x, getY = y, getZ = z}
 
 bestExamples :: (MonadRandom m) => Int -> ExprNode -> Set.Set Env -> m [Env]
+-- bestExamples count program envs | trace (printf "bestExamples %d <P> <E %d>" count (length envs)) False = undefined
 bestExamples count program envs = do
   uniqueExamples <- computeUniqueExamples count program (Set.toList envs) Set.empty
   let unusedEnvs = Set.difference envs (Set.fromList uniqueExamples)
@@ -289,6 +291,7 @@ bestExamples count program envs = do
   return $ uniqueExamples ++ nonUniqueExamples
   where
     computeUniqueExamples :: (MonadRandom m) => Int -> ExprNode -> [Env] -> Set.Set Integer -> m [Env]
+    -- computeUniqueExamples count program envs used | trace (printf "computeUniqueExamples %d %s <E %d> <U %d>" count (describeExpr program) (length envs) (Set.size used)) False = undefined
     computeUniqueExamples 0 _ _ _ = return []
     computeUniqueExamples _ _ [] _ = return []
     computeUniqueExamples count program envs used = do
@@ -303,6 +306,7 @@ bestExamples count program envs = do
           return $ e : examples
 
     computeNonUniqueExamples :: (MonadRandom m) => Int -> [Env] -> m [Env]
+    -- computeNonUniqueExamples count envs | trace (printf "computeNonUniqueExamples %d <P> <E %d>" count (length envs)) False = undefined
     computeNonUniqueExamples 0 envs = return []
     computeNonUniqueExamples count envs = do
       i <- getRandomR (0, length envs - 1)
@@ -316,15 +320,20 @@ describeExample env@(Env x y z) program =
   printf "x=%d, y=%d, z=%d -> %d" x y z (evalExpr env program)
 
 makeTestProgram :: (MonadRandom m) => Int -> Int -> m String
+-- makeTestProgram depth exampleCount | trace (printf "makeTestProgram %d %d" depth exampleCount) False = undefined
 makeTestProgram depth exampleCount = do
   program <- randomExpr depth depth
-  smallRangeExamples <- bestExamples depth program smallRangeEnvs
-  largeRangeExamples <- bestExamples depth program largeRangeEnvs
-  let examples = smallRangeExamples ++ largeRangeExamples
-  let examplesText =
-        printf "# %s\n" (describeExpr program)
-          ++ concatMap (\ex -> describeExample ex program ++ "\n") examples
-  return examplesText
+  let tidyProgram = unfoldExpr $ foldExpr program
+  if programDepth tidyProgram < depth
+    then makeTestProgram depth exampleCount
+    else do
+      smallRangeExamples <- bestExamples (max 2 (exampleCount - (exampleCount `div` 2))) tidyProgram smallRangeEnvs
+      largeRangeExamples <- bestExamples (max 2 (exampleCount `div` 2)) tidyProgram largeRangeEnvs
+      let examples = smallRangeExamples ++ largeRangeExamples
+      let examplesText =
+            printf "# %s\n" (describeExpr tidyProgram)
+              ++ concatMap (\ex -> describeExample ex tidyProgram ++ "\n") examples
+      return examplesText
   where
     smallRangeEnvs = Set.fromList (allEnvs 1 3)
     largeRangeEnvs = Set.difference (Set.fromList (allEnvs (-5) 15)) smallRangeEnvs
@@ -336,9 +345,8 @@ main = do
         mapM_
           ( \(i :: Int) -> do
               programText <- makeTestProgram d (d * 2)
-              putStrLn (printf "../1%02d%d.txt" (0 :: Int) i)
-              putStrLn programText
+              writeFile (printf "../%02d%02d.txt" d i) programText
           )
-          [0 .. 0]
+          [0 .. (if d < 4 then 19 else 9)]
     )
-    depths
+    [1 .. 7]
