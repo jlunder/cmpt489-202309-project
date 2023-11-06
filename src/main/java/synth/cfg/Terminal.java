@@ -24,7 +24,8 @@ public class Terminal extends Symbol {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Terminal)) return false;
+        if (!(o instanceof Terminal))
+            return false;
         Terminal other = (Terminal) o;
         return name == other.name;
     }

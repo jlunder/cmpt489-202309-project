@@ -89,6 +89,16 @@ foldExpr (Ite b t e) =
       ce = foldExpr e
    in case tryEvalBool cb of
         Just bv -> if bv then ct else ce
+        Nothing ->
+          if ct == ce
+            then Left $ unfoldExpr ct
+            else Left $ Ite cb (unfoldExpr ct) (unfoldExpr ce)
+foldExpr (Ite b t e) =
+  let cb = foldBool b
+      ct = foldExpr t
+      ce = foldExpr e
+   in case tryEvalBool cb of
+        Just bv -> if bv then ct else ce
         Nothing -> Left $ Ite cb (unfoldExpr ct) (unfoldExpr ce)
 foldExpr (Add e1 e2) =
   let ce1 = foldExpr e1
@@ -98,6 +108,8 @@ foldExpr (Add e1 e2) =
         (Left ef1, Right v2) -> Left $ Add ef1 (unfoldExpr $ Right v2)
         (Right v1, Left ef2) -> Left $ Add (unfoldExpr $ Right v1) ef2
         (Left ef1, Left ef2) -> Left $ Add ef1 ef2
+foldExpr (Multiply Const1 e2) = foldExpr e2
+foldExpr (Multiply e1 Const1) = foldExpr e1
 foldExpr (Multiply e1 e2) =
   let ce1 = foldExpr e1
       ce2 = foldExpr e2
@@ -119,8 +131,16 @@ foldBool :: BoolNode -> BoolNode
 -- foldBool b | trace ("foldBool " ++ describeBool b) False = undefined
 foldBool (Lt e1 e2) = Lt (unfoldExpr $ foldExpr e1) (unfoldExpr $ foldExpr e2)
 foldBool (Eq e1 e2) = Eq (unfoldExpr $ foldExpr e1) (unfoldExpr $ foldExpr e2)
-foldBool (And b1 b2) = And (foldBool b1) (foldBool b2)
-foldBool (Or b1 b2) = Or (foldBool b1) (foldBool b2)
+foldBool (And b1 b2) = case tryEvalBool b1 of
+  Just True -> foldBool b2
+  _ -> case tryEvalBool b2 of
+    Just True -> foldBool b1
+    _ -> And (foldBool b1) (foldBool b2)
+foldBool (Or b1 b2) = case tryEvalBool b1 of
+  Just False -> foldBool b2
+  _ -> case tryEvalBool b2 of
+    Just False -> foldBool b1
+    _ -> Or (foldBool b1) (foldBool b2)
 foldBool (Not (Not b)) = b
 foldBool (Not b) = Not (foldBool b)
 
@@ -349,4 +369,4 @@ main = do
           )
           [0 .. (if d < 4 then 19 else 9)]
     )
-    [1 .. 7]
+    [2 .. 7]

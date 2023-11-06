@@ -9,15 +9,23 @@ import java.util.*;
 public class Main {
     public static void main(String[] args) {
         // String examplesFilePath = "examples.txt";
-        String examplesFilePath = args[0];
-        List<String> lines = FileUtils.readLinesFromFile(examplesFilePath);
-        // parse all examples
-        List<Example> examples = Parser.parseAllExamples(lines);
-        // read the CFG
-        CFG cfg = buildCFG();
-        ISynthesizer synthesizer = new TopDownEnumSynthesizer();
-        Program program = synthesizer.synthesize(cfg, examples);
-        System.out.println(program);
+        for (var examplesFilePath : args) {
+            if (args.length > 1) {
+                System.out.println("# " + examplesFilePath);
+            }
+            List<String> lines = FileUtils.readLinesFromFile(examplesFilePath);
+            // parse all examples
+            List<Example> examples = Parser.parseAllExamples(lines);
+            // read the CFG
+            CFG cfg = buildCFG();
+            ISynthesizer synthesizer = new TopDownEnumSynthesizer();
+            Program program = synthesizer.synthesize(cfg, examples);
+            if (program == null) {
+                System.out.println("error: failed to generate!");
+            } else {
+                System.out.println(program);
+            }
+        }
     }
 
     /**

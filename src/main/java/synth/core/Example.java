@@ -33,7 +33,8 @@ public class Example {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Example)) return false;
+        if (!(o instanceof Example))
+            return false;
         Example other = (Example) o;
         return Objects.equals(input, other.input) && output == other.output;
     }

@@ -35,8 +35,7 @@ public class InterpreterTests {
                 new ASTNode(new Terminal("Add"),
                         List.of(
                                 new ASTNode(new Terminal("x"), Collections.emptyList()),
-                                new ASTNode(new Terminal("y"), Collections.emptyList()))
-                ));
+                                new ASTNode(new Terminal("y"), Collections.emptyList()))));
         int result = Interpreter.evaluate(program, buildEnvironment());
         Assert.assertEquals(25, result);
     }
@@ -48,8 +47,7 @@ public class InterpreterTests {
                 new ASTNode(new Terminal("Multiply"),
                         List.of(
                                 new ASTNode(new Terminal("z"), Collections.emptyList()),
-                                new ASTNode(new Terminal("2"), Collections.emptyList()))
-                ));
+                                new ASTNode(new Terminal("2"), Collections.emptyList()))));
         int result = Interpreter.evaluate(program, buildEnvironment());
         Assert.assertEquals(40, result);
     }
@@ -71,8 +69,7 @@ public class InterpreterTests {
                                 new ASTNode(new Terminal("Multiply"),
                                         List.of(
                                                 new ASTNode(new Terminal("y"), Collections.emptyList()),
-                                                new ASTNode(new Terminal("z"), Collections.emptyList())))
-                        )));
+                                                new ASTNode(new Terminal("z"), Collections.emptyList()))))));
         int result = Interpreter.evaluate(program, buildEnvironment());
         Assert.assertEquals(300, result);
     }

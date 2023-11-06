@@ -24,7 +24,8 @@ public class NonTerminal extends Symbol {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof NonTerminal)) return false;
+        if (!(o instanceof NonTerminal))
+            return false;
         NonTerminal other = (NonTerminal) o;
         return name == other.name;
     }
