@@ -39,7 +39,7 @@ public class Parser {
     public static List<Example> parseAllExamples(List<String> lines) {
         List<Example> examples = new ArrayList<>();
         for (String line : lines) {
-            if (!line.isEmpty()) {
+            if (!line.isEmpty() && !line.trim().startsWith("#")) {
                 examples.add(parseAnExample(line));
             }
         }
