@@ -10,6 +10,7 @@
             "request": "launch",
             "mainClass": "synth.Main",
             "projectName": "synth",
+            "vmArgs": ["-ea"],
             "args": ["examples.txt"]
         }
     ]

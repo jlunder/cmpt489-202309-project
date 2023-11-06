@@ -25,7 +25,17 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
             this.holeSymbols = holeSymbols;
         }
 
-        public void enumerate(Consumer<ASTNode> asts, Consumer<EnumerationJob> jobs) {
+        /**
+         * Enumerates all ASTs produced by
+         * 
+         * @param asts function receiving finished ASTs; if the function returns true
+         *             when executed, enumeration stops
+         * @param jobs consumer receiving jobs for ASTs which still have holes -- the
+         *             job will enumerate ASTs which fill a further hole
+         * @return a new index
+         */
+
+        public Program enumerate(Function<Program, Boolean> validate, Consumer<EnumerationJob> jobs) {
             assert holeLocations.length == holeSymbols.length;
             assert holeSymbols.length > 0;
             var i = holeLocations[0];
@@ -34,91 +44,85 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
                 var args = p.getArgumentSymbols();
                 productions[i] = p;
                 if (args.isEmpty() && (holeLocations.length == 1)) {
-                    constructAST(productions.length, asts);
+                    var program = new Program(constructAST(new ProductionsStack(productions)));
+                    if (validate.apply(program)) {
+                        return program;
+                    }
                 } else {
-                    enumerateCombinations(args, combination -> {
-                        // Insert these productions along with their associated holes at i:
-                        int addedHoleCount = 0;
-                        for (var p2 : combination) {
-                            addedHoleCount += p2.getArgumentSymbols().size();
+                    Production[] newProductions = new Production[productions.length + args.size()];
+                    System.arraycopy(productions, 0, newProductions, 0, i);
+                    int j = i + args.size();
+                    System.arraycopy(productions, i, newProductions, j, productions.length - i);
+
+                    int carryoverHoles = holeLocations.length - 1;
+                    int remainingHoles = carryoverHoles + args.size();
+
+                    if (remainingHoles == 0) {
+                        var program = new Program(constructAST(new ProductionsStack(productions)));
+                        if (validate.apply(program)) {
+                            return program;
                         }
-                        Production[] newProductions = new Production[productions.length + addedHoleCount + args.size()];
-                        System.arraycopy(productions, 0, newProductions, 0, i);
-                        int j = i + addedHoleCount + args.size();
-                        System.arraycopy(productions, i, newProductions, j, productions.length - i);
+                    } else {
+                        int[] remainingHoleLocations = new int[remainingHoles];
+                        System.arraycopy(holeLocations, 1, remainingHoleLocations, 0, carryoverHoles);
 
-                        int remainingHoles = holeSymbols.length - 1 + addedHoleCount;
-                        if (remainingHoles == 0) {
-                            for (var p2 : combination) {
-                                --j;
-                                newProductions[j] = p2;
+                        NonTerminal[] remainingHoleSymbols = new NonTerminal[remainingHoles];
+                        System.arraycopy(holeSymbols, 1, remainingHoleSymbols, 0, holeSymbols.length - 1);
+
+                        for (int k = 0; k < (carryoverHoles); ++k) {
+                            if (remainingHoleLocations[k] >= i) {
+                                remainingHoleLocations[k] += args.size();
                             }
-                            constructAST(newProductions.length, asts);
-                        } else {
-                            int[] remainingHoleLocations = new int[remainingHoles];
-                            System.arraycopy(holeLocations, 1, remainingHoleLocations, 0, holeLocations.length - 1);
-
-                            NonTerminal[] remainingHoleSymbols = new NonTerminal[remainingHoles];
-                            System.arraycopy(holeSymbols, 1, remainingHoleSymbols, 0, holeSymbols.length - 1);
-
-                            int k = holeLocations.length - 1;
-                            for (var p2 : combination) {
-                                --j;
-                                newProductions[j] = p2;
-                                for (var p2a : p2.getArgumentSymbols()) {
-                                    assert j > i;
-                                    --j;
-                                    // newProductions[j] = null; // Implicitly already null
-                                    assert k < remainingHoleLocations.length;
-                                    remainingHoleLocations[k] = j;
-                                    remainingHoleSymbols[k] = (NonTerminal) p2a;
-                                    ++k;
-                                }
-                            }
-                            assert j == i;
-                            jobs.accept(new EnumerationJob(cfg, newProductions, remainingHoleLocations,
-                                    remainingHoleSymbols));
                         }
-                    });
+                        for (int k = 0; k < args.size(); ++k) {
+                            --j;
+                            remainingHoleLocations[carryoverHoles + k] = j;
+                            remainingHoleSymbols[carryoverHoles + k] = (NonTerminal) args.get(k);
+                        }
+
+                        jobs.accept(new EnumerationJob(cfg, newProductions, remainingHoleLocations,
+                                remainingHoleSymbols));
+                    }
                 }
+            }
+
+            // No candidates passed validation
+            return null;
+        }
+
+        private static class ProductionsStack {
+            private int top;
+            private final Production[] productions;
+
+            public ProductionsStack(Production[] productions) {
+                this.top = productions.length;
+                this.productions = productions;
+            }
+
+            Production pop() {
+                return productions[--top];
             }
         }
 
-        private int constructAST(int i, Consumer<ASTNode> asts) {
-            assert i > 0 && i <= productions.length;
-            var j = i - 1;
-            var p = productions[j];
+        private static List<ASTNode> noChildren = List.of();
+
+        /**
+         * Construct an AST from a post-order array of productions. E.g., an array
+         * like { x, y, Add } becomes Add(x, y); {x, y, Add, z, Add } becomes Add(z,
+         * Add(x, y)).
+         */
+        private ASTNode constructAST(ProductionsStack stack) {
+            var p = stack.pop();
             assert p != null;
             var argSymbols = p.getArgumentSymbols();
+            List<ASTNode> children = noChildren;
             if (!argSymbols.isEmpty()) {
-                var children = new ArrayList<ASTNode>(argSymbols.size());
-                for (int k = 0; k < argSymbols.size(); ++k) {
-                    j = constructAST(j, ast -> children.add(ast));
-                }
-                asts.accept(ASTNode.make(p.getOperator(), children));
-            } else {
-                asts.accept(ASTNode.make(p.getOperator(), List.of()));
-            }
-            return j;
-        }
-
-        private void enumerateCombinations(List<Symbol> symbols, Consumer<Production[]> consumer) {
-            enumerateCombinationsRecurse(symbols, new Production[symbols.size()], 0, consumer);
-        }
-
-        private void enumerateCombinationsRecurse(List<Symbol> symbols, Production[] partial, int index,
-                Consumer<Production[]> consumer) {
-            if (index + 1 < partial.length) {
-                for (var p : cfg.getProductions((NonTerminal) symbols.get(index))) {
-                    partial[index] = p;
-                    enumerateCombinationsRecurse(symbols, partial, index + 1, consumer);
-                }
-            } else {
-                for (var p : cfg.getProductions((NonTerminal) symbols.get(index))) {
-                    partial[index] = p;
-                    consumer.accept(partial);
+                children = new ArrayList<ASTNode>(argSymbols.size());
+                for (int i = 0; i < argSymbols.size(); ++i) {
+                    children.add(constructAST(stack));
                 }
             }
+            return ASTNode.make(p.getOperator(), children);
         }
     }
 
@@ -138,29 +142,18 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
                 .map(e -> new Validation(new Interpreter(e.getInput()), e.getOutput()))
                 .toList();
 
-        var programs = new ArrayDeque<Program>();
         var jobs = new ArrayDeque<EnumerationJob>();
 
-        jobs.offer(new EnumerationJob(cfg, new Production[] { null }, new int[] { 0 },
-                new NonTerminal[] { cfg.getStartSymbol() }));
-
-        while (true) {
-            var j = jobs.poll();
-            if (j == null) {
-                // No jobs left -- we failed to generate a program. This shouldn't happen
-                // without a recursion limit..?
-                return null;
-            }
-
-            j.enumerate(ast -> programs.offer(new Program(ast)), job -> jobs.offer(job));
-            // Validate fully-formed candidate programs first
-            for (var candidate : programs) {
-                if (validate(validations, candidate)) {
-                    // Successful candidate!
-                    return candidate;
-                }
+        for (var j = new EnumerationJob(cfg, new Production[] { null }, new int[] { 0 },
+                new NonTerminal[] { cfg.getStartSymbol() }); j != null; j = jobs.poll()) {
+            var program = j.enumerate(candidate -> validate(validations, candidate), job -> jobs.offer(job));
+            if (program != null) {
+                return program;
             }
         }
+        // No jobs left -- we failed to generate a program. This shouldn't happen
+        // without a recursion limit..?
+        return null;
     }
 
     private boolean validate(List<Validation> validations, Program program) {
