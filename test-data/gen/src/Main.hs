@@ -6,9 +6,9 @@ module Main where
 
 import Control.Monad.Random.Lazy
 import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
 import System.IO (writeFile)
 import Text.Printf (printf)
-import Data.Set (cartesianProduct)
 
 data ExprNode
   = Const1
@@ -31,6 +31,7 @@ data BoolNode
   deriving (Eq, Show)
 
 data Env = Env {getX :: Integer, getY :: Integer, getZ :: Integer}
+  deriving (Eq, Ord, Show)
 
 evalExpr :: Env -> ExprNode -> Integer
 evalExpr env Const1 = 1
@@ -155,21 +156,31 @@ randomExpr minDepth maxDepth
     minDepth <= maxDepth = do
       let newMinDepth = max 0 (minDepth - 1)
           newMaxDepth = maxDepth - 1
-      exprGens1 <- if minDepth <= 1 then exprGenDepth1 newMinDepth newMaxDepth else return []
+      exprGens0 <- if minDepth == 0 then exprGenDepth0 newMinDepth newMaxDepth else return []
+      exprGens1 <- if minDepth == 1 then exprGenDepth1 newMinDepth newMaxDepth else return []
       exprGens2 <- if maxDepth >= 2 then exprGenDepth2P newMinDepth newMaxDepth else return []
       exprGens3 <- if maxDepth >= 3 then exprGenDepth3P newMinDepth newMaxDepth else return []
-      let exprGens = exprGens1 ++ exprGens2 ++ exprGens3
+      let exprGens = exprGens0 ++ exprGens1 ++ exprGens2 ++ exprGens3
       i <- getRandomR (0, length exprGens - 1)
       exprGens !! i
 
-exprGenDepth1 :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
-exprGenDepth1 0 newMaxDepth
+exprGenDepth0 :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
+exprGenDepth0 0 newMaxDepth
   | newMaxDepth >= 0 =
       return
         [ return Const1,
           return Const2,
           return Const3,
           return VarX,
+          return VarY,
+          return VarZ
+        ]
+
+exprGenDepth1 :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
+exprGenDepth1 1 newMaxDepth
+  | newMaxDepth >= 0 =
+      return
+        [ return VarX,
           return VarY,
           return VarZ
         ]
@@ -256,36 +267,78 @@ boolGenDepth3P newMinDepth newMaxDepth
             return (Not b)
         ]
 
+depths = [1, 1, 2, 2, 3, 3, 4, 5, 6, 7]
+
+allEnvs :: Integer -> Integer -> [Env]
+allEnvs rangeMin rangeMax =
+  let range = [rangeMin .. rangeMax]
+   in concatMap (\i -> concatMap (\j -> map (Env i j) range) range) range
+
+randomEnv :: (MonadRandom m) => Integer -> Integer -> m Env
+randomEnv rangeMin rangeMax = do
+  x <- getRandomR (rangeMin, rangeMax)
+  y <- getRandomR (rangeMin, rangeMax)
+  z <- getRandomR (rangeMin, rangeMax)
+  return Env {getX = x, getY = y, getZ = z}
+
+bestExamples :: (MonadRandom m) => Int -> ExprNode -> Set.Set Env -> m [Env]
+bestExamples count program envs = do
+  uniqueExamples <- computeUniqueExamples count program (Set.toList envs) Set.empty
+  let unusedEnvs = Set.difference envs (Set.fromList uniqueExamples)
+  nonUniqueExamples <- computeNonUniqueExamples (count - length uniqueExamples) (Set.toList unusedEnvs)
+  return $ uniqueExamples ++ nonUniqueExamples
+  where
+    computeUniqueExamples :: (MonadRandom m) => Int -> ExprNode -> [Env] -> Set.Set Integer -> m [Env]
+    computeUniqueExamples 0 _ _ _ = return []
+    computeUniqueExamples _ _ [] _ = return []
+    computeUniqueExamples count program envs used = do
+      i <- getRandomR (0, length envs - 1)
+      let e = envs !! i
+      let remainEnvs = take i envs ++ drop (i + 1) envs
+      let result = evalExpr e program
+      if Set.member result used
+        then computeUniqueExamples count program remainEnvs used
+        else do
+          examples <- computeUniqueExamples (count - 1) program remainEnvs (Set.insert result used)
+          return $ e : examples
+
+    computeNonUniqueExamples :: (MonadRandom m) => Int -> [Env] -> m [Env]
+    computeNonUniqueExamples 0 envs = return []
+    computeNonUniqueExamples count envs = do
+      i <- getRandomR (0, length envs - 1)
+      let e = envs !! i
+      let remainEnvs = take i envs ++ drop (i + 1) envs
+      examples <- computeNonUniqueExamples (count - 1) remainEnvs
+      return $ e : examples
+
+describeExample :: Env -> ExprNode -> String
+describeExample env@(Env x y z) program =
+  printf "x=%d, y=%d, z=%d -> %d" x y z (evalExpr env program)
+
+makeTestProgram :: (MonadRandom m) => Int -> Int -> m String
+makeTestProgram depth exampleCount = do
+  program <- randomExpr depth depth
+  smallRangeExamples <- bestExamples depth program smallRangeEnvs
+  largeRangeExamples <- bestExamples depth program largeRangeEnvs
+  let examples = smallRangeExamples ++ largeRangeExamples
+  let examplesText =
+        printf "# %s\n" (describeExpr program)
+          ++ concatMap (\ex -> describeExample ex program ++ "\n") examples
+  return examplesText
+  where
+    smallRangeEnvs = Set.fromList (allEnvs 1 3)
+    largeRangeEnvs = Set.difference (Set.fromList (allEnvs (-5) 15)) smallRangeEnvs
+
 main :: IO ()
 main = do
-  print envs
   mapM_
     ( \d ->
         mapM_
           ( \(i :: Int) -> do
               programText <- makeTestProgram d (d * 2)
-              writeFile (printf "../1%02d%d.txt" (0 :: Int) i) programText
+              putStrLn (printf "../1%02d%d.txt" (0 :: Int) i)
+              putStrLn programText
           )
-          [0 .. 9]
+          [0 .. 0]
     )
     depths
-  where
-    depths = [1, 1, 2, 2, 3, 3, 4, 5, 6, 7]
-    envs = map (\i -> map (\j -> map (\k -> Env i j k) [1..3]) [1..3]) [1..3]
-    randomEnv :: (MonadRandom m) => Integer -> Integer -> m Env
-    randomEnv rangeMin rangeMax = do
-      x <- getRandomR (rangeMin, rangeMax)
-      y <- getRandomR (rangeMin, rangeMax)
-      z <- getRandomR (rangeMin, rangeMax)
-      return Env {getX = x, getY = y, getZ = z}
-    describeExample :: Env -> ExprNode -> String
-    describeExample env@(Env x y z) program =
-      printf "x=%d, y=%d, z=%d -> %d" x y z (evalExpr env program)
-    makeTestProgram :: (MonadRandom m) => Int -> Int -> m String
-    makeTestProgram depth exampleCount = do
-      program <- randomExpr depth depth
-      examples <- mapM (ranges $ randomEnv 1 3) [1 .. exampleCount]
-      let examplesText =
-            printf "# %s\n" (describeExpr program)
-              ++ concatMap (\ex -> describeExample ex program ++ "\n") examples
-      return examplesText
