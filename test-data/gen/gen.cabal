@@ -1,0 +1,12 @@
+cabal-version:      2.4
+name:               gen
+version:            0.1.0.0
+
+author:             Joseph Lunderville
+maintainer:         joseph_lunderville@sfu.ca
+
+executable gen
+    main-is:            Main.hs
+    build-depends:      base, mtl, random, MonadRandom
+    hs-source-dirs:     src
+    default-language:   GHC2021
