@@ -129,7 +129,7 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
     private record Validation(Interpreter interpreter, int expectedOutput) {
     };
 
-    private static final int MAX_PENDING_JOBS = 1000000;
+    private static final int MAX_PENDING_JOBS = 10000000;
 
     /**
      * Synthesize a program f(x, y, z) based on a context-free grammar and examples
@@ -145,11 +145,16 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
                 .toList();
 
         var jobs = new ArrayDeque<EnumerationJob>();
+        boolean aborting = false;
 
         for (var j = new EnumerationJob(cfg, new Production[] { null }, new int[] { 0 },
-                new NonTerminal[] { cfg.getStartSymbol() }); j != null
-                        && jobs.size() < MAX_PENDING_JOBS; j = jobs.poll()) {
-            var program = j.enumerate(candidate -> validate(validations, candidate), job -> jobs.offer(job));
+                new NonTerminal[] { cfg.getStartSymbol() }); j != null; j = jobs.poll()) {
+            if (jobs.size() >= MAX_PENDING_JOBS) {
+                aborting = true;
+            }
+            var program = j.enumerate(candidate -> validate(validations, candidate), aborting ? job -> {
+                return;
+            } : job -> jobs.offer(job));
             if (program != null) {
                 return program;
             }
