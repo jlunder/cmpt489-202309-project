@@ -2,8 +2,6 @@ package synth.core;
 
 import synth.cfg.Symbol;
 
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
 import java.util.List;
 
 public class ASTNode {
