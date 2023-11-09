@@ -26,8 +26,8 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
         }
 
         /**
-         * Enumerates all ASTs produced by
-         * 
+         * Enumerates all ASTs produced by filling in holes in this job's partial AST.
+         *
          * @param asts function receiving finished ASTs; if the function returns true
          *             when executed, enumeration stops
          * @param jobs consumer receiving jobs for ASTs which still have holes -- the
@@ -150,6 +150,9 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
         for (var j = new EnumerationJob(cfg, new Production[] { null }, new int[] { 0 },
                 new NonTerminal[] { cfg.getStartSymbol() }); j != null; j = jobs.poll()) {
             if (jobs.size() >= MAX_PENDING_JOBS) {
+                if (!aborting) {
+                    System.out.println("warning: enumeration capped at " + MAX_PENDING_JOBS + " pending jobs");
+                }
                 aborting = true;
             }
             var program = j.enumerate(candidate -> validate(validations, candidate), aborting ? job -> {

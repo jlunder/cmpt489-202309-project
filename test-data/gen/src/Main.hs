@@ -367,6 +367,7 @@ main = do
               programText <- makeTestProgram d (d * 2)
               writeFile (printf "../%02d%02d.txt" d i) programText
           )
-          [0 .. (if d < 4 then 19 else 9)]
+          (if d < 5 then [20 .. 99] else [])
     )
     [2 .. 7]
+

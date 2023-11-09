@@ -1,0 +1,760 @@
+# test-data/0100.txt
+y
+# test-data/0101.txt
+2
+# test-data/0102.txt
+x
+# test-data/0103.txt
+z
+# test-data/0104.txt
+1
+# test-data/0105.txt
+3
+# test-data/0200.txt
+Add(2, z)
+# test-data/0201.txt
+Multiply(x, y)
+# test-data/0202.txt
+Multiply(3, z)
+# test-data/0203.txt
+Add(2, 3)
+# test-data/0204.txt
+Add(1, 3)
+# test-data/0205.txt
+Add(1, 3)
+# test-data/0206.txt
+Multiply(3, z)
+# test-data/0207.txt
+Multiply(3, x)
+# test-data/0208.txt
+Add(3, x)
+# test-data/0209.txt
+Add(x, y)
+# test-data/0210.txt
+Add(2, x)
+# test-data/0211.txt
+Add(1, z)
+# test-data/0212.txt
+Add(1, z)
+# test-data/0213.txt
+Add(2, 3)
+# test-data/0214.txt
+Add(3, y)
+# test-data/0215.txt
+Add(1, y)
+# test-data/0216.txt
+Add(x, z)
+# test-data/0217.txt
+Add(1, z)
+# test-data/0218.txt
+Add(2, 3)
+# test-data/0219.txt
+Multiply(3, z)
+# test-data/0220.txt
+Multiply(y, z)
+# test-data/0221.txt
+Add(z, z)
+# test-data/0222.txt
+Add(1, 3)
+# test-data/0223.txt
+Add(y, y)
+# test-data/0224.txt
+Add(y, y)
+# test-data/0225.txt
+Add(x, y)
+# test-data/0226.txt
+Add(z, z)
+# test-data/0227.txt
+Add(3, y)
+# test-data/0228.txt
+Add(1, y)
+# test-data/0229.txt
+Multiply(x, z)
+# test-data/0230.txt
+Add(2, x)
+# test-data/0231.txt
+Add(y, y)
+# test-data/0232.txt
+Add(x, z)
+# test-data/0233.txt
+Multiply(y, y)
+# test-data/0234.txt
+Add(x, x)
+# test-data/0235.txt
+Add(z, z)
+# test-data/0236.txt
+Add(2, x)
+# test-data/0237.txt
+Add(2, y)
+# test-data/0238.txt
+Multiply(y, z)
+# test-data/0239.txt
+Add(z, z)
+# test-data/0240.txt
+Add(z, z)
+# test-data/0241.txt
+Add(2, y)
+# test-data/0242.txt
+Add(1, z)
+# test-data/0243.txt
+Add(1, y)
+# test-data/0244.txt
+Add(x, x)
+# test-data/0245.txt
+Add(1, 3)
+# test-data/0246.txt
+Multiply(3, 3)
+# test-data/0247.txt
+Add(2, z)
+# test-data/0248.txt
+Add(3, x)
+# test-data/0249.txt
+Add(3, y)
+# test-data/0250.txt
+Add(1, z)
+# test-data/0251.txt
+Add(z, z)
+# test-data/0252.txt
+Add(2, z)
+# test-data/0253.txt
+Add(z, z)
+# test-data/0254.txt
+Add(3, 3)
+# test-data/0255.txt
+Multiply(y, z)
+# test-data/0256.txt
+Multiply(x, y)
+# test-data/0257.txt
+Add(x, y)
+# test-data/0258.txt
+Multiply(x, z)
+# test-data/0259.txt
+Multiply(z, z)
+# test-data/0260.txt
+Multiply(3, y)
+# test-data/0261.txt
+Add(x, y)
+# test-data/0262.txt
+Add(x, x)
+# test-data/0263.txt
+Multiply(x, y)
+# test-data/0264.txt
+Add(x, y)
+# test-data/0265.txt
+Multiply(x, z)
+# test-data/0266.txt
+Add(y, z)
+# test-data/0267.txt
+Add(z, z)
+# test-data/0268.txt
+Add(y, z)
+# test-data/0269.txt
+Add(1, z)
+# test-data/0270.txt
+Add(3, z)
+# test-data/0271.txt
+Multiply(y, z)
+# test-data/0272.txt
+Add(2, 3)
+# test-data/0273.txt
+Multiply(z, z)
+# test-data/0274.txt
+Add(3, z)
+# test-data/0275.txt
+Multiply(x, z)
+# test-data/0276.txt
+Add(1, z)
+# test-data/0277.txt
+Add(3, 3)
+# test-data/0278.txt
+Add(x, z)
+# test-data/0279.txt
+Multiply(3, z)
+# test-data/0280.txt
+Add(1, y)
+# test-data/0281.txt
+Add(2, z)
+# test-data/0282.txt
+Add(y, y)
+# test-data/0283.txt
+Multiply(y, z)
+# test-data/0284.txt
+Multiply(x, x)
+# test-data/0285.txt
+Add(1, x)
+# test-data/0286.txt
+Add(3, y)
+# test-data/0287.txt
+Add(1, z)
+# test-data/0288.txt
+Add(y, y)
+# test-data/0289.txt
+Multiply(x, y)
+# test-data/0290.txt
+Add(x, z)
+# test-data/0291.txt
+Add(x, y)
+# test-data/0292.txt
+Add(y, z)
+# test-data/0293.txt
+Add(3, x)
+# test-data/0294.txt
+Add(x, z)
+# test-data/0295.txt
+Multiply(3, 3)
+# test-data/0296.txt
+Multiply(z, z)
+# test-data/0297.txt
+Add(3, y)
+# test-data/0298.txt
+Multiply(3, z)
+# test-data/0299.txt
+Add(2, 3)
+# test-data/0300.txt
+Ite(Lt(y, 2), x, Add(1, 3))
+# test-data/0301.txt
+Add(z, Multiply(3, x))
+# test-data/0302.txt
+Add(2, Add(x, y))
+# test-data/0303.txt
+Multiply(2, Add(3, x))
+# test-data/0304.txt
+Add(x, Multiply(3, x))
+# test-data/0305.txt
+Add(2, Add(x, z))
+# test-data/0306.txt
+Add(1, Add(x, y))
+# test-data/0307.txt
+Add(2, 3)
+# test-data/0308.txt
+Add(2, Add(x, x))
+# test-data/0309.txt
+Ite(Lt(x, 2), 3, x)
+# test-data/0310.txt
+Add(y, Multiply(3, x))
+# test-data/0311.txt
+Ite(Lt(3, z), Add(y, y), 2)
+# test-data/0312.txt
+Add(1, Add(y, y))
+# test-data/0313.txt
+Multiply(2, Add(2, z))
+# test-data/0314.txt
+Multiply(2, Multiply(3, x))
+# test-data/0315.txt
+Multiply(x, Add(y, Multiply(y, z)))
+# test-data/0316.txt
+Add(3, Multiply(3, x))
+# test-data/0317.txt
+Ite(Eq(1, z), 3, Add(x, y))
+# test-data/0318.txt
+Add(x, Add(y, z))
+# test-data/0319.txt
+Add(2, Add(3, y))
+# test-data/0320.txt
+Multiply(2, Add(3, x))
+# test-data/0321.txt
+Ite(Lt(3, x), Add(2, x), y)
+# test-data/0322.txt
+Multiply(3, Add(x, y))
+# test-data/0323.txt
+Ite(Lt(3, x), z, Multiply(3, y))
+# test-data/0324.txt
+Add(x, Multiply(z, z))
+# test-data/0325.txt
+Add(2, Add(3, 3))
+# test-data/0326.txt
+Multiply(2, Ite(Lt(z, 3), 2, x))
+# test-data/0327.txt
+Add(3, Multiply(3, y))
+# test-data/0328.txt
+Add(2, Add(x, Multiply(x, z)))
+# test-data/0329.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(3, z), Add(3, 3), Multiply(y, z))
+# test-data/0330.txt
+Add(2, Add(3, 3))
+# test-data/0331.txt
+Add(3, Add(x, x))
+# test-data/0332.txt
+Add(3, Add(x, y))
+# test-data/0333.txt
+Ite(Lt(x, 2), z, Add(x, x))
+# test-data/0334.txt
+Multiply(x, x)
+# test-data/0335.txt
+Multiply(3, z)
+# test-data/0336.txt
+Add(x, z)
+# test-data/0337.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(1, z), Add(3, y), Multiply(3, 3))
+# test-data/0338.txt
+Multiply(y, Add(3, y))
+# test-data/0339.txt
+Ite(Lt(z, x), Add(3, z), 3)
+# test-data/0340.txt
+Add(1, Add(3, 3))
+# test-data/0341.txt
+Add(y, Add(y, z))
+# test-data/0342.txt
+Add(3, Add(x, y))
+# test-data/0343.txt
+Multiply(3, Add(2, x))
+# test-data/0344.txt
+Multiply(3, Add(2, y))
+# test-data/0345.txt
+Multiply(2, Multiply(3, z))
+# test-data/0346.txt
+Multiply(2, Add(3, x))
+# test-data/0347.txt
+Ite(Lt(y, x), 3, Multiply(3, 3))
+# test-data/0348.txt
+Add(1, Add(x, z))
+# test-data/0349.txt
+Ite(Lt(3, z), z, Add(2, z))
+# test-data/0350.txt
+Multiply(2, Multiply(y, z))
+# test-data/0351.txt
+Multiply(2, Multiply(3, Add(2, y)))
+# test-data/0352.txt
+Add(z, Multiply(3, 3))
+# test-data/0353.txt
+Add(1, Add(3, z))
+# test-data/0354.txt
+Ite(Lt(1, z), y, Add(1, 3))
+# test-data/0355.txt
+Ite(Lt(y, 2), x, y)
+# test-data/0356.txt
+Multiply(2, Add(y, z))
+# test-data/0357.txt
+Multiply(3, Multiply(x, y))
+# test-data/0358.txt
+Multiply(z, Add(3, x))
+# test-data/0359.txt
+Multiply(3, Add(3, y))
+# test-data/0360.txt
+Add(3, Add(3, z))
+# test-data/0361.txt
+Multiply(3, Multiply(3, y))
+# test-data/0362.txt
+Multiply(2, Multiply(3, x))
+# test-data/0363.txt
+Ite(Lt(1, x), z, Add(1, 3))
+# test-data/0364.txt
+Add(3, Add(3, y))
+# test-data/0365.txt
+Multiply(Add(2, 3), Add(x, y))
+# test-data/0366.txt
+Ite(Lt(y, 3), 1, y)
+# test-data/0367.txt
+Add(3, Multiply(3, z))
+# test-data/0368.txt
+Add(1, Multiply(x, z))
+# test-data/0369.txt
+Add(2, Add(3, z))
+# test-data/0370.txt
+Add(3, Multiply(3, z))
+# test-data/0371.txt
+Ite(Lt(x, 1), 2, y)
+# test-data/0372.txt
+Multiply(2, Multiply(2, Multiply(3, x)))
+# test-data/0373.txt
+Add(x, Add(y, y))
+# test-data/0374.txt
+Add(y, Multiply(y, y))
+# test-data/0375.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(3, x), Add(x, x), Multiply(y, z))
+# test-data/0376.txt
+Add(x, z)
+# test-data/0377.txt
+Add(x, Add(x, Add(y, z)))
+# test-data/0378.txt
+Add(2, Add(3, 3))
+# test-data/0379.txt
+Ite(Lt(2, y), 3, x)
+# test-data/0380.txt
+Multiply(x, Multiply(z, z))
+# test-data/0381.txt
+Add(2, Add(x, y))
+# test-data/0382.txt
+Multiply(3, Multiply(x, Multiply(y, z)))
+# test-data/0383.txt
+Ite(Lt(x, y), 2, Add(x, x))
+# test-data/0384.txt
+Ite(Lt(1, z), y, Add(3, x))
+# test-data/0385.txt
+Multiply(3, Multiply(y, Multiply(z, z)))
+# test-data/0386.txt
+Multiply(y, Add(y, z))
+# test-data/0387.txt
+Add(3, Add(3, z))
+# test-data/0388.txt
+Add(3, Add(x, x))
+# test-data/0389.txt
+Multiply(3, Add(3, Multiply(3, x)))
+# test-data/0390.txt
+Add(3, Add(y, z))
+# test-data/0391.txt
+Multiply(x, Multiply(z, z))
+# test-data/0392.txt
+Add(1, z)
+# test-data/0393.txt
+Add(1, Multiply(3, y))
+# test-data/0394.txt
+Add(1, Add(x, x))
+# test-data/0395.txt
+z
+# test-data/0396.txt
+Multiply(2, Multiply(x, Multiply(x, z)))
+# test-data/0397.txt
+Add(1, Add(3, x))
+# test-data/0398.txt
+Multiply(3, 3)
+# test-data/0399.txt
+Add(1, Add(3, y))
+# test-data/0400.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(3, x), 3, Add(3, Multiply(3, 3)))
+# test-data/0401.txt
+Add(2, Multiply(2, Add(x, z)))
+# test-data/0402.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0403.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(Add(2, y), Add(3, Add(x, y)))
+# test-data/0404.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(1, Ite(Eq(3, x), 3, Add(3, z)))
+# test-data/0405.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0406.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(1, x), 3, Multiply(2, Multiply(3, y)))
+# test-data/0407.txt
+Add(y, Multiply(2, Multiply(x, y)))
+# test-data/0408.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0409.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(3, x), 1, Multiply(3, Multiply(3, x)))
+# test-data/0410.txt
+Add(z, Multiply(z, Add(3, x)))
+# test-data/0411.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(3, Add(z, Multiply(y, z))))
+# test-data/0412.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0413.txt
+Add(3, Add(x, Add(x, y)))
+# test-data/0414.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0415.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0416.txt
+Add(1, Add(3, Add(y, z)))
+# test-data/0417.txt
+Add(3, Multiply(2, Multiply(3, y)))
+# test-data/0418.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(1, Ite(Eq(2, z), 3, Add(y, y)))
+# test-data/0419.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(x, 2), 3, Multiply(z, Add(2, 3)))
+# test-data/0420.txt
+Multiply(y, Add(3, Add(z, z)))
+# test-data/0421.txt
+x
+# test-data/0422.txt
+Multiply(3, Multiply(x, Multiply(y, y)))
+# test-data/0423.txt
+Multiply(z, Add(3, Add(3, y)))
+# test-data/0424.txt
+Add(y, Multiply(2, Multiply(x, y)))
+# test-data/0425.txt
+Multiply(3, Multiply(z, Add(3, x)))
+# test-data/0426.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0427.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0428.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0429.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0430.txt
+Ite(Lt(x, y), z, 3)
+# test-data/0431.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0432.txt
+x
+# test-data/0433.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0434.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0435.txt
+Ite(Eq(1, x), Add(1, 3), z)
+# test-data/0436.txt
+Add(3, Multiply(y, Add(2, x)))
+# test-data/0437.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(2, Multiply(3, Multiply(x, z))))
+# test-data/0438.txt
+Add(3, Multiply(2, Multiply(x, z)))
+# test-data/0439.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0440.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(3, Add(x, Add(x, Add(y, z))))
+# test-data/0441.txt
+Add(3, Multiply(y, Add(2, 3)))
+# test-data/0442.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(2, Multiply(x, y)), 1, Multiply(x, z))
+# test-data/0443.txt
+Add(2, Add(x, y))
+# test-data/0444.txt
+Multiply(3, Multiply(x, Multiply(y, z)))
+# test-data/0445.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(Add(2, 3), Add(x, z)), x, z)
+# test-data/0446.txt
+Add(3, Add(x, Multiply(3, z)))
+# test-data/0447.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0448.txt
+Add(x, Multiply(2, Multiply(3, y)))
+# test-data/0449.txt
+3
+# test-data/0450.txt
+Multiply(2, Add(3, z))
+# test-data/0451.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0452.txt
+Add(3, Multiply(3, x))
+# test-data/0453.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0454.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(Add(x, z), Add(y, Multiply(3, x)))
+# test-data/0455.txt
+Ite(Eq(2, x), Add(3, 3), y)
+# test-data/0456.txt
+Add(x, Multiply(x, y))
+# test-data/0457.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(x, Multiply(2, Multiply(2, Add(3, y))))
+# test-data/0458.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(2, z), 3, Add(2, Add(3, y)))
+# test-data/0459.txt
+Add(1, Add(3, Add(z, Multiply(y, z))))
+# test-data/0460.txt
+Add(2, Add(3, Add(3, y)))
+# test-data/0461.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0462.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0463.txt
+y
+# test-data/0464.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(3, x), Add(y, Multiply(3, y)), x)
+# test-data/0465.txt
+3
+# test-data/0466.txt
+Multiply(y, Add(3, Add(x, z)))
+# test-data/0467.txt
+Multiply(y, Ite(Lt(1, z), 2, z))
+# test-data/0468.txt
+Add(x, Multiply(2, Multiply(3, x)))
+# test-data/0469.txt
+Ite(Lt(2, y), 2, x)
+# test-data/0470.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0471.txt
+Multiply(2, Multiply(y, Multiply(y, z)))
+# test-data/0472.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(2, Multiply(3, Multiply(y, z))))
+# test-data/0473.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0474.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(y, 2), 2, Multiply(2, Multiply(3, z)))
+# test-data/0475.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(2, z), y, Add(x, Multiply(3, 3)))
+# test-data/0476.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(y, Multiply(z, z)), x, Add(1, 3))
+# test-data/0477.txt
+Multiply(2, Multiply(3, Add(3, y)))
+# test-data/0478.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(Add(1, Add(y, z)), Add(2, 3))
+# test-data/0479.txt
+Add(2, Multiply(3, Multiply(x, y)))
+# test-data/0480.txt
+Add(2, Multiply(3, x))
+# test-data/0481.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0482.txt
+Multiply(3, Add(2, z))
+# test-data/0483.txt
+Add(y, Add(y, z))
+# test-data/0484.txt
+Ite(Eq(2, z), Add(y, y), y)
+# test-data/0485.txt
+Ite(Lt(1, y), 1, Add(1, x))
+# test-data/0486.txt
+Add(x, Multiply(3, Add(3, z)))
+# test-data/0487.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(2, Multiply(2, Multiply(3, z))))
+# test-data/0488.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0489.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0490.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(3, Multiply(3, Multiply(z, z))))
+# test-data/0491.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0492.txt
+Ite(Lt(x, 2), y, Multiply(x, x))
+# test-data/0493.txt
+Add(1, Multiply(x, Multiply(x, z)))
+# test-data/0494.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0495.txt
+Add(1, Multiply(3, Multiply(x, y)))
+# test-data/0496.txt
+Add(x, z)
+# test-data/0497.txt
+Multiply(x, y)
+# test-data/0498.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(2, Add(3, Add(3, z))))
+# test-data/0499.txt
+Multiply(3, Add(3, Add(3, x)))
+# test-data/0500.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0501.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0502.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(z, Multiply(2, Multiply(2, Multiply(3, y))))
+# test-data/0503.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0504.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0505.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0506.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(y, 2), 2, Multiply(2, Add(3, y)))
+# test-data/0507.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0508.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(2, Multiply(2, Add(3, Add(x, y))))
+# test-data/0509.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(x, Multiply(z, Multiply(z, z))))
+# test-data/0600.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0601.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0602.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0603.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0604.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0605.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0606.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0607.txt
+Add(1, Add(x, Add(y, Add(y, z))))
+# test-data/0608.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0609.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0700.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0701.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0702.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0703.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Add(z, Multiply(3, Multiply(z, z))))
+# test-data/0704.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0705.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0706.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0707.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0708.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/0709.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# test-data/9900.txt
+Add(x, Add(y, z))
+# test-data/9901.txt
+Add(z, Ite(Lt(z, 3), 3, z))
+# test-data/9902.txt
+Ite(Lt(2, x), 1, Add(2, 3))
