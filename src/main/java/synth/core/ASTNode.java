@@ -1,8 +1,8 @@
 package synth.core;
 
-import synth.cfg.Symbol;
-
 import java.util.List;
+
+import synth.dsl.Symbol;
 
 public class ASTNode {
     private final Symbol symbol;
@@ -23,6 +23,26 @@ public class ASTNode {
 
     public ASTNode getChild(int index) {
         return children.get(index);
+    }
+
+    public ASTNode withChild(int index, ASTNode newChild) {
+        if (this.children.size() == 1 && index == 0) {
+            return new ASTNode(symbol, List.of(newChild));
+        } else if (this.children.size() == 2) {
+            switch (index) {
+                case 0:
+                    return new ASTNode(symbol, List.of(newChild, children.get(1)));
+                case 1:
+                    return new ASTNode(symbol, List.of(children.get(0), newChild));
+            }
+        }
+        ASTNode[] newChildren = children.toArray(ASTNode[]::new);
+        newChildren[index] = newChild;
+        return new ASTNode(symbol, List.of(newChildren));
+    }
+
+    public ASTNode withChildren(int index, List<ASTNode> newChildren) {
+        return new ASTNode(symbol, newChildren);
     }
 
     public static ASTNode make(Symbol symbol, List<ASTNode> children) {

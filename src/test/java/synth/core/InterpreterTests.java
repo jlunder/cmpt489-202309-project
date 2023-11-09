@@ -2,12 +2,10 @@ package synth.core;
 
 import org.junit.Assert;
 import org.junit.Test;
-import synth.cfg.Symbol;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import synth.dsl.*;
+
+import java.util.*;
 
 /**
  * Tests for interpreters.
@@ -20,12 +18,8 @@ public class InterpreterTests {
      *
      * @return the environment map
      */
-    private Map<String, Integer> buildEnvironment() {
-        Map<String, Integer> env = new HashMap<>();
-        env.put("x", 10);
-        env.put("y", 15);
-        env.put("z", 20);
-        return env;
+    private Environment buildEnvironment() {
+        return new Environment(10, 15, 20);
     }
 
     @Test
@@ -36,7 +30,7 @@ public class InterpreterTests {
                         List.of(
                                 new ASTNode(Symbol.VarX, Collections.emptyList()),
                                 new ASTNode(Symbol.VarY, Collections.emptyList()))));
-        int result = Interpreter.evaluate(program, buildEnvironment());
+        int result = Semantics.evaluate(program, buildEnvironment());
         Assert.assertEquals(25, result);
     }
 
@@ -48,7 +42,7 @@ public class InterpreterTests {
                         List.of(
                                 new ASTNode(Symbol.VarZ, Collections.emptyList()),
                                 new ASTNode(Symbol.Const2, Collections.emptyList()))));
-        int result = Interpreter.evaluate(program, buildEnvironment());
+        int result = Semantics.evaluate(program, buildEnvironment());
         Assert.assertEquals(40, result);
     }
 
@@ -70,7 +64,7 @@ public class InterpreterTests {
                                         List.of(
                                                 new ASTNode(Symbol.VarY, Collections.emptyList()),
                                                 new ASTNode(Symbol.VarZ, Collections.emptyList()))))));
-        int result = Interpreter.evaluate(program, buildEnvironment());
+        int result = Semantics.evaluate(program, buildEnvironment());
         Assert.assertEquals(300, result);
     }
 }

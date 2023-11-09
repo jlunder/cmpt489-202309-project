@@ -1,24 +1,23 @@
 package synth.core;
 
-import java.util.Map;
 import java.util.Objects;
 
 public class Example {
     /**
      * Input: mapping from variable names to their values
      */
-    private final Map<String, Integer> input;
+    private final Environment input;
     /**
      * Output value
      */
     private final int output;
 
-    public Example(Map<String, Integer> input, int output) {
+    public Example(Environment input, int output) {
         this.input = input;
         this.output = output;
     }
 
-    public Map<String, Integer> getInput() {
+    public Environment getInput() {
         return input;
     }
 
@@ -41,6 +40,6 @@ public class Example {
 
     @Override
     public String toString() {
-        return String.format("%s -> %s", input, output);
+        return String.format("x=%d, y=%d, z=%d -> %s", input.x(), input.y(), input.z(), output);
     }
 }

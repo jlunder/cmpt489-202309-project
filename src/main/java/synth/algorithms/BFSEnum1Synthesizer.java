@@ -1,21 +1,15 @@
 package synth.algorithms;
 
-import synth.cfg.*;
-import synth.core.ASTNode;
-import synth.core.Example;
-import synth.core.ISynthesizer;
-import synth.core.Interpreter;
-import synth.core.Program;
+import synth.core.*;
+import synth.dsl.*;
 
 import java.util.*;
 import java.util.function.*;
 
 public class BFSEnum1Synthesizer implements ISynthesizer {
-    private class EnumerationJob {
-        private final CFG cfg;
-
+    private static class EnumerationJob {
         // AST written out postfix order, with null for holes
-        private final Production[] productions;
+        private final Symbol[] productions;
 
         // Locations of holes (in symbols) -- this is stored explicitly so that the
         // order will be maintained, this is important because holes need to be filled
@@ -23,8 +17,7 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
         private final int[] holeLocations;
         private final Symbol[] holeSymbols;
 
-        public EnumerationJob(CFG cfg, Production[] productions, int[] holeLocations, Symbol[] holeSymbols) {
-            this.cfg = cfg;
+        public EnumerationJob(Symbol[] productions, int[] holeLocations, Symbol[] holeSymbols) {
             this.productions = productions;
             this.holeLocations = holeLocations;
             this.holeSymbols = holeSymbols;
@@ -45,20 +38,15 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
             assert holeSymbols.length > 0;
             var i = holeLocations[0];
             var s = holeSymbols[0];
-            for (var p : cfg.getProductions(s)) {
-                var args = p.getArgumentSymbols();
-                productions[i] = p;
+            for (var op : Grammar.getProductionOperators(s)) {
+                var args = Grammar.getOperatorArguments(op);
+                productions[i] = op;
                 if (args.isEmpty() && (holeLocations.length == 1)) {
                     var program = new Program(constructAST(new ProductionsStack(productions)));
                     if (validate.apply(program)) {
                         return program;
                     }
                 } else {
-                    Production[] newProductions = new Production[productions.length + args.size()];
-                    System.arraycopy(productions, 0, newProductions, 0, i);
-                    int j = i + args.size();
-                    System.arraycopy(productions, i, newProductions, j, productions.length - i);
-
                     int carryoverHoles = holeLocations.length - 1;
                     int remainingHoles = carryoverHoles + args.size();
 
@@ -68,6 +56,11 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
                             return program;
                         }
                     } else {
+                        Symbol[] newProductions = new Symbol[productions.length + args.size()];
+                        System.arraycopy(productions, 0, newProductions, 0, i);
+                        int j = i + args.size();
+                        System.arraycopy(productions, i, newProductions, j, productions.length - i);
+
                         int[] remainingHoleLocations = new int[remainingHoles];
                         System.arraycopy(holeLocations, 1, remainingHoleLocations, 0, carryoverHoles);
 
@@ -85,7 +78,7 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
                             remainingHoleSymbols[carryoverHoles + k] = args.get(k);
                         }
 
-                        jobs.accept(new EnumerationJob(cfg, newProductions, remainingHoleLocations,
+                        jobs.accept(new EnumerationJob(newProductions, remainingHoleLocations,
                                 remainingHoleSymbols));
                     }
                 }
@@ -97,14 +90,14 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
 
         private static class ProductionsStack {
             private int top;
-            private final Production[] productions;
+            private final Symbol[] productions;
 
-            public ProductionsStack(Production[] productions) {
+            public ProductionsStack(Symbol[] productions) {
                 this.top = productions.length;
                 this.productions = productions;
             }
 
-            Production pop() {
+            Symbol pop() {
                 return productions[--top];
             }
         }
@@ -117,9 +110,9 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
          * Add(x, y)).
          */
         private ASTNode constructAST(ProductionsStack stack) {
-            var p = stack.pop();
-            assert p != null;
-            var argSymbols = p.getArgumentSymbols();
+            var op = stack.pop();
+            assert op != null;
+            var argSymbols = Grammar.getOperatorArguments(op);
             List<ASTNode> children = noChildren;
             if (!argSymbols.isEmpty()) {
                 children = new ArrayList<ASTNode>(argSymbols.size());
@@ -127,40 +120,32 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
                     children.add(constructAST(stack));
                 }
             }
-            return ASTNode.make(p.getOperator(), children);
+            return ASTNode.make(op, children);
         }
     }
-
-    private record Validation(Interpreter interpreter, int expectedOutput) {
-    };
 
     private static final int MAX_PENDING_JOBS = 10000000;
 
     /**
-     * Synthesize a program f(x, y, z) based on a context-free grammar and examples
+     * Synthesize a program f(x, y, z) based on examples
      *
-     * @param cfg      the context-free grammar
      * @param examples a list of examples
      * @return the program or null to indicate synthesis failure
      */
     @Override
-    public Program synthesize(CFG cfg, List<Example> examples) {
-        List<Validation> validations = examples.stream()
-                .map(e -> new Validation(new Interpreter(e.getInput()), e.getOutput()))
-                .toList();
-
+    public Program synthesize(List<Example> examples) {
         var jobs = new ArrayDeque<EnumerationJob>();
         boolean aborting = false;
 
-        for (var j = new EnumerationJob(cfg, new Production[] { null }, new int[] { 0 },
-                new Symbol[] { cfg.getStartSymbol() }); j != null; j = jobs.poll()) {
+        for (var j = new EnumerationJob(new Symbol[] { null }, new int[] { 0 },
+                new Symbol[] { Grammar.startSymbol() }); j != null; j = jobs.poll()) {
             if (jobs.size() >= MAX_PENDING_JOBS) {
                 if (!aborting) {
                     System.out.println("warning: enumeration capped at " + MAX_PENDING_JOBS + " pending jobs");
                 }
                 aborting = true;
             }
-            var program = j.enumerate(candidate -> validate(validations, candidate), aborting ? job -> {
+            var program = j.enumerate(candidate -> validate(examples, candidate), aborting ? job -> {
                 return;
             } : job -> jobs.offer(job));
             if (program != null) {
@@ -172,11 +157,11 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
         return null;
     }
 
-    private boolean validate(List<Validation> validations, Program program) {
+    private boolean validate(List<Example> examples, Program program) {
         // Run the program in each interpreter env representing a particular example,
         // and check whether the output is as expected
-        for (Validation v : validations) {
-            if (v.interpreter().evalExpr(program.getRoot()) != v.expectedOutput()) {
+        for (Example ex : examples) {
+            if (Semantics.evaluate(program, ex.getInput()) != ex.getOutput()) {
                 // This example produces incorrect output
                 return false;
             }

@@ -1,32 +1,26 @@
 package synth.algorithms;
 
-import synth.cfg.*;
-import synth.core.ASTNode;
-import synth.core.Example;
-import synth.core.ISynthesizer;
-import synth.core.PreorderInterpreter;
-import synth.core.Program;
+import synth.core.*;
+import synth.dsl.*;
 
 import java.util.*;
 import java.util.function.*;
 
 public class DFSEnum1Synthesizer implements ISynthesizer {
-    private CFG cfg;
-
     private static class ASTBuilder {
         private record State(int size) {
         }
 
-        private Production[] preorder = new Production[1000];
+        private Symbol[] preorder = new Symbol[1000];
         private int size = 0;
 
-        public void add(Production p) {
+        public void add(Symbol s) {
             if (size + 1 >= preorder.length) {
-                var newPreorder = new Production[preorder.length * 2];
+                var newPreorder = new Symbol[preorder.length * 2];
                 System.arraycopy(preorder, 0, newPreorder, 0, preorder.length);
                 preorder = newPreorder;
             }
-            preorder[size++] = p;
+            preorder[size++] = s;
         }
 
         public State mark() {
@@ -37,7 +31,7 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
             size = state.size();
         }
 
-        public Iterator<Production> preorder() {
+        public Iterator<Symbol> preorder() {
             return Arrays.stream(preorder, 0, size).iterator();
         }
 
@@ -50,23 +44,23 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
             return buildFromPreorder(preorder());
         }
 
-        private static ASTNode buildFromPreorder(Iterator<Production> preorder) {
-            var p = preorder.next();
-            var n = p.getArgumentSymbols().size();
+        private static ASTNode buildFromPreorder(Iterator<Symbol> preorder) {
+            var s = preorder.next();
+            var n = Grammar.getOperatorArguments(s).size();
             var children = new ArrayList<ASTNode>(n);
             for (int i = 0; i < n; ++i) {
                 children.add(buildFromPreorder(preorder));
             }
-            return new ASTNode(p.getOperator(), children);
+            return new ASTNode(s, children);
         }
 
         public int computeHeight() {
             return computeHeightFromPreorder(preorder());
         }
 
-        private static int computeHeightFromPreorder(Iterator<Production> preorder) {
-            var p = preorder.next();
-            var n = p.getArgumentSymbols().size();
+        private static int computeHeightFromPreorder(Iterator<Symbol> preorder) {
+            var s = preorder.next();
+            var n = Grammar.getOperatorArguments(s).size();
             int height = 0;
             for (int i = 0; i < n; ++i) {
                 height = Math.max(height, 1 + computeHeightFromPreorder(preorder));
@@ -78,29 +72,29 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
     private boolean enumerateProductions(int maxHeight, Symbol symbol, ASTBuilder builder,
             Function<ASTBuilder, Boolean> progressConsumer) {
         assert maxHeight >= 0;
-        for (var p : cfg.getProductions(symbol)) {
-            var n = p.getArgumentSymbols().size();
+        for (var op : Grammar.getProductionOperators(symbol)) {
+            var n = Grammar.getOperatorArguments(op).size();
             assert n >= 0;
             if (n != 0 && maxHeight == 0) {
                 // We need a leaf and this production yields a branch
                 continue;
             }
-            if (p.getOperator().getName().equals("Ite") && maxHeight == 1) {
+            if (op == Symbol.Ite && maxHeight == 1) {
                 // "Ite" will always have a branch beneath it
                 continue;
             }
             var oldState = builder.mark();
             try {
                 if (n == 0) {
-                    builder.add(p);
+                    builder.add(op);
                     if (progressConsumer.apply(builder)) {
                         return true;
                     }
                 } else if (maxHeight > 0) {
                     // Add symbol to AST
-                    builder.add(p);
+                    builder.add(op);
                     // Add parameters
-                    if (enumerateParameters(maxHeight - 1, p.getArgumentSymbols(), 0, builder, progressConsumer)) {
+                    if (enumerateParameters(maxHeight - 1, Grammar.getOperatorArguments(op), 0, builder, progressConsumer)) {
                         return true;
                     }
                 }
@@ -126,36 +120,26 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
                         progressConsumer));
     }
 
-    private record Validation(PreorderInterpreter interpreter, int expectedOutput) {
-    }
-
     /**
-     * Synthesize a program f(x, y, z) based on a context-free grammar and examples
+     * Synthesize a program f(x, y, z) based on examples
      *
-     * @param cfg      the context-free grammar
      * @param examples a list of examples
      * @return the program or null to indicate synthesis failure
      */
     @Override
-    public Program synthesize(CFG cfg, List<Example> examples) {
-        this.cfg = cfg;
-
-        List<Validation> validations = examples.stream()
-                .map(e -> new Validation(new PreorderInterpreter(e.getInput()), e.getOutput()))
-                .toList();
-
+    public Program synthesize(List<Example> examples) {
         ArrayList<Program> results = new ArrayList<>();
         int maxHeight = 5;
 
         for (int targetHeight = 0; targetHeight <= maxHeight && results.isEmpty(); ++targetHeight) {
             var captureTargetHeight = targetHeight;
-            enumerateProductions(targetHeight, cfg.getStartSymbol(), new ASTBuilder(), (builder) -> {
+            enumerateProductions(targetHeight, Grammar.startSymbol(), new ASTBuilder(), (builder) -> {
                 if (builder.computeHeight() != captureTargetHeight) {
                     return false;
                 }
                 // var candidate = new Program(builder.build());
                 // System.out.println("trying: " + candidate);
-                if (validate(validations, builder)) {
+                if (validate(examples, builder)) {
                     results.add(new Program(builder.build()));
                     return true;
                 }
@@ -169,11 +153,11 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
         return results.get(0);
     }
 
-    private boolean validate(List<Validation> validations, ASTBuilder program) {
+    private boolean validate(List<Example> examples, ASTBuilder program) {
         // Run the program in each interpreter env representing a particular example,
         // and check whether the output is as expected
-        for (Validation v : validations) {
-            if (v.interpreter().evalExpr(program.preorder()) != v.expectedOutput()) {
+        for (Example ex : examples) {
+            if (Semantics.evaluate(program.preorder(), ex.getInput()) != ex.getOutput()) {
                 // This example produces incorrect output
                 return false;
             }
