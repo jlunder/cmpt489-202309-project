@@ -100,7 +100,7 @@ public class Interpreter {
     }
 
     public boolean evalOr(ASTNode or) {
-        return evalPred(or.getChild(0)) && evalPred(or.getChild(1));
+        return evalPred(or.getChild(0)) || evalPred(or.getChild(1));
     }
 
     public boolean evalNot(ASTNode not) {
