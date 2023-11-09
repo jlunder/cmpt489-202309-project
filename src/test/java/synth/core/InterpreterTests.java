@@ -2,7 +2,7 @@ package synth.core;
 
 import org.junit.Assert;
 import org.junit.Test;
-import synth.cfg.Terminal;
+import synth.cfg.Symbol;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,10 +32,10 @@ public class InterpreterTests {
     public void testInterpreter1() {
         // Add(x, y)
         Program program = new Program(
-                new ASTNode(new Terminal("Add"),
+                new ASTNode(Symbol.Add,
                         List.of(
-                                new ASTNode(new Terminal("x"), Collections.emptyList()),
-                                new ASTNode(new Terminal("y"), Collections.emptyList()))));
+                                new ASTNode(Symbol.VarX, Collections.emptyList()),
+                                new ASTNode(Symbol.VarY, Collections.emptyList()))));
         int result = Interpreter.evaluate(program, buildEnvironment());
         Assert.assertEquals(25, result);
     }
@@ -44,10 +44,10 @@ public class InterpreterTests {
     public void testInterpreter2() {
         // Multiply(z, 2)
         Program program = new Program(
-                new ASTNode(new Terminal("Multiply"),
+                new ASTNode(Symbol.Multiply,
                         List.of(
-                                new ASTNode(new Terminal("z"), Collections.emptyList()),
-                                new ASTNode(new Terminal("2"), Collections.emptyList()))));
+                                new ASTNode(Symbol.VarZ, Collections.emptyList()),
+                                new ASTNode(Symbol.Const2, Collections.emptyList()))));
         int result = Interpreter.evaluate(program, buildEnvironment());
         Assert.assertEquals(40, result);
     }
@@ -56,20 +56,20 @@ public class InterpreterTests {
     public void testInterpreter3() {
         // Ite(Lt(x, 3), Add(y, z), Multiply(y, z))
         Program program = new Program(
-                new ASTNode(new Terminal("Ite"),
+                new ASTNode(Symbol.Ite,
                         List.of(
-                                new ASTNode(new Terminal("Lt"),
+                                new ASTNode(Symbol.Lt,
                                         List.of(
-                                                new ASTNode(new Terminal("x"), Collections.emptyList()),
-                                                new ASTNode(new Terminal("3"), Collections.emptyList()))),
-                                new ASTNode(new Terminal("Add"),
+                                                new ASTNode(Symbol.VarX, Collections.emptyList()),
+                                                new ASTNode(Symbol.Const3, Collections.emptyList()))),
+                                new ASTNode(Symbol.Add,
                                         List.of(
-                                                new ASTNode(new Terminal("y"), Collections.emptyList()),
-                                                new ASTNode(new Terminal("z"), Collections.emptyList()))),
-                                new ASTNode(new Terminal("Multiply"),
+                                                new ASTNode(Symbol.VarY, Collections.emptyList()),
+                                                new ASTNode(Symbol.VarZ, Collections.emptyList()))),
+                                new ASTNode(Symbol.Multiply,
                                         List.of(
-                                                new ASTNode(new Terminal("y"), Collections.emptyList()),
-                                                new ASTNode(new Terminal("z"), Collections.emptyList()))))));
+                                                new ASTNode(Symbol.VarY, Collections.emptyList()),
+                                                new ASTNode(Symbol.VarZ, Collections.emptyList()))))));
         int result = Interpreter.evaluate(program, buildEnvironment());
         Assert.assertEquals(300, result);
     }

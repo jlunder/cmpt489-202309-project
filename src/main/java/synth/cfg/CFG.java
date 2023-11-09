@@ -7,22 +7,22 @@ public class CFG {
     /**
      * map from non-terminal (return) symbols to all their productions
      */
-    private final Map<NonTerminal, List<Production>> symbolToProductions;
+    private final Map<Symbol, List<Production>> symbolToProductions;
     /**
      * start symbol of the grammar
      */
-    private final NonTerminal startSymbol;
+    private final Symbol startSymbol;
 
-    public CFG(NonTerminal startSymbol, Map<NonTerminal, List<Production>> symbolToProductions) {
+    public CFG(Symbol startSymbol, Map<Symbol, List<Production>> symbolToProductions) {
         this.startSymbol = startSymbol;
         this.symbolToProductions = symbolToProductions;
     }
 
-    public NonTerminal getStartSymbol() {
+    public Symbol getStartSymbol() {
         return startSymbol;
     }
 
-    public List<Production> getProductions(NonTerminal symbol) {
+    public List<Production> getProductions(Symbol symbol) {
         return symbolToProductions.get(symbol);
     }
 
@@ -31,7 +31,7 @@ public class CFG {
         StringBuilder builder = new StringBuilder();
         builder.append("Start symbol: ").append(startSymbol).append(System.lineSeparator());
         builder.append("Productions:").append(System.lineSeparator());
-        for (NonTerminal retSymbol : symbolToProductions.keySet()) {
+        for (Symbol retSymbol : symbolToProductions.keySet()) {
             builder.append(symbolToProductions.get(retSymbol)).append(System.lineSeparator());
         }
         return builder.toString();

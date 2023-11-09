@@ -1,5 +1,6 @@
 package synth;
 
+import synth.algorithms.*;
 import synth.cfg.*;
 import synth.core.*;
 import synth.util.*;
@@ -18,7 +19,7 @@ public class Main {
             List<Example> examples = Parser.parseAllExamples(lines);
             // read the CFG
             CFG cfg = buildCFG();
-            ISynthesizer synthesizer = new TopDownEnumSynthesizer();
+            ISynthesizer synthesizer = new BFSEnum1Synthesizer();
             Program program = synthesizer.synthesize(cfg, examples);
             if (program == null) {
                 System.out.println("error: failed to generate!");
@@ -38,39 +39,29 @@ public class Main {
      * @return the CFG
      */
     private static CFG buildCFG() {
-        NonTerminal startSymbol = new NonTerminal("E");
-        Map<NonTerminal, List<Production>> symbolToProductions = new HashMap<>();
+        Map<Symbol, List<Production>> symbolToProductions = new HashMap<>();
         {
-            NonTerminal retSymbol = new NonTerminal("E");
             List<Production> prods = List.of(
-                    new Production(new NonTerminal("E"), new Terminal("1"), Collections.emptyList()),
-                    new Production(new NonTerminal("E"), new Terminal("2"), Collections.emptyList()),
-                    new Production(new NonTerminal("E"), new Terminal("3"), Collections.emptyList()),
-                    new Production(new NonTerminal("E"), new Terminal("x"), Collections.emptyList()),
-                    new Production(new NonTerminal("E"), new Terminal("y"), Collections.emptyList()),
-                    new Production(new NonTerminal("E"), new Terminal("z"), Collections.emptyList()),
-                    new Production(new NonTerminal("E"), new Terminal("Ite"),
-                            List.of(new NonTerminal("B"), new NonTerminal("E"), new NonTerminal("E"))),
-                    new Production(new NonTerminal("E"), new Terminal("Add"),
-                            List.of(new NonTerminal("E"), new NonTerminal("E"))),
-                    new Production(new NonTerminal("E"), new Terminal("Multiply"),
-                            List.of(new NonTerminal("E"), new NonTerminal("E"))));
-            symbolToProductions.put(retSymbol, prods);
+                    new Production(Symbol.E, Symbol.Const1, Collections.emptyList()),
+                    new Production(Symbol.E, Symbol.Const2, Collections.emptyList()),
+                    new Production(Symbol.E, Symbol.Const3, Collections.emptyList()),
+                    new Production(Symbol.E, Symbol.VarX, Collections.emptyList()),
+                    new Production(Symbol.E, Symbol.VarY, Collections.emptyList()),
+                    new Production(Symbol.E, Symbol.VarZ, Collections.emptyList()),
+                    new Production(Symbol.E, Symbol.Ite, List.of(Symbol.B, Symbol.E, Symbol.E)),
+                    new Production(Symbol.E, Symbol.Add, List.of(Symbol.E, Symbol.E)),
+                    new Production(Symbol.E, Symbol.Multiply, List.of(Symbol.E, Symbol.E)));
+            symbolToProductions.put(Symbol.E, prods);
         }
         {
-            NonTerminal retSymbol = new NonTerminal("B");
             List<Production> prods = List.of(
-                    new Production(new NonTerminal("B"), new Terminal("Lt"),
-                            List.of(new NonTerminal("E"), new NonTerminal("E"))),
-                    new Production(new NonTerminal("B"), new Terminal("Eq"),
-                            List.of(new NonTerminal("E"), new NonTerminal("E"))),
-                    new Production(new NonTerminal("B"), new Terminal("And"),
-                            List.of(new NonTerminal("B"), new NonTerminal("B"))),
-                    new Production(new NonTerminal("B"), new Terminal("Or"),
-                            List.of(new NonTerminal("B"), new NonTerminal("B"))),
-                    new Production(new NonTerminal("B"), new Terminal("Not"), List.of(new NonTerminal("B"))));
-            symbolToProductions.put(retSymbol, prods);
+                    new Production(Symbol.B, Symbol.Lt,  List.of(Symbol.E, Symbol.E)),
+                    new Production(Symbol.B, Symbol.Eq,  List.of(Symbol.E, Symbol.E)),
+                    new Production(Symbol.B, Symbol.And, List.of(Symbol.B, Symbol.B)),
+                    new Production(Symbol.B, Symbol.Or,  List.of(Symbol.B, Symbol.B)),
+                    new Production(Symbol.B, Symbol.Not, List.of(Symbol.B)));
+            symbolToProductions.put(Symbol.B, prods);
         }
-        return new CFG(startSymbol, symbolToProductions);
+        return new CFG(Symbol.E, symbolToProductions);
     }
 }

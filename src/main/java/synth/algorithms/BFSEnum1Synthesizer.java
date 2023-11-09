@@ -1,11 +1,16 @@
-package synth.core;
+package synth.algorithms;
 
 import synth.cfg.*;
+import synth.core.ASTNode;
+import synth.core.Example;
+import synth.core.ISynthesizer;
+import synth.core.Interpreter;
+import synth.core.Program;
 
 import java.util.*;
 import java.util.function.*;
 
-public class TopDownEnumSynthesizer implements ISynthesizer {
+public class BFSEnum1Synthesizer implements ISynthesizer {
     private class EnumerationJob {
         private final CFG cfg;
 
@@ -16,9 +21,9 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
         // order will be maintained, this is important because holes need to be filled
         // in breadth-first
         private final int[] holeLocations;
-        private final NonTerminal[] holeSymbols;
+        private final Symbol[] holeSymbols;
 
-        public EnumerationJob(CFG cfg, Production[] productions, int[] holeLocations, NonTerminal[] holeSymbols) {
+        public EnumerationJob(CFG cfg, Production[] productions, int[] holeLocations, Symbol[] holeSymbols) {
             this.cfg = cfg;
             this.productions = productions;
             this.holeLocations = holeLocations;
@@ -66,7 +71,7 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
                         int[] remainingHoleLocations = new int[remainingHoles];
                         System.arraycopy(holeLocations, 1, remainingHoleLocations, 0, carryoverHoles);
 
-                        NonTerminal[] remainingHoleSymbols = new NonTerminal[remainingHoles];
+                        Symbol[] remainingHoleSymbols = new Symbol[remainingHoles];
                         System.arraycopy(holeSymbols, 1, remainingHoleSymbols, 0, holeSymbols.length - 1);
 
                         for (int k = 0; k < (carryoverHoles); ++k) {
@@ -77,7 +82,7 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
                         for (int k = 0; k < args.size(); ++k) {
                             --j;
                             remainingHoleLocations[carryoverHoles + k] = j;
-                            remainingHoleSymbols[carryoverHoles + k] = (NonTerminal) args.get(k);
+                            remainingHoleSymbols[carryoverHoles + k] = args.get(k);
                         }
 
                         jobs.accept(new EnumerationJob(cfg, newProductions, remainingHoleLocations,
@@ -148,7 +153,7 @@ public class TopDownEnumSynthesizer implements ISynthesizer {
         boolean aborting = false;
 
         for (var j = new EnumerationJob(cfg, new Production[] { null }, new int[] { 0 },
-                new NonTerminal[] { cfg.getStartSymbol() }); j != null; j = jobs.poll()) {
+                new Symbol[] { cfg.getStartSymbol() }); j != null; j = jobs.poll()) {
             if (jobs.size() >= MAX_PENDING_JOBS) {
                 if (!aborting) {
                     System.out.println("warning: enumeration capped at " + MAX_PENDING_JOBS + " pending jobs");

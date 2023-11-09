@@ -10,27 +10,29 @@ public class Production {
     /**
      * return symbol
      */
-    private NonTerminal retSymbol;
+    private Symbol retSymbol;
     /**
      * operator symbol
      */
-    private Terminal operator;
+    private Symbol operator;
     /**
      * argument symbols
      */
     private List<Symbol> argSymbols;
 
-    public Production(NonTerminal returnSymbol, Terminal operator, List<Symbol> argumentSymbols) {
+    public Production(Symbol returnSymbol, Symbol operator, List<Symbol> argumentSymbols) {
+        assert returnSymbol.isNonTerminal();
+        assert operator.isTerminal();
         this.retSymbol = returnSymbol;
         this.operator = operator;
         this.argSymbols = argumentSymbols;
     }
 
-    public NonTerminal getReturnSymbol() {
+    public Symbol getReturnSymbol() {
         return retSymbol;
     }
 
-    public Terminal getOperator() {
+    public Symbol getOperator() {
         return operator;
     }
 

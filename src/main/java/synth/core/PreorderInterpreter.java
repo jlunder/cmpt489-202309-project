@@ -30,19 +30,19 @@ public class PreorderInterpreter {
 
     public int evalExpr(Iterator<Production> expr) {
         var sym = expr.next().getOperator();
-        switch (sym.getName()) {
-            case "Ite":
+        switch (sym) {
+            case Ite:
                 return evalIte(expr);
-            case "Add":
+            case Add:
                 return evalAdd(expr);
-            case "Multiply":
+            case Multiply:
                 return evalMultiply(expr);
-            case "x": return environment.get("x");
-            case "y": return environment.get("y");
-            case "z": return environment.get("z");
-            case "1": return 1;
-            case "2": return 2;
-            case "3": return 3;
+            case VarX: return environment.get("x");
+            case VarY: return environment.get("y");
+            case VarZ: return environment.get("z");
+            case Const1: return 1;
+            case Const2: return 2;
+            case Const3: return 3;
             default:
                 throw new RuntimeException("Cannot evaluate expression " + expr);
         }
@@ -50,16 +50,16 @@ public class PreorderInterpreter {
 
     public boolean evalPred(Iterator<Production> pred) {
         var sym = pred.next().getOperator();
-        switch (sym.getName()) {
-            case "Lt":
+        switch (sym) {
+            case Lt:
                 return evalLt(pred);
-            case "Eq":
+            case Eq:
                 return evalEq(pred);
-            case "And":
+            case And:
                 return evalAnd(pred);
-            case "Or":
+            case Or:
                 return evalOr(pred);
-            case "Not":
+            case Not:
                 return evalNot(pred);
             default:
                 throw new RuntimeException("Cannot evaluate predicate " + pred);

@@ -26,20 +26,20 @@ public class Interpreter {
     }
 
     public int evalExpr(ASTNode expr) {
-        switch (expr.getSymbol().getName()) {
-            case "Ite":
+        switch (expr.getSymbol()) {
+            case Ite:
                 return evalIte(expr);
-            case "Add":
+            case Add:
                 return evalAdd(expr);
-            case "Multiply":
+            case Multiply:
                 return evalMultiply(expr);
-            case "x":
-            case "y":
-            case "z":
+            case VarX:
+            case VarY:
+            case VarZ:
                 return evalVar(expr);
-            case "1":
-            case "2":
-            case "3":
+            case Const1:
+            case Const2:
+            case Const3:
                 return evalConst(expr);
             default:
                 throw new RuntimeException("Cannot evaluate expression " + expr);
@@ -47,16 +47,16 @@ public class Interpreter {
     }
 
     public boolean evalPred(ASTNode pred) {
-        switch (pred.getSymbol().getName()) {
-            case "Lt":
+        switch (pred.getSymbol()) {
+            case Lt:
                 return evalLt(pred);
-            case "Eq":
+            case Eq:
                 return evalEq(pred);
-            case "And":
+            case And:
                 return evalAnd(pred);
-            case "Or":
+            case Or:
                 return evalOr(pred);
-            case "Not":
+            case Not:
                 return evalNot(pred);
             default:
                 throw new RuntimeException("Cannot evaluate predicate " + pred);
