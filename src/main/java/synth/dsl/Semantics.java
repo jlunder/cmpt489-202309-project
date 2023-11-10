@@ -17,6 +17,10 @@ public class Semantics {
         return evalExpr(program.getRoot(), env);
     }
 
+    public static int evaluate(ASTNode program, Environment env) {
+        return evalExpr(program, env);
+    }
+
     private static int evalExpr(ASTNode expr, Environment env) {
         switch (expr.getSymbol()) {
             case Ite:

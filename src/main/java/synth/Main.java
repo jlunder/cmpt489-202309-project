@@ -19,7 +19,7 @@ public class Main {
             List<Example> examples = Parser.parseAllExamples(lines);
 
             // run the synthesizer
-            ISynthesizer synthesizer = new DFSEnum1Synthesizer();
+            ISynthesizer synthesizer = new BFSEnum2Synthesizer();
             Program program = synthesizer.synthesize(examples);
             if (program == null) {
                 System.out.println("error: failed to generate!");

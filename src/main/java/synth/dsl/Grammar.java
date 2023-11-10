@@ -15,6 +15,10 @@ public class Grammar {
         return symbol.isTerminal();
     }
 
+    public static Symbol getReturnSymbol(Symbol symbol) {
+        return symbol.returnSymbol();
+    }
+
     public static List<Symbol> getProductionOperators(Symbol symbol) {
         return symbol.productionOperators();
     }

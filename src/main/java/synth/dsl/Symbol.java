@@ -30,7 +30,7 @@ public enum Symbol {
         assert name != null && !name.isEmpty();
         assert (returnSym == null) == (operatorArgs == null);
         this.name = name;
-        this.terminal = productionOps != null;
+        this.terminal = operatorArgs != null && operatorArgs.isEmpty();
         this.returnSym = returnSym != null ? returnSym : this;
         this.operatorArgs = operatorArgs;
     }

@@ -5,6 +5,7 @@ import java.util.List;
 import synth.dsl.Symbol;
 
 public class ASTNode {
+    public static final List<ASTNode> NO_CHILDREN = List.of();
     private final Symbol symbol;
     private final List<ASTNode> children;
 
