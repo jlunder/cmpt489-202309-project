@@ -5,13 +5,13 @@ import synth.dsl.*;
 
 import java.util.*;
 
-public class BFSEnum2Synthesizer implements ISynthesizer {
+public class BFSEnum3Synthesizer implements ISynthesizer {
     private static final int ASSUME_MIN_PRODUCTIONS = 100000;
     private static final int MAX_PRODUCTIONS = 20000000;
 
     private static class SymbolProductions {
-        final ArrayList<ASTNode> productions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
-        final ArrayList<ASTNode> newProductions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
+        final ArrayList<List<Symbol>> productions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
+        final ArrayList<List<Symbol>> newProductions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
         final Symbol[] terminals;
         final Symbol[] nonTerminals;
         int lastGenStart = 0;
@@ -26,14 +26,16 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
         boolean produceOneGeneration(int maxNewProductions) {
             for (var s : nonTerminals) {
                 var argumentSymbols = Grammar.getOperatorArguments(s);
-                var tempChildren = new ASTNode[argumentSymbols.size()];
+                var ast = new ArrayDeque<Symbol>();
                 // k specifies which argument should *only* use ASTs from the last generation --
                 // this ensures we only generate fresh ASTs, otherwise we will duplicate all of
                 // the previous generation in addition to creating new ones
                 for (int k = 0; k < argumentSymbols.size(); ++k) {
-                    if (!produceASTs(s, tempChildren, argumentSymbols, 0, k, newProductions, maxNewProductions)) {
+                    ast.add(s);
+                    if (!produceASTs(s, ast, argumentSymbols, 0, k, newProductions, maxNewProductions)) {
                         return false;
                     }
+                    ast.clear();
                 }
             }
             return true;
@@ -45,33 +47,47 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
             newProductions.clear();
         }
 
-        boolean produceASTs(Symbol s, ASTNode[] tempChildren, List<Symbol> argumentSymbols, int i, int k,
-                List<ASTNode> newProds, int maxNewProductions) {
+        boolean produceASTs(Symbol s, Deque<Symbol> ast, List<Symbol> argumentSymbols, int i, int k,
+                List<List<Symbol>> newProds, int maxNewProductions) {
             if (newProds.size() >= maxNewProductions) {
                 return false;
             }
             if (i == 0 && argumentSymbols.size() == 0) {
-                newProds.add(ASTNode.make(s, List.of(tempChildren)));
+                newProds.add(new ArrayList<Symbol>(ast));
                 return true;
             }
             var argSP = (argumentSymbols.get(i) == Symbol.E) ? eProductions : bProductions;
             int n = argSP.productions.size();
             for (int j = (i == k ? argSP.lastGenStart : 0); j < n; ++j) {
                 var pJ = argSP.productions.get(j);
-                tempChildren[i] = pJ;
-                if (i + 1 < tempChildren.length) {
-                    if (!produceASTs(s, tempChildren, argumentSymbols, i + 1, k, newProds, maxNewProductions)) {
+                int astMark = ast.size();
+                ast.addAll(pJ);
+                if (i + 1 < argumentSymbols.size()) {
+                    if (!produceASTs(s, ast, argumentSymbols, i + 1, k, newProds, maxNewProductions)) {
                         return false;
                     }
                 } else {
                     if (newProds.size() >= maxNewProductions) {
                         return false;
                     }
-                    newProds.add(ASTNode.make(s, List.of(tempChildren)));
+                    newProds.add(new ArrayList<Symbol>(ast));
+                }
+                while (ast.size() > astMark) {
+                    ast.removeLast();
                 }
             }
             return true;
         }
+    }
+
+    private static ASTNode buildFromPreorder(Iterator<Symbol> preorder) {
+        var s = preorder.next();
+        var n = Grammar.getOperatorArguments(s).size();
+        var children = new ArrayList<ASTNode>(n);
+        for (int i = 0; i < n; ++i) {
+            children.add(buildFromPreorder(preorder));
+        }
+        return new ASTNode(s, children);
     }
 
     private static SymbolProductions eProductions = new SymbolProductions(Symbol.E);
@@ -79,7 +95,7 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
 
     static {
         for (var s : eProductions.terminals) {
-            eProductions.productions.add(ASTNode.make(s, ASTNode.NO_CHILDREN));
+            eProductions.productions.add(List.of(s));
         }
     }
 
@@ -102,7 +118,7 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
             while (n < eProductions.productions.size()) {
                 var candidate = eProductions.productions.get(n++);
                 if (validate(examples, candidate)) {
-                    return new Program(candidate);
+                    return new Program(buildFromPreorder(candidate.iterator()));
                 }
             }
             for (var p : List.of(eProductions, bProductions)) {
@@ -123,11 +139,11 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
         return null;
     }
 
-    private boolean validate(List<Example> examples, ASTNode program) {
+    private boolean validate(List<Example> examples, List<Symbol> program) {
         // Run the program in each interpreter env representing a particular example,
         // and check whether the output is as expected
         for (Example ex : examples) {
-            if (Semantics.evaluate(program, ex.getInput()) != ex.getOutput()) {
+            if (Semantics.evaluate(program.iterator(), ex.getInput()) != ex.getOutput()) {
                 // This example produces incorrect output
                 return false;
             }
