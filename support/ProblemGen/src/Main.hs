@@ -34,27 +34,24 @@ data BoolNode
 data Env = Env {getX :: Integer, getY :: Integer, getZ :: Integer}
   deriving (Eq, Ord, Show)
 
-programDepth :: ExprNode -> Int
-programDepth =
-  exprDepth
-  where
-    exprDepth :: ExprNode -> Int
-    exprDepth Const1 = 1
-    exprDepth Const2 = 1
-    exprDepth Const3 = 1
-    exprDepth VarX = 1
-    exprDepth VarY = 1
-    exprDepth VarZ = 1
-    exprDepth (Ite b t e) = 1 + foldl max (boolDepth b) [exprDepth t, exprDepth e]
-    exprDepth (Add e1 e2) = 1 + max (exprDepth e1) (exprDepth e2)
-    exprDepth (Multiply e1 e2) = 1 + max (exprDepth e1) (exprDepth e2)
+-- Compute the (tree) height of a program
+exprHeight :: ExprNode -> Int
+exprHeight Const1 = 0
+exprHeight Const2 = 0
+exprHeight Const3 = 0
+exprHeight VarX = 0
+exprHeight VarY = 0
+exprHeight VarZ = 0
+exprHeight (Ite b t e) = 1 + foldl max (boolHeight b) [exprHeight t, exprHeight e]
+exprHeight (Add e1 e2) = 1 + max (exprHeight e1) (exprHeight e2)
+exprHeight (Multiply e1 e2) = 1 + max (exprHeight e1) (exprHeight e2)
 
-    boolDepth :: BoolNode -> Int
-    boolDepth (Lt e1 e2) = 1 + max (exprDepth e1) (exprDepth e2)
-    boolDepth (Eq e1 e2) = 1 + max (exprDepth e1) (exprDepth e2)
-    boolDepth (And b1 b2) = 1 + max (boolDepth b1) (boolDepth b2)
-    boolDepth (Or b1 b2) = 1 + max (boolDepth b1) (boolDepth b2)
-    boolDepth (Not b) = 1 + boolDepth b
+boolHeight :: BoolNode -> Int
+boolHeight (Lt e1 e2) = 1 + max (exprHeight e1) (exprHeight e2)
+boolHeight (Eq e1 e2) = 1 + max (exprHeight e1) (exprHeight e2)
+boolHeight (And b1 b2) = 1 + max (boolHeight b1) (boolHeight b2)
+boolHeight (Or b1 b2) = 1 + max (boolHeight b1) (boolHeight b2)
+boolHeight (Not b) = 1 + boolHeight b
 
 evalExpr :: Env -> ExprNode -> Integer
 -- evalExpr env expr | trace (printf "evalExpr %s %s" (show env) (describeExpr expr)) False = undefined
@@ -183,22 +180,22 @@ describeBool (Or b1 b2) = "Or(" ++ describeBool b1 ++ ", " ++ describeBool b2 ++
 describeBool (Not b) = "Not(" ++ describeBool b ++ ")"
 
 randomExpr :: (MonadRandom m) => Int -> Int -> m ExprNode
-randomExpr minDepth maxDepth
-  | minDepth >= 0,
-    maxDepth >= 1,
-    minDepth <= maxDepth = do
-      let newMinDepth = max 0 (minDepth - 1)
-          newMaxDepth = maxDepth - 1
-      exprGens1 <- if minDepth <= 1 then exprGenDepth1 newMinDepth newMaxDepth else return []
-      exprGens2 <- if maxDepth >= 2 then exprGenDepth2P newMinDepth newMaxDepth else return []
-      exprGens3 <- if maxDepth >= 3 then exprGenDepth3P newMinDepth newMaxDepth else return []
+randomExpr minHeight maxHeight
+  | minHeight >= 0,
+    maxHeight >= 1,
+    minHeight <= maxHeight = do
+      let newMinHeight = max 0 (minHeight - 1)
+          newMaxHeight = maxHeight - 1
+      exprGens1 <- if minHeight <= 1 then exprGenHeight0 newMinHeight newMaxHeight else return []
+      exprGens2 <- if maxHeight >= 2 then exprGenHeight1P newMinHeight newMaxHeight else return []
+      exprGens3 <- if maxHeight >= 3 then exprGenHeight2P newMinHeight newMaxHeight else return []
       let exprGens = exprGens1 ++ exprGens2 ++ exprGens3
       i <- getRandomR (0, length exprGens - 1)
       exprGens !! i
 
-exprGenDepth1 :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
-exprGenDepth1 0 newMaxDepth
-  | newMaxDepth >= 0 =
+exprGenHeight0 :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
+exprGenHeight0 0 newMaxHeight
+  | newMaxHeight >= 0 =
       return
         [ return Const1,
           return Const2,
@@ -208,85 +205,85 @@ exprGenDepth1 0 newMaxDepth
           return VarZ
         ]
 
-exprGenDepth2P :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
-exprGenDepth2P newMinDepth newMaxDepth
-  | newMaxDepth >= 1 = do
+exprGenHeight1P :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
+exprGenHeight1P newMinHeight newMaxHeight
+  | newMaxHeight >= 1 = do
       sel :: Int <- getRandomR (1, 2)
-      let newMinDepthA = if sel == 1 then newMinDepth else 0
-          newMinDepthB = if sel == 2 then newMinDepth else 0
+      let newMinHeightA = if sel == 1 then newMinHeight else 0
+          newMinHeightB = if sel == 2 then newMinHeight else 0
       return
         [ do
-            e1 <- randomExpr newMinDepthA newMaxDepth
-            e2 <- randomExpr newMinDepthB newMaxDepth
+            e1 <- randomExpr newMinHeightA newMaxHeight
+            e2 <- randomExpr newMinHeightB newMaxHeight
             return (Add e1 e2),
           do
-            e1 <- randomExpr newMinDepthA newMaxDepth
-            e2 <- randomExpr newMinDepthB newMaxDepth
+            e1 <- randomExpr newMinHeightA newMaxHeight
+            e2 <- randomExpr newMinHeightB newMaxHeight
             return (Multiply e1 e2)
         ]
 
-exprGenDepth3P :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
-exprGenDepth3P newMinDepth newMaxDepth
-  | newMaxDepth >= 2 = do
+exprGenHeight2P :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
+exprGenHeight2P newMinHeight newMaxHeight
+  | newMaxHeight >= 2 = do
       sel :: Int <- getRandomR (1, 3)
-      let newMinDepthA = if sel == 1 then newMinDepth else 0
-          newMinDepthB = if sel == 2 then newMinDepth else 0
-          newMinDepthC = if sel == 3 then newMinDepth else 0
+      let newMinHeightA = if sel == 1 then newMinHeight else 0
+          newMinHeightB = if sel == 2 then newMinHeight else 0
+          newMinHeightC = if sel == 3 then newMinHeight else 0
       return
         [ do
-            b <- randomBool newMinDepthA newMaxDepth
-            t <- randomExpr newMinDepthB newMaxDepth
-            e <- randomExpr newMinDepthC newMaxDepth
+            b <- randomBool newMinHeightA newMaxHeight
+            t <- randomExpr newMinHeightB newMaxHeight
+            e <- randomExpr newMinHeightC newMaxHeight
             return (Ite b t e)
         ]
 
 randomBool :: (MonadRandom m) => Int -> Int -> m BoolNode
-randomBool minDepth maxDepth
-  | minDepth >= 0,
-    maxDepth >= 1,
-    minDepth <= maxDepth = do
-      let newMinDepth = max 0 (minDepth - 1)
-          newMaxDepth = maxDepth - 1
-      boolGens1 <- if maxDepth >= 2 then boolGenDepth2P newMinDepth newMaxDepth else return []
-      boolGens2 <- if maxDepth >= 3 then boolGenDepth3P newMinDepth newMaxDepth else return []
+randomBool minHeight maxHeight
+  | minHeight >= 0,
+    maxHeight >= 1,
+    minHeight <= maxHeight = do
+      let newMinHeight = max 0 (minHeight - 1)
+          newMaxHeight = maxHeight - 1
+      boolGens1 <- if maxHeight >= 2 then boolGenHeight1P newMinHeight newMaxHeight else return []
+      boolGens2 <- if maxHeight >= 3 then boolGenHeight2P newMinHeight newMaxHeight else return []
       let boolGens = boolGens1 ++ boolGens2
       i <- getRandomR (0, length boolGens - 1)
       boolGens !! i
 
-boolGenDepth2P :: (MonadRandom m) => Int -> Int -> m [m BoolNode]
-boolGenDepth2P newMinDepth newMaxDepth
-  | newMaxDepth >= 1 = do
+boolGenHeight1P :: (MonadRandom m) => Int -> Int -> m [m BoolNode]
+boolGenHeight1P newMinHeight newMaxHeight
+  | newMaxHeight >= 1 = do
       sel :: Int <- getRandomR (1, 2)
-      let newMinDepthA = if sel == 1 then newMinDepth else 0
-          newMinDepthB = if sel == 2 then newMinDepth else 0
+      let newMinHeightA = if sel == 1 then newMinHeight else 0
+          newMinHeightB = if sel == 2 then newMinHeight else 0
       return
         [ do
-            e1 <- randomExpr newMinDepthA newMaxDepth
-            e2 <- randomExpr newMinDepthB newMaxDepth
+            e1 <- randomExproll newMinHeightA newMaxHeight
+            e2 <- randomExpr newMinHeightB newMaxHeight
             return (Lt e1 e2),
           do
-            e1 <- randomExpr newMinDepthA newMaxDepth
-            e2 <- randomExpr newMinDepthB newMaxDepth
+            e1 <- randomExpr newMinHeightA newMaxHeight
+            e2 <- randomExpr newMinHeightB newMaxHeight
             return (Eq e1 e2)
         ]
 
-boolGenDepth3P :: (MonadRandom m) => Int -> Int -> m [m BoolNode]
-boolGenDepth3P newMinDepth newMaxDepth
-  | newMaxDepth >= 2 = do
+boolGenHeight2P :: (MonadRandom m) => Int -> Int -> m [m BoolNode]
+boolGenHeight2P newMinHeight newMaxHeight
+  | newMaxHeight >= 2 = do
       sel :: Int <- getRandomR (1, 2)
-      let newMinDepthA = if sel == 1 then newMinDepth else 0
-          newMinDepthB = if sel == 2 then newMinDepth else 0
+      let newMinHeightA = if sel == 1 then newMinHeight else 0
+          newMinHeightB = if sel == 2 then newMinHeight else 0
       return
         [ do
-            b1 <- randomBool newMinDepthA newMaxDepth
-            b2 <- randomBool newMinDepthB newMaxDepth
+            b1 <- randomBool newMinHeightA newMaxHeight
+            b2 <- randomBool newMinHeightB newMaxHeight
             return (And b1 b2),
           do
-            b1 <- randomBool newMinDepthA newMaxDepth
-            b2 <- randomBool newMinDepthB newMaxDepth
+            b1 <- randomBool newMinHeightA newMaxHeight
+            b2 <- randomBool newMinHeightB newMaxHeight
             return (Or b1 b2),
           do
-            b <- randomBool newMinDepth newMaxDepth
+            b <- randomBool newMinHeight newMaxHeight
             return (Not b)
         ]
 
@@ -340,12 +337,12 @@ describeExample env@(Env x y z) program =
   printf "x=%d, y=%d, z=%d -> %d" x y z (evalExpr env program)
 
 makeTestProgram :: (MonadRandom m) => Int -> Int -> m String
--- makeTestProgram depth exampleCount | trace (printf "makeTestProgram %d %d" depth exampleCount) False = undefined
-makeTestProgram depth exampleCount = do
-  program <- randomExpr depth depth
+-- makeTestProgram height exampleCount | trace (printf "makeTestProgram %d %d" height exampleCount) False = undefined
+makeTestProgram height exampleCount = do
+  program <- randomExpr height height
   let tidyProgram = unfoldExpr $ foldExpr program
-  if programDepth tidyProgram < depth
-    then makeTestProgram depth exampleCount
+  if programHeight tidyProgram < height
+    then makeTestProgram height exampleCount
     else do
       smallRangeExamples <- bestExamples (max 2 (exampleCount - (exampleCount `div` 2))) tidyProgram smallRangeEnvs
       largeRangeExamples <- bestExamples (max 2 (exampleCount `div` 2)) tidyProgram largeRangeEnvs
