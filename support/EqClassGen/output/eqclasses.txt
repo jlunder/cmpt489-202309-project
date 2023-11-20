@@ -1,0 +1,574 @@
+1 -> new
+2 -> new
+3 -> new
+x -> new
+y -> new
+z -> new
+Add(1, 1) == 2
+Multiply(1, 1) == 1
+Add(1, 2) == 3
+Multiply(1, 2) == 2
+Add(1, 3) -> new
+Multiply(1, 3) == 3
+Add(1, x) -> new
+Multiply(1, x) == x
+Add(1, y) -> new
+Multiply(1, y) == y
+Add(1, z) -> new
+Multiply(1, z) == z
+Add(1, Add(1, 1)) == 3
+Multiply(1, Add(1, 1)) == 2
+Add(1, Multiply(1, 1)) == 2
+Multiply(1, Multiply(1, 1)) == 1
+Add(1, Add(1, 2)) == Add(1, 3)
+Multiply(1, Add(1, 2)) == 3
+Add(1, Multiply(1, 2)) == 3
+Multiply(1, Multiply(1, 2)) == 2
+Add(1, Add(1, 3)) -> new
+Multiply(1, Add(1, 3)) == Add(1, 3)
+Add(1, Multiply(1, 3)) == Add(1, 3)
+Multiply(1, Multiply(1, 3)) == 3
+Add(1, Add(1, x)) -> new
+Multiply(1, Add(1, x)) == Add(1, x)
+Add(1, Multiply(1, x)) == Add(1, x)
+Multiply(1, Multiply(1, x)) == x
+Add(1, Add(1, y)) -> new
+Multiply(1, Add(1, y)) == Add(1, y)
+Add(1, Multiply(1, y)) == Add(1, y)
+Multiply(1, Multiply(1, y)) == y
+Add(1, Add(1, z)) -> new
+Multiply(1, Add(1, z)) == Add(1, z)
+Add(1, Multiply(1, z)) == Add(1, z)
+Multiply(1, Multiply(1, z)) == z
+Add(1, Add(2, 1)) == Add(1, 3)
+Multiply(1, Add(2, 1)) == 3
+Add(1, Multiply(2, 1)) == 3
+Multiply(1, Multiply(2, 1)) == 2
+Add(1, Add(2, 2)) == Add(1, Add(1, 3))
+Multiply(1, Add(2, 2)) == Add(1, 3)
+Add(1, Multiply(2, 2)) == Add(1, Add(1, 3))
+Multiply(1, Multiply(2, 2)) == Add(1, 3)
+Add(1, Add(2, 3)) -> new
+Multiply(1, Add(2, 3)) == Add(1, Add(1, 3))
+Add(1, Multiply(2, 3)) -> new
+Multiply(1, Multiply(2, 3)) == Add(1, Add(2, 3))
+Add(1, Add(2, x)) -> new
+Multiply(1, Add(2, x)) == Add(1, Add(1, x))
+Add(1, Multiply(2, x)) -> new
+Multiply(1, Multiply(2, x)) -> new
+Add(1, Add(2, y)) -> new
+Multiply(1, Add(2, y)) == Add(1, Add(1, y))
+Add(1, Multiply(2, y)) -> new
+Multiply(1, Multiply(2, y)) -> new
+Add(1, Add(2, z)) -> new
+Multiply(1, Add(2, z)) == Add(1, Add(1, z))
+Add(1, Multiply(2, z)) -> new
+Multiply(1, Multiply(2, z)) -> new
+Add(1, Add(3, 1)) == Add(1, Add(1, 3))
+Multiply(1, Add(3, 1)) == Add(1, 3)
+Add(1, Multiply(3, 1)) == Add(1, 3)
+Multiply(1, Multiply(3, 1)) == 3
+Add(1, Add(3, 2)) == Add(1, Add(2, 3))
+Multiply(1, Add(3, 2)) == Add(1, Add(1, 3))
+Add(1, Multiply(3, 2)) == Add(1, Multiply(2, 3))
+Multiply(1, Multiply(3, 2)) == Add(1, Add(2, 3))
+Add(1, Add(3, 3)) == Add(1, Multiply(2, 3))
+Multiply(1, Add(3, 3)) == Add(1, Add(2, 3))
+Add(1, Multiply(3, 3)) -> new
+Multiply(1, Multiply(3, 3)) -> new
+Add(1, Add(3, x)) -> new
+Multiply(1, Add(3, x)) == Add(1, Add(2, x))
+Add(1, Multiply(3, x)) -> new
+Multiply(1, Multiply(3, x)) -> new
+Add(1, Add(3, y)) -> new
+Multiply(1, Add(3, y)) == Add(1, Add(2, y))
+Add(1, Multiply(3, y)) -> new
+Multiply(1, Multiply(3, y)) -> new
+Add(1, Add(3, z)) -> new
+Multiply(1, Add(3, z)) == Add(1, Add(2, z))
+Add(1, Multiply(3, z)) -> new
+Multiply(1, Multiply(3, z)) -> new
+Add(1, Add(x, 1)) == Add(1, Add(1, x))
+Multiply(1, Add(x, 1)) == Add(1, x)
+Add(1, Multiply(x, 1)) == Add(1, x)
+Multiply(1, Multiply(x, 1)) == x
+Add(1, Add(x, 2)) == Add(1, Add(2, x))
+Multiply(1, Add(x, 2)) == Add(1, Add(1, x))
+Add(1, Multiply(x, 2)) == Add(1, Multiply(2, x))
+Multiply(1, Multiply(x, 2)) == Multiply(1, Multiply(2, x))
+Add(1, Add(x, 3)) == Add(1, Add(3, x))
+Multiply(1, Add(x, 3)) == Add(1, Add(2, x))
+Add(1, Multiply(x, 3)) == Add(1, Multiply(3, x))
+Multiply(1, Multiply(x, 3)) == Multiply(1, Multiply(3, x))
+Add(1, Add(x, x)) == Add(1, Multiply(2, x))
+Multiply(1, Add(x, x)) == Multiply(1, Multiply(2, x))
+Add(1, Multiply(x, x)) -> new
+Multiply(1, Multiply(x, x)) -> new
+Add(1, Add(x, y)) -> new
+Multiply(1, Add(x, y)) -> new
+Add(1, Multiply(x, y)) -> new
+Multiply(1, Multiply(x, y)) -> new
+Add(1, Add(x, z)) -> new
+Multiply(1, Add(x, z)) -> new
+Add(1, Multiply(x, z)) -> new
+Multiply(1, Multiply(x, z)) -> new
+Add(1, Add(y, 1)) == Add(1, Add(1, y))
+Multiply(1, Add(y, 1)) == Add(1, y)
+Add(1, Multiply(y, 1)) == Add(1, y)
+Multiply(1, Multiply(y, 1)) == y
+Add(1, Add(y, 2)) == Add(1, Add(2, y))
+Multiply(1, Add(y, 2)) == Add(1, Add(1, y))
+Add(1, Multiply(y, 2)) == Add(1, Multiply(2, y))
+Multiply(1, Multiply(y, 2)) == Multiply(1, Multiply(2, y))
+Add(1, Add(y, 3)) == Add(1, Add(3, y))
+Multiply(1, Add(y, 3)) == Add(1, Add(2, y))
+Add(1, Multiply(y, 3)) == Add(1, Multiply(3, y))
+Multiply(1, Multiply(y, 3)) == Multiply(1, Multiply(3, y))
+Add(1, Add(y, x)) == Add(1, Add(x, y))
+Multiply(1, Add(y, x)) == Multiply(1, Add(x, y))
+Add(1, Multiply(y, x)) == Add(1, Multiply(x, y))
+Multiply(1, Multiply(y, x)) == Multiply(1, Multiply(x, y))
+Add(1, Add(y, y)) == Add(1, Multiply(2, y))
+Multiply(1, Add(y, y)) == Multiply(1, Multiply(2, y))
+Add(1, Multiply(y, y)) -> new
+Multiply(1, Multiply(y, y)) -> new
+Add(1, Add(y, z)) -> new
+Multiply(1, Add(y, z)) -> new
+Add(1, Multiply(y, z)) -> new
+Multiply(1, Multiply(y, z)) -> new
+Add(1, Add(z, 1)) == Add(1, Add(1, z))
+Multiply(1, Add(z, 1)) == Add(1, z)
+Add(1, Multiply(z, 1)) == Add(1, z)
+Multiply(1, Multiply(z, 1)) == z
+Add(1, Add(z, 2)) == Add(1, Add(2, z))
+Multiply(1, Add(z, 2)) == Add(1, Add(1, z))
+Add(1, Multiply(z, 2)) == Add(1, Multiply(2, z))
+Multiply(1, Multiply(z, 2)) == Multiply(1, Multiply(2, z))
+Add(1, Add(z, 3)) == Add(1, Add(3, z))
+Multiply(1, Add(z, 3)) == Add(1, Add(2, z))
+Add(1, Multiply(z, 3)) == Add(1, Multiply(3, z))
+Multiply(1, Multiply(z, 3)) == Multiply(1, Multiply(3, z))
+Add(1, Add(z, x)) == Add(1, Add(x, z))
+Multiply(1, Add(z, x)) == Multiply(1, Add(x, z))
+Add(1, Multiply(z, x)) == Add(1, Multiply(x, z))
+Multiply(1, Multiply(z, x)) == Multiply(1, Multiply(x, z))
+Add(1, Add(z, y)) == Add(1, Add(y, z))
+Multiply(1, Add(z, y)) == Multiply(1, Add(y, z))
+Add(1, Multiply(z, y)) == Add(1, Multiply(y, z))
+Multiply(1, Multiply(z, y)) == Multiply(1, Multiply(y, z))
+Add(1, Add(z, z)) == Add(1, Multiply(2, z))
+Multiply(1, Add(z, z)) == Multiply(1, Multiply(2, z))
+Add(1, Multiply(z, z)) -> new
+Multiply(1, Multiply(z, z)) -> new
+Add(2, 1) == 3
+Multiply(2, 1) == 2
+Add(2, 2) == Add(1, 3)
+Multiply(2, 2) == Add(1, 3)
+Add(2, 3) == Add(1, Add(1, 3))
+Multiply(2, 3) == Add(1, Add(2, 3))
+Add(2, x) == Add(1, Add(1, x))
+Multiply(2, x) == Multiply(1, Multiply(2, x))
+Add(2, y) == Add(1, Add(1, y))
+Multiply(2, y) == Multiply(1, Multiply(2, y))
+Add(2, z) == Add(1, Add(1, z))
+Multiply(2, z) == Multiply(1, Multiply(2, z))
+Add(2, Add(1, 1)) == Add(1, 3)
+Multiply(2, Add(1, 1)) == Add(1, 3)
+Add(2, Multiply(1, 1)) == 3
+Multiply(2, Multiply(1, 1)) == 2
+Add(2, Add(1, 2)) == Add(1, Add(1, 3))
+Multiply(2, Add(1, 2)) == Add(1, Add(2, 3))
+Add(2, Multiply(1, 2)) == Add(1, 3)
+Multiply(2, Multiply(1, 2)) == Add(1, 3)
+Add(2, Add(1, 3)) == Add(1, Add(2, 3))
+Multiply(2, Add(1, 3)) -> new
+Add(2, Multiply(1, 3)) == Add(1, Add(1, 3))
+Multiply(2, Multiply(1, 3)) == Add(1, Add(2, 3))
+Add(2, Add(1, x)) == Add(1, Add(2, x))
+Multiply(2, Add(1, x)) -> new
+Add(2, Multiply(1, x)) == Add(1, Add(1, x))
+Multiply(2, Multiply(1, x)) == Multiply(1, Multiply(2, x))
+Add(2, Add(1, y)) == Add(1, Add(2, y))
+Multiply(2, Add(1, y)) -> new
+Add(2, Multiply(1, y)) == Add(1, Add(1, y))
+Multiply(2, Multiply(1, y)) == Multiply(1, Multiply(2, y))
+Add(2, Add(1, z)) == Add(1, Add(2, z))
+Multiply(2, Add(1, z)) -> new
+Add(2, Multiply(1, z)) == Add(1, Add(1, z))
+Multiply(2, Multiply(1, z)) == Multiply(1, Multiply(2, z))
+Add(2, Add(2, 1)) == Add(1, Add(1, 3))
+Multiply(2, Add(2, 1)) == Add(1, Add(2, 3))
+Add(2, Multiply(2, 1)) == Add(1, 3)
+Multiply(2, Multiply(2, 1)) == Add(1, 3)
+Add(2, Add(2, 2)) == Add(1, Add(2, 3))
+Multiply(2, Add(2, 2)) == Multiply(2, Add(1, 3))
+Add(2, Multiply(2, 2)) == Add(1, Add(2, 3))
+Multiply(2, Multiply(2, 2)) == Multiply(2, Add(1, 3))
+Add(2, Add(2, 3)) == Add(1, Multiply(2, 3))
+Multiply(2, Add(2, 3)) == Add(1, Multiply(3, 3))
+Add(2, Multiply(2, 3)) == Multiply(2, Add(1, 3))
+Multiply(2, Multiply(2, 3)) -> new
+Add(2, Add(2, x)) == Add(1, Add(3, x))
+Multiply(2, Add(2, x)) -> new
+Add(2, Multiply(2, x)) == Multiply(2, Add(1, x))
+Multiply(2, Multiply(2, x)) -> new
+Add(2, Add(2, y)) == Add(1, Add(3, y))
+Multiply(2, Add(2, y)) -> new
+Add(2, Multiply(2, y)) == Multiply(2, Add(1, y))
+Multiply(2, Multiply(2, y)) -> new
+Add(2, Add(2, z)) == Add(1, Add(3, z))
+Multiply(2, Add(2, z)) -> new
+Add(2, Multiply(2, z)) == Multiply(2, Add(1, z))
+Multiply(2, Multiply(2, z)) -> new
+Add(2, Add(3, 1)) == Add(1, Add(2, 3))
+Multiply(2, Add(3, 1)) == Multiply(2, Add(1, 3))
+Add(2, Multiply(3, 1)) == Add(1, Add(1, 3))
+Multiply(2, Multiply(3, 1)) == Add(1, Add(2, 3))
+Add(2, Add(3, 2)) == Add(1, Multiply(2, 3))
+Multiply(2, Add(3, 2)) == Add(1, Multiply(3, 3))
+Add(2, Multiply(3, 2)) == Multiply(2, Add(1, 3))
+Multiply(2, Multiply(3, 2)) == Multiply(2, Multiply(2, 3))
+Add(2, Add(3, 3)) == Multiply(2, Add(1, 3))
+Multiply(2, Add(3, 3)) == Multiply(2, Multiply(2, 3))
+Add(2, Multiply(3, 3)) -> new
+Multiply(2, Multiply(3, 3)) -> new
+Add(2, Add(3, x)) -> new
+Multiply(2, Add(3, x)) -> new
+Add(2, Multiply(3, x)) -> new
+Multiply(2, Multiply(3, x)) -> new
+Add(2, Add(3, y)) -> new
+Multiply(2, Add(3, y)) -> new
+Add(2, Multiply(3, y)) -> new
+Multiply(2, Multiply(3, y)) -> new
+Add(2, Add(3, z)) -> new
+Multiply(2, Add(3, z)) -> new
+Add(2, Multiply(3, z)) -> new
+Multiply(2, Multiply(3, z)) -> new
+Add(2, Add(x, 1)) == Add(1, Add(2, x))
+Multiply(2, Add(x, 1)) == Multiply(2, Add(1, x))
+Add(2, Multiply(x, 1)) == Add(1, Add(1, x))
+Multiply(2, Multiply(x, 1)) == Multiply(1, Multiply(2, x))
+Add(2, Add(x, 2)) == Add(1, Add(3, x))
+Multiply(2, Add(x, 2)) == Multiply(2, Add(2, x))
+Add(2, Multiply(x, 2)) == Multiply(2, Add(1, x))
+Multiply(2, Multiply(x, 2)) == Multiply(2, Multiply(2, x))
+Add(2, Add(x, 3)) == Add(2, Add(3, x))
+Multiply(2, Add(x, 3)) == Multiply(2, Add(3, x))
+Add(2, Multiply(x, 3)) == Add(2, Multiply(3, x))
+Multiply(2, Multiply(x, 3)) == Multiply(2, Multiply(3, x))
+Add(2, Add(x, x)) == Multiply(2, Add(1, x))
+Multiply(2, Add(x, x)) == Multiply(2, Multiply(2, x))
+Add(2, Multiply(x, x)) -> new
+Multiply(2, Multiply(x, x)) -> new
+Add(2, Add(x, y)) -> new
+Multiply(2, Add(x, y)) -> new
+Add(2, Multiply(x, y)) -> new
+Multiply(2, Multiply(x, y)) -> new
+Add(2, Add(x, z)) -> new
+Multiply(2, Add(x, z)) -> new
+Add(2, Multiply(x, z)) -> new
+Multiply(2, Multiply(x, z)) -> new
+Add(2, Add(y, 1)) == Add(1, Add(2, y))
+Multiply(2, Add(y, 1)) == Multiply(2, Add(1, y))
+Add(2, Multiply(y, 1)) == Add(1, Add(1, y))
+Multiply(2, Multiply(y, 1)) == Multiply(1, Multiply(2, y))
+Add(2, Add(y, 2)) == Add(1, Add(3, y))
+Multiply(2, Add(y, 2)) == Multiply(2, Add(2, y))
+Add(2, Multiply(y, 2)) == Multiply(2, Add(1, y))
+Multiply(2, Multiply(y, 2)) == Multiply(2, Multiply(2, y))
+Add(2, Add(y, 3)) == Add(2, Add(3, y))
+Multiply(2, Add(y, 3)) == Multiply(2, Add(3, y))
+Add(2, Multiply(y, 3)) == Add(2, Multiply(3, y))
+Multiply(2, Multiply(y, 3)) == Multiply(2, Multiply(3, y))
+Add(2, Add(y, x)) == Add(2, Add(x, y))
+Multiply(2, Add(y, x)) == Multiply(2, Add(x, y))
+Add(2, Multiply(y, x)) == Add(2, Multiply(x, y))
+Multiply(2, Multiply(y, x)) == Multiply(2, Multiply(x, y))
+Add(2, Add(y, y)) == Multiply(2, Add(1, y))
+Multiply(2, Add(y, y)) == Multiply(2, Multiply(2, y))
+Add(2, Multiply(y, y)) -> new
+Multiply(2, Multiply(y, y)) -> new
+Add(2, Add(y, z)) -> new
+Multiply(2, Add(y, z)) -> new
+Add(2, Multiply(y, z)) -> new
+Multiply(2, Multiply(y, z)) -> new
+Add(2, Add(z, 1)) == Add(1, Add(2, z))
+Multiply(2, Add(z, 1)) == Multiply(2, Add(1, z))
+Add(2, Multiply(z, 1)) == Add(1, Add(1, z))
+Multiply(2, Multiply(z, 1)) == Multiply(1, Multiply(2, z))
+Add(2, Add(z, 2)) == Add(1, Add(3, z))
+Multiply(2, Add(z, 2)) == Multiply(2, Add(2, z))
+Add(2, Multiply(z, 2)) == Multiply(2, Add(1, z))
+Multiply(2, Multiply(z, 2)) == Multiply(2, Multiply(2, z))
+Add(2, Add(z, 3)) == Add(2, Add(3, z))
+Multiply(2, Add(z, 3)) == Multiply(2, Add(3, z))
+Add(2, Multiply(z, 3)) == Add(2, Multiply(3, z))
+Multiply(2, Multiply(z, 3)) == Multiply(2, Multiply(3, z))
+Add(2, Add(z, x)) == Add(2, Add(x, z))
+Multiply(2, Add(z, x)) == Multiply(2, Add(x, z))
+Add(2, Multiply(z, x)) == Add(2, Multiply(x, z))
+Multiply(2, Multiply(z, x)) == Multiply(2, Multiply(x, z))
+Add(2, Add(z, y)) == Add(2, Add(y, z))
+Multiply(2, Add(z, y)) == Multiply(2, Add(y, z))
+Add(2, Multiply(z, y)) == Add(2, Multiply(y, z))
+Multiply(2, Multiply(z, y)) == Multiply(2, Multiply(y, z))
+Add(2, Add(z, z)) == Multiply(2, Add(1, z))
+Multiply(2, Add(z, z)) == Multiply(2, Multiply(2, z))
+Add(2, Multiply(z, z)) -> new
+Multiply(2, Multiply(z, z)) -> new
+Add(3, 1) == Add(1, 3)
+Multiply(3, 1) == 3
+Add(3, 2) == Add(1, Add(1, 3))
+Multiply(3, 2) == Add(1, Add(2, 3))
+Add(3, 3) == Add(1, Add(2, 3))
+Multiply(3, 3) == Multiply(1, Multiply(3, 3))
+Add(3, x) == Add(1, Add(2, x))
+Multiply(3, x) == Multiply(1, Multiply(3, x))
+Add(3, y) == Add(1, Add(2, y))
+Multiply(3, y) == Multiply(1, Multiply(3, y))
+Add(3, z) == Add(1, Add(2, z))
+Multiply(3, z) == Multiply(1, Multiply(3, z))
+Add(3, Add(1, 1)) == Add(1, Add(1, 3))
+Multiply(3, Add(1, 1)) == Add(1, Add(2, 3))
+Add(3, Multiply(1, 1)) == Add(1, 3)
+Multiply(3, Multiply(1, 1)) == 3
+Add(3, Add(1, 2)) == Add(1, Add(2, 3))
+Multiply(3, Add(1, 2)) == Multiply(1, Multiply(3, 3))
+Add(3, Multiply(1, 2)) == Add(1, Add(1, 3))
+Multiply(3, Multiply(1, 2)) == Add(1, Add(2, 3))
+Add(3, Add(1, 3)) == Add(1, Multiply(2, 3))
+Multiply(3, Add(1, 3)) == Multiply(2, Multiply(2, 3))
+Add(3, Multiply(1, 3)) == Add(1, Add(2, 3))
+Multiply(3, Multiply(1, 3)) == Multiply(1, Multiply(3, 3))
+Add(3, Add(1, x)) == Add(1, Add(3, x))
+Multiply(3, Add(1, x)) -> new
+Add(3, Multiply(1, x)) == Add(1, Add(2, x))
+Multiply(3, Multiply(1, x)) == Multiply(1, Multiply(3, x))
+Add(3, Add(1, y)) == Add(1, Add(3, y))
+Multiply(3, Add(1, y)) -> new
+Add(3, Multiply(1, y)) == Add(1, Add(2, y))
+Multiply(3, Multiply(1, y)) == Multiply(1, Multiply(3, y))
+Add(3, Add(1, z)) == Add(1, Add(3, z))
+Multiply(3, Add(1, z)) -> new
+Add(3, Multiply(1, z)) == Add(1, Add(2, z))
+Multiply(3, Multiply(1, z)) == Multiply(1, Multiply(3, z))
+Add(3, Add(2, 1)) == Add(1, Add(2, 3))
+Multiply(3, Add(2, 1)) == Multiply(1, Multiply(3, 3))
+Add(3, Multiply(2, 1)) == Add(1, Add(1, 3))
+Multiply(3, Multiply(2, 1)) == Add(1, Add(2, 3))
+Add(3, Add(2, 2)) == Add(1, Multiply(2, 3))
+Multiply(3, Add(2, 2)) == Multiply(2, Multiply(2, 3))
+Add(3, Multiply(2, 2)) == Add(1, Multiply(2, 3))
+Multiply(3, Multiply(2, 2)) == Multiply(2, Multiply(2, 3))
+Add(3, Add(2, 3)) == Multiply(2, Add(1, 3))
+Multiply(3, Add(2, 3)) -> new
+Add(3, Multiply(2, 3)) == Multiply(1, Multiply(3, 3))
+Multiply(3, Multiply(2, 3)) == Multiply(2, Multiply(3, 3))
+Add(3, Add(2, x)) == Add(2, Add(3, x))
+Multiply(3, Add(2, x)) -> new
+Add(3, Multiply(2, x)) -> new
+Multiply(3, Multiply(2, x)) == Multiply(2, Multiply(3, x))
+Add(3, Add(2, y)) == Add(2, Add(3, y))
+Multiply(3, Add(2, y)) -> new
+Add(3, Multiply(2, y)) -> new
+Multiply(3, Multiply(2, y)) == Multiply(2, Multiply(3, y))
+Add(3, Add(2, z)) == Add(2, Add(3, z))
+Multiply(3, Add(2, z)) -> new
+Add(3, Multiply(2, z)) -> new
+Multiply(3, Multiply(2, z)) == Multiply(2, Multiply(3, z))
+Add(3, Add(3, 1)) == Add(1, Multiply(2, 3))
+Multiply(3, Add(3, 1)) == Multiply(2, Multiply(2, 3))
+Add(3, Multiply(3, 1)) == Add(1, Add(2, 3))
+Multiply(3, Multiply(3, 1)) == Multiply(1, Multiply(3, 3))
+Add(3, Add(3, 2)) == Multiply(2, Add(1, 3))
+Multiply(3, Add(3, 2)) == Multiply(3, Add(2, 3))
+Add(3, Multiply(3, 2)) == Multiply(1, Multiply(3, 3))
+Multiply(3, Multiply(3, 2)) == Multiply(2, Multiply(3, 3))
+Add(3, Add(3, 3)) == Multiply(1, Multiply(3, 3))
+Multiply(3, Add(3, 3)) == Multiply(2, Multiply(3, 3))
+Add(3, Multiply(3, 3)) == Multiply(2, Multiply(2, 3))
+Multiply(3, Multiply(3, 3)) -> new
+Add(3, Add(3, x)) -> new
+Multiply(3, Add(3, x)) -> new
+Add(3, Multiply(3, x)) == Multiply(3, Add(1, x))
+Multiply(3, Multiply(3, x)) -> new
+Add(3, Add(3, y)) -> new
+Multiply(3, Add(3, y)) -> new
+Add(3, Multiply(3, y)) == Multiply(3, Add(1, y))
+Multiply(3, Multiply(3, y)) -> new
+Add(3, Add(3, z)) -> new
+Multiply(3, Add(3, z)) -> new
+Add(3, Multiply(3, z)) == Multiply(3, Add(1, z))
+Multiply(3, Multiply(3, z)) -> new
+Add(3, Add(x, 1)) == Add(1, Add(3, x))
+Multiply(3, Add(x, 1)) == Multiply(3, Add(1, x))
+Add(3, Multiply(x, 1)) == Add(1, Add(2, x))
+Multiply(3, Multiply(x, 1)) == Multiply(1, Multiply(3, x))
+Add(3, Add(x, 2)) == Add(2, Add(3, x))
+Multiply(3, Add(x, 2)) == Multiply(3, Add(2, x))
+Add(3, Multiply(x, 2)) == Add(3, Multiply(2, x))
+Multiply(3, Multiply(x, 2)) == Multiply(2, Multiply(3, x))
+Add(3, Add(x, 3)) == Add(3, Add(3, x))
+Multiply(3, Add(x, 3)) == Multiply(3, Add(3, x))
+Add(3, Multiply(x, 3)) == Multiply(3, Add(1, x))
+Multiply(3, Multiply(x, 3)) == Multiply(3, Multiply(3, x))
+Add(3, Add(x, x)) == Add(3, Multiply(2, x))
+Multiply(3, Add(x, x)) == Multiply(2, Multiply(3, x))
+Add(3, Multiply(x, x)) -> new
+Multiply(3, Multiply(x, x)) -> new
+Add(3, Add(x, y)) -> new
+Multiply(3, Add(x, y)) -> new
+Add(3, Multiply(x, y)) -> new
+Multiply(3, Multiply(x, y)) -> new
+Add(3, Add(x, z)) -> new
+Multiply(3, Add(x, z)) -> new
+Add(3, Multiply(x, z)) -> new
+Multiply(3, Multiply(x, z)) -> new
+Add(3, Add(y, 1)) == Add(1, Add(3, y))
+Multiply(3, Add(y, 1)) == Multiply(3, Add(1, y))
+Add(3, Multiply(y, 1)) == Add(1, Add(2, y))
+Multiply(3, Multiply(y, 1)) == Multiply(1, Multiply(3, y))
+Add(3, Add(y, 2)) == Add(2, Add(3, y))
+Multiply(3, Add(y, 2)) == Multiply(3, Add(2, y))
+Add(3, Multiply(y, 2)) == Add(3, Multiply(2, y))
+Multiply(3, Multiply(y, 2)) == Multiply(2, Multiply(3, y))
+Add(3, Add(y, 3)) == Add(3, Add(3, y))
+Multiply(3, Add(y, 3)) == Multiply(3, Add(3, y))
+Add(3, Multiply(y, 3)) == Multiply(3, Add(1, y))
+Multiply(3, Multiply(y, 3)) == Multiply(3, Multiply(3, y))
+Add(3, Add(y, x)) == Add(3, Add(x, y))
+Multiply(3, Add(y, x)) == Multiply(3, Add(x, y))
+Add(3, Multiply(y, x)) == Add(3, Multiply(x, y))
+Multiply(3, Multiply(y, x)) == Multiply(3, Multiply(x, y))
+Add(3, Add(y, y)) == Add(3, Multiply(2, y))
+Multiply(3, Add(y, y)) == Multiply(2, Multiply(3, y))
+Add(3, Multiply(y, y)) -> new
+Multiply(3, Multiply(y, y)) -> new
+Add(3, Add(y, z)) -> new
+Multiply(3, Add(y, z)) -> new
+Add(3, Multiply(y, z)) -> new
+Multiply(3, Multiply(y, z)) -> new
+Add(3, Add(z, 1)) == Add(1, Add(3, z))
+Multiply(3, Add(z, 1)) == Multiply(3, Add(1, z))
+Add(3, Multiply(z, 1)) == Add(1, Add(2, z))
+Multiply(3, Multiply(z, 1)) == Multiply(1, Multiply(3, z))
+Add(3, Add(z, 2)) == Add(2, Add(3, z))
+Multiply(3, Add(z, 2)) == Multiply(3, Add(2, z))
+Add(3, Multiply(z, 2)) == Add(3, Multiply(2, z))
+Multiply(3, Multiply(z, 2)) == Multiply(2, Multiply(3, z))
+Add(3, Add(z, 3)) == Add(3, Add(3, z))
+Multiply(3, Add(z, 3)) == Multiply(3, Add(3, z))
+Add(3, Multiply(z, 3)) == Multiply(3, Add(1, z))
+Multiply(3, Multiply(z, 3)) == Multiply(3, Multiply(3, z))
+Add(3, Add(z, x)) == Add(3, Add(x, z))
+Multiply(3, Add(z, x)) == Multiply(3, Add(x, z))
+Add(3, Multiply(z, x)) == Add(3, Multiply(x, z))
+Multiply(3, Multiply(z, x)) == Multiply(3, Multiply(x, z))
+Add(3, Add(z, y)) == Add(3, Add(y, z))
+Multiply(3, Add(z, y)) == Multiply(3, Add(y, z))
+Add(3, Multiply(z, y)) == Add(3, Multiply(y, z))
+Multiply(3, Multiply(z, y)) == Multiply(3, Multiply(y, z))
+Add(3, Add(z, z)) == Add(3, Multiply(2, z))
+Multiply(3, Add(z, z)) == Multiply(2, Multiply(3, z))
+Add(3, Multiply(z, z)) -> new
+Multiply(3, Multiply(z, z)) -> new
+Add(x, 1) == Add(1, x)
+Multiply(x, 1) == x
+Add(x, 2) == Add(1, Add(1, x))
+Multiply(x, 2) == Multiply(1, Multiply(2, x))
+Add(x, 3) == Add(1, Add(2, x))
+Multiply(x, 3) == Multiply(1, Multiply(3, x))
+Add(x, x) == Multiply(1, Multiply(2, x))
+Multiply(x, x) == Multiply(1, Multiply(x, x))
+Add(x, y) == Multiply(1, Add(x, y))
+Multiply(x, y) == Multiply(1, Multiply(x, y))
+Add(x, z) == Multiply(1, Add(x, z))
+Multiply(x, z) == Multiply(1, Multiply(x, z))
+Add(x, Add(1, 1)) == Add(1, Add(1, x))
+Multiply(x, Add(1, 1)) == Multiply(1, Multiply(2, x))
+Add(x, Multiply(1, 1)) == Add(1, x)
+Multiply(x, Multiply(1, 1)) == x
+Add(x, Add(1, 2)) == Add(1, Add(2, x))
+Multiply(x, Add(1, 2)) == Multiply(1, Multiply(3, x))
+Add(x, Multiply(1, 2)) == Add(1, Add(1, x))
+Multiply(x, Multiply(1, 2)) == Multiply(1, Multiply(2, x))
+Add(x, Add(1, 3)) == Add(1, Add(3, x))
+Multiply(x, Add(1, 3)) == Multiply(2, Multiply(2, x))
+Add(x, Multiply(1, 3)) == Add(1, Add(2, x))
+Multiply(x, Multiply(1, 3)) == Multiply(1, Multiply(3, x))
+Add(x, Add(1, x)) == Add(1, Multiply(2, x))
+Multiply(x, Add(1, x)) -> new
+Add(x, Multiply(1, x)) == Multiply(1, Multiply(2, x))
+Multiply(x, Multiply(1, x)) == Multiply(1, Multiply(x, x))
+Add(x, Add(1, y)) == Add(1, Add(x, y))
+Multiply(x, Add(1, y)) -> new
+Add(x, Multiply(1, y)) == Multiply(1, Add(x, y))
+Multiply(x, Multiply(1, y)) == Multiply(1, Multiply(x, y))
+Add(x, Add(1, z)) == Add(1, Add(x, z))
+Multiply(x, Add(1, z)) -> new
+Add(x, Multiply(1, z)) == Multiply(1, Add(x, z))
+Multiply(x, Multiply(1, z)) == Multiply(1, Multiply(x, z))
+Add(x, Add(2, 1)) == Add(1, Add(2, x))
+Multiply(x, Add(2, 1)) == Multiply(1, Multiply(3, x))
+Add(x, Multiply(2, 1)) == Add(1, Add(1, x))
+Multiply(x, Multiply(2, 1)) == Multiply(1, Multiply(2, x))
+Add(x, Add(2, 2)) == Add(1, Add(3, x))
+Multiply(x, Add(2, 2)) == Multiply(2, Multiply(2, x))
+Add(x, Multiply(2, 2)) == Add(1, Add(3, x))
+Multiply(x, Multiply(2, 2)) == Multiply(2, Multiply(2, x))
+Add(x, Add(2, 3)) == Add(2, Add(3, x))
+Multiply(x, Add(2, 3)) -> new
+Add(x, Multiply(2, 3)) == Add(3, Add(3, x))
+Multiply(x, Multiply(2, 3)) == Multiply(2, Multiply(3, x))
+Add(x, Add(2, x)) == Multiply(2, Add(1, x))
+Multiply(x, Add(2, x)) -> new
+Add(x, Multiply(2, x)) == Multiply(1, Multiply(3, x))
+Multiply(x, Multiply(2, x)) == Multiply(2, Multiply(x, x))
+Add(x, Add(2, y)) == Add(2, Add(x, y))
+Multiply(x, Add(2, y)) -> new
+Add(x, Multiply(2, y)) -> new
+Multiply(x, Multiply(2, y)) == Multiply(2, Multiply(x, y))
+Add(x, Add(2, z)) == Add(2, Add(x, z))
+Multiply(x, Add(2, z)) -> new
+Add(x, Multiply(2, z)) -> new
+Multiply(x, Multiply(2, z)) == Multiply(2, Multiply(x, z))
+Add(x, Add(3, 1)) == Add(1, Add(3, x))
+Multiply(x, Add(3, 1)) == Multiply(2, Multiply(2, x))
+Add(x, Multiply(3, 1)) == Add(1, Add(2, x))
+Multiply(x, Multiply(3, 1)) == Multiply(1, Multiply(3, x))
+Add(x, Add(3, 2)) == Add(2, Add(3, x))
+Multiply(x, Add(3, 2)) == Multiply(x, Add(2, 3))
+Add(x, Multiply(3, 2)) == Add(3, Add(3, x))
+Multiply(x, Multiply(3, 2)) == Multiply(2, Multiply(3, x))
+Add(x, Add(3, 3)) == Add(3, Add(3, x))
+Multiply(x, Add(3, 3)) == Multiply(2, Multiply(3, x))
+Add(x, Multiply(3, 3)) -> new
+Multiply(x, Multiply(3, 3)) == Multiply(3, Multiply(3, x))
+Add(x, Add(3, x)) == Add(3, Multiply(2, x))
+Multiply(x, Add(3, x)) -> new
+Add(x, Multiply(3, x)) == Multiply(2, Multiply(2, x))
+Multiply(x, Multiply(3, x)) == Multiply(3, Multiply(x, x))
+Add(x, Add(3, y)) == Add(3, Add(x, y))
+Multiply(x, Add(3, y)) -> new
+Add(x, Multiply(3, y)) -> new
+Multiply(x, Multiply(3, y)) == Multiply(3, Multiply(x, y))
+Add(x, Add(3, z)) == Add(3, Add(x, z))
+Multiply(x, Add(3, z)) -> new
+Add(x, Multiply(3, z)) -> new
+Multiply(x, Multiply(3, z)) == Multiply(3, Multiply(x, z))
+Add(x, Add(x, 1)) == Add(1, Multiply(2, x))
+Multiply(x, Add(x, 1)) == Multiply(x, Add(1, x))
+Add(x, Multiply(x, 1)) == Multiply(1, Multiply(2, x))
+Multiply(x, Multiply(x, 1)) == Multiply(1, Multiply(x, x))
+Add(x, Add(x, 2)) == Multiply(2, Add(1, x))
+Multiply(x, Add(x, 2)) == Multiply(x, Add(2, x))
+Add(x, Multiply(x, 2)) == Multiply(1, Multiply(3, x))
+Multiply(x, Multiply(x, 2)) == Multiply(2, Multiply(x, x))
+Add(x, Add(x, 3)) == Add(3, Multiply(2, x))
+Multiply(x, Add(x, 3)) == Multiply(x, Add(3, x))
+Add(x, Multiply(x, 3)) == Multiply(2, Multiply(2, x))
+Multiply(x, Multiply(x, 3)) == Multiply(3, Multiply(x, x))
+Add(x, Add(x, x)) == Multiply(1, Multiply(3, x))
+Multiply(x, Add(x, x)) == Multiply(2, Multiply(x, x))
+Add(x, Multiply(x, x)) == Multiply(x, Add(1, x))
+Multiply(x, Multiply(x, x)) -> new
