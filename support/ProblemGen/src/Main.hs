@@ -7,7 +7,7 @@ module Main where
 import Control.Monad.Random.Lazy
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
--- import Debug.Trace (trace)
+import Debug.Trace (trace)
 import System.IO (writeFile)
 import Text.Printf (printf)
 
@@ -53,6 +53,7 @@ boolHeight (And b1 b2) = 1 + max (boolHeight b1) (boolHeight b2)
 boolHeight (Or b1 b2) = 1 + max (boolHeight b1) (boolHeight b2)
 boolHeight (Not b) = 1 + boolHeight b
 
+-- Evaluate an expression (or program) given an environment
 evalExpr :: Env -> ExprNode -> Integer
 -- evalExpr env expr | trace (printf "evalExpr %s %s" (show env) (describeExpr expr)) False = undefined
 evalExpr env Const1 = 1
@@ -72,6 +73,7 @@ evalBool env (And b1 b2) = evalBool env b1 && evalBool env b2
 evalBool env (Or b1 b2) = evalBool env b1 || evalBool env b2
 evalBool env (Not b) = not (evalBool env b)
 
+--
 foldExpr :: ExprNode -> Either ExprNode Integer
 -- foldExpr e | trace ("foldExpr " ++ describeExpr e) False = undefined
 foldExpr Const1 = Right 1
@@ -90,13 +92,6 @@ foldExpr (Ite b t e) =
           if ct == ce
             then Left $ unfoldExpr ct
             else Left $ Ite cb (unfoldExpr ct) (unfoldExpr ce)
-foldExpr (Ite b t e) =
-  let cb = foldBool b
-      ct = foldExpr t
-      ce = foldExpr e
-   in case tryEvalBool cb of
-        Just bv -> if bv then ct else ce
-        Nothing -> Left $ Ite cb (unfoldExpr ct) (unfoldExpr ce)
 foldExpr (Add e1 e2) =
   let ce1 = foldExpr e1
       ce2 = foldExpr e2
@@ -181,21 +176,24 @@ describeBool (Not b) = "Not(" ++ describeBool b ++ ")"
 
 randomExpr :: (MonadRandom m) => Int -> Int -> m ExprNode
 randomExpr minHeight maxHeight
-  | minHeight >= 0,
-    maxHeight >= 1,
+  | minHeight >= (-1),
+    maxHeight >= 0,
     minHeight <= maxHeight = do
-      let newMinHeight = max 0 (minHeight - 1)
+      let newMinHeight = max (-1) (minHeight - 1)
           newMaxHeight = maxHeight - 1
-      exprGens1 <- if minHeight <= 1 then exprGenHeight0 newMinHeight newMaxHeight else return []
-      exprGens2 <- if maxHeight >= 2 then exprGenHeight1P newMinHeight newMaxHeight else return []
-      exprGens3 <- if maxHeight >= 3 then exprGenHeight2P newMinHeight newMaxHeight else return []
+      -- Height 0 by definition means terminal productions, they are height exactly 0 -- 1P means >= 1, 2P >= 2
+      -- minHeight <= 0 means min height achieved, and that's the only circumstance we are allowed terminals
+      exprGens1 <- if minHeight <= 0 then exprGenHeight0 newMinHeight newMaxHeight else return []
+      exprGens2 <- if maxHeight >= 1 then exprGenHeight1P newMinHeight newMaxHeight else return []
+      exprGens3 <- if maxHeight >= 2 then exprGenHeight2P newMinHeight newMaxHeight else return []
       let exprGens = exprGens1 ++ exprGens2 ++ exprGens3
       i <- getRandomR (0, length exprGens - 1)
       exprGens !! i
 
+-- Generate an expression with height == 0 (i.e. a terminal production)
 exprGenHeight0 :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
-exprGenHeight0 0 newMaxHeight
-  | newMaxHeight >= 0 =
+exprGenHeight0 (-1) newMaxHeight
+  | newMaxHeight >= (-1) =
       return
         [ return Const1,
           return Const2,
@@ -205,12 +203,12 @@ exprGenHeight0 0 newMaxHeight
           return VarZ
         ]
 
+-- Generate an expression with height == 0 (i.e. a terminal)
 exprGenHeight1P :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
 exprGenHeight1P newMinHeight newMaxHeight
-  | newMaxHeight >= 1 = do
-      sel :: Int <- getRandomR (1, 2)
-      let newMinHeightA = if sel == 1 then newMinHeight else 0
-          newMinHeightB = if sel == 2 then newMinHeight else 0
+  | newMaxHeight >= 0 = do
+      newMins <- randomMinHeights newMinHeight 2
+      let [newMinHeightA, newMinHeightB] = newMins
       return
         [ do
             e1 <- randomExpr newMinHeightA newMaxHeight
@@ -224,11 +222,9 @@ exprGenHeight1P newMinHeight newMaxHeight
 
 exprGenHeight2P :: (MonadRandom m) => Int -> Int -> m [m ExprNode]
 exprGenHeight2P newMinHeight newMaxHeight
-  | newMaxHeight >= 2 = do
-      sel :: Int <- getRandomR (1, 3)
-      let newMinHeightA = if sel == 1 then newMinHeight else 0
-          newMinHeightB = if sel == 2 then newMinHeight else 0
-          newMinHeightC = if sel == 3 then newMinHeight else 0
+  | newMaxHeight >= 1 = do
+      newMins <- randomMinHeights newMinHeight 3
+      let [newMinHeightA, newMinHeightB, newMinHeightC] = newMins
       return
         [ do
             b <- randomBool newMinHeightA newMaxHeight
@@ -239,26 +235,25 @@ exprGenHeight2P newMinHeight newMaxHeight
 
 randomBool :: (MonadRandom m) => Int -> Int -> m BoolNode
 randomBool minHeight maxHeight
-  | minHeight >= 0,
-    maxHeight >= 1,
+  | minHeight >= (-1),
+    maxHeight >= 0,
     minHeight <= maxHeight = do
-      let newMinHeight = max 0 (minHeight - 1)
+      let newMinHeight = max (-1) (minHeight - 1)
           newMaxHeight = maxHeight - 1
-      boolGens1 <- if maxHeight >= 2 then boolGenHeight1P newMinHeight newMaxHeight else return []
-      boolGens2 <- if maxHeight >= 3 then boolGenHeight2P newMinHeight newMaxHeight else return []
+      boolGens1 <- if maxHeight >= 1 then boolGenHeight1P newMinHeight newMaxHeight else return []
+      boolGens2 <- if maxHeight >= 2 then boolGenHeight2P newMinHeight newMaxHeight else return []
       let boolGens = boolGens1 ++ boolGens2
       i <- getRandomR (0, length boolGens - 1)
       boolGens !! i
 
 boolGenHeight1P :: (MonadRandom m) => Int -> Int -> m [m BoolNode]
 boolGenHeight1P newMinHeight newMaxHeight
-  | newMaxHeight >= 1 = do
-      sel :: Int <- getRandomR (1, 2)
-      let newMinHeightA = if sel == 1 then newMinHeight else 0
-          newMinHeightB = if sel == 2 then newMinHeight else 0
+  | newMaxHeight >= 0 = do
+      newMins <- randomMinHeights newMinHeight 2
+      let [newMinHeightA, newMinHeightB] = newMins
       return
         [ do
-            e1 <- randomExproll newMinHeightA newMaxHeight
+            e1 <- randomExpr newMinHeightA newMaxHeight
             e2 <- randomExpr newMinHeightB newMaxHeight
             return (Lt e1 e2),
           do
@@ -269,10 +264,9 @@ boolGenHeight1P newMinHeight newMaxHeight
 
 boolGenHeight2P :: (MonadRandom m) => Int -> Int -> m [m BoolNode]
 boolGenHeight2P newMinHeight newMaxHeight
-  | newMaxHeight >= 2 = do
-      sel :: Int <- getRandomR (1, 2)
-      let newMinHeightA = if sel == 1 then newMinHeight else 0
-          newMinHeightB = if sel == 2 then newMinHeight else 0
+  | newMaxHeight >= 1 = do
+      newMins <- randomMinHeights newMinHeight 2
+      let [newMinHeightA, newMinHeightB] = newMins
       return
         [ do
             b1 <- randomBool newMinHeightA newMaxHeight
@@ -286,6 +280,13 @@ boolGenHeight2P newMinHeight newMaxHeight
             b <- randomBool newMinHeight newMaxHeight
             return (Not b)
         ]
+
+
+randomMinHeights :: (MonadRandom m, Random b, Num b) => b -> Int -> m [b]
+randomMinHeights minHeight nBranches = do
+  -- Only enforce minHeight on one branch -- others get random mins
+  sel :: Int <- getRandomR (1, nBranches)
+  mapM (\x -> if sel == x then return minHeight else getRandomR (0, minHeight)) [1 .. nBranches]
 
 allEnvs :: Integer -> Integer -> [Env]
 allEnvs rangeMin rangeMax =
@@ -341,11 +342,12 @@ makeTestProgram :: (MonadRandom m) => Int -> Int -> m String
 makeTestProgram height exampleCount = do
   program <- randomExpr height height
   let tidyProgram = unfoldExpr $ foldExpr program
-  if programHeight tidyProgram < height
+  if exprHeight tidyProgram < height
     then makeTestProgram height exampleCount
     else do
-      smallRangeExamples <- bestExamples (max 2 (exampleCount - (exampleCount `div` 2))) tidyProgram smallRangeEnvs
-      largeRangeExamples <- bestExamples (max 2 (exampleCount `div` 2)) tidyProgram largeRangeEnvs
+      let smallRangeCount = min 20 (max 2 (exampleCount `div` 2))
+      smallRangeExamples <- bestExamples smallRangeCount tidyProgram smallRangeEnvs
+      largeRangeExamples <- bestExamples (max 2 (exampleCount - smallRangeCount)) tidyProgram largeRangeEnvs
       let examples = smallRangeExamples ++ largeRangeExamples
       let examplesText =
             printf "# %s\n" (describeExpr tidyProgram)
@@ -361,10 +363,9 @@ main = do
     ( \d ->
         mapM_
           ( \(i :: Int) -> do
-              programText <- makeTestProgram d (d * 2)
-              writeFile (printf "../%02d%02d.txt" d i) programText
+              programText <- makeTestProgram d 1000
+              writeFile (printf "output/%02d%02d.txt" d i) programText
           )
-          (if d < 5 then [20 .. 99] else [])
+          [0 .. 9]
     )
-    [2 .. 7]
-
+    [0 .. 19]
