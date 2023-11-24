@@ -79,10 +79,10 @@ class AstNode:
             return False
         if not isinstance(other, AstNode):
             return True
-        if self.height() < other.height():
-            return True
         if str(self) == str(other):
             return False
+        if self.height() != other.height():
+            return self.height() < other.height()
         if self.sort_order != other.sort_order:
             assert (self.name != other.name) and "sort_order different but name same"
             return self.sort_order < other.sort_order
@@ -141,7 +141,7 @@ class Add(AstNode):
     sort_order: int = 10
 
     def canon_op(self, e0, e1):
-        if str(e1) < str(e0):
+        if e1 < e0:
             return Add(e1, e0)
         return self
 
@@ -154,7 +154,7 @@ class Multiply(AstNode):
     sort_order: int = 11
 
     def canon_op(self, e0, e1):
-        if str(e1) < str(e0):
+        if e1 < e0:
             return Multiply(e1, e0)
         return self
 
@@ -189,7 +189,7 @@ class Eq(AstNode):
     sort_order: int = 21
 
     def canon_op(self, e0, e1):
-        if str(e1) < str(e0):
+        if e1 < e0:
             return Eq(e1, e0)
         return self
 
@@ -205,7 +205,7 @@ class And(AstNode):
     sort_order: int = 22
 
     def canon_op(self, b0, b1):
-        if str(b1) < str(b0):
+        if b1 < b0:
             return And(b1, b0)
         return self
 
@@ -221,7 +221,7 @@ class Or(AstNode):
     sort_order: int = 23
 
     def canon_op(self, b0, b1):
-        if str(b1) < str(b0):
+        if b1 < b0:
             return And(b1, b0)
         return self
 
