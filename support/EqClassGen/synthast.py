@@ -22,15 +22,20 @@ sym_env = Env(sym_x, sym_y, sym_z)
 
 @functools.total_ordering
 class AstNode:
+    _memo_height = None
     _memo_str = None
     _memo_sym = None
     _memo_canon = None
+    sort_order: int
     name: str
     p: []
 
     def __init__(self, *p):
-        self.name = self.__class__.__name__
+        self._memo_height = max((pp.height() + 1 for pp in p), default=0)
         self.p = p
+
+    def height(self):
+        return self._memo_height
 
     def to_sym(self):
         if self._memo_sym == None:
@@ -74,28 +79,31 @@ class AstNode:
             return False
         if not isinstance(other, AstNode):
             return True
-        return str(self) == str(other)
-        # Note that self < other iff str(self) < str(other)!
-        # if self.name is not other.name:
-        #     assert self.name != other.name
-        #     return self.name < other.name
-        # for i in range(min(len(self.p), len(other.p))):
-        #     if self.p[i] != other.p[i]:
-        #         return self.p[i] < other.p[i]
-        # # self and other probably equal, I guess -- mostly we try to avoid this
-        # return len(self.p) < len(other.p)
-
-    # We CAN use AstNode.__eq__ and __lt__, but it's very precarious: the name
-    # comes first in self.p and because of the order of checks and comparisons
-    # we won't try to compare the lambdas which are in self.p[1]. If it breaks
-    # it's reasonable to implement custom __eq__ and __lt__ here.
+        if self.height() < other.height():
+            return True
+        if str(self) == str(other):
+            return False
+        if self.sort_order != other.sort_order:
+            assert (self.name != other.name) and "sort_order different but name same"
+            return self.sort_order < other.sort_order
+        if self.name != other.name:
+            return self.name < other.name
+        assert len(self.p) == len(other.p) and "len(p) should be same"
+        for sp, op in zip(self.p, other.p):
+            if sp != op:
+                return sp < op
+        print('%s != %s?' % (self, other))
+        assert not "not __eq__ should imply name different or p different"
+        return False
 
 
 class Const(AstNode):
+    sort_order: int = 0
     v: int
 
     def __init__(self, v):
         AstNode.__init__(self)
+        self.name = str(v)
         self.v = v
 
     def to_sym(self):
@@ -109,6 +117,7 @@ class Const(AstNode):
 
 
 class Var(AstNode):
+    sort_order: int = 1
     v: int
 
     def __init__(self, name, a):
@@ -128,6 +137,9 @@ class Var(AstNode):
 
 
 class Add(AstNode):
+    name: str = 'Add'
+    sort_order: int = 10
+
     def canon_op(self, e0, e1):
         if str(e1) < str(e0):
             return Add(e1, e0)
@@ -138,6 +150,9 @@ class Add(AstNode):
 
 
 class Multiply(AstNode):
+    name: str = 'Multiply'
+    sort_order: int = 11
+
     def canon_op(self, e0, e1):
         if str(e1) < str(e0):
             return Multiply(e1, e0)
@@ -148,6 +163,9 @@ class Multiply(AstNode):
 
 
 class Ite(AstNode):
+    name: str = 'Ite'
+    sort_order: int = 12
+
     def eval_op(self, b, e0, e1):
         return e0 if b else e1
 
@@ -155,7 +173,37 @@ class Ite(AstNode):
         return sp.Piecewise((e0, b), (e1, True))
 
 
+class Lt(AstNode):
+    name: str = 'Lt'
+    sort_order: int = 20
+
+    def eval_op(self, e0, e1):
+        return e0 < e1
+
+    def to_sym_op(self, e0, e1):
+        return sp.Lt(e0, e1)
+
+
+class Eq(AstNode):
+    name: str = 'Eq'
+    sort_order: int = 21
+
+    def canon_op(self, e0, e1):
+        if str(e1) < str(e0):
+            return Eq(e1, e0)
+        return self
+
+    def eval_op(self, e0, e1):
+        return e0 == e1
+
+    def to_sym_op(self, e0, e1):
+        return sp.Eq(e0, e1)
+
+
 class And(AstNode):
+    name: str = 'And'
+    sort_order: int = 22
+
     def canon_op(self, b0, b1):
         if str(b1) < str(b0):
             return And(b1, b0)
@@ -169,6 +217,9 @@ class And(AstNode):
 
 
 class Or(AstNode):
+    name: str = 'Or'
+    sort_order: int = 23
+
     def canon_op(self, b0, b1):
         if str(b1) < str(b0):
             return And(b1, b0)
@@ -182,32 +233,14 @@ class Or(AstNode):
 
 
 class Not(AstNode):
+    name: str = 'Not'
+    sort_order: int = 24
+
     def eval_op(self, b):
         return not b
 
     def to_sym_op(self, b):
         return sp.Not(b)
-
-
-class Lt(AstNode):
-    def eval_op(self, e0, e1):
-        return e0 < e1
-
-    def to_sym_op(self, e0, e1):
-        return sp.Lt(e0, e1)
-
-
-class Eq(AstNode):
-    def canon_op(self, e0, e1):
-        if str(e1) < str(e0):
-            return Eq(e1, e0)
-        return self
-
-    def eval_op(self, e0, e1):
-        return e0 == e1
-
-    def to_sym_op(self, e0, e1):
-        return sp.Eq(e0, e1)
 
 
 c1 = Const(1)
@@ -237,14 +270,16 @@ eval_globals = {
 }
 
 
-def parse_examples(filename):
+def parse_expr_str(expr_str):
     global eval_globals
+    return eval(
+        expr_str.replace("1", "c1").replace("2", "c2").replace("3", "c3"),
+        eval_globals,
+    )
+
+def parse_examples(filename):
     with open(filename) as f:
         m = re.match("#\\s*(.*)\\s*$", f.readline())
         if not m:
             return None
-        expr_str = m.group(1)
-        return eval(
-            expr_str.replace("1", "c1").replace("2", "c2").replace("3", "c3"),
-            eval_globals,
-        )
+        return parse_expr_str(m.group(1))

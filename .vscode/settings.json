@@ -1,0 +1,7 @@
+{
+    "files.watcherExclude": {
+        "**/.venv/**": true,
+        "**/dist-newstyle/**": true,
+        "**/target/**": true
+    }
+}
