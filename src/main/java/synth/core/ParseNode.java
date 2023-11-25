@@ -4,12 +4,12 @@ import java.util.List;
 
 import synth.dsl.Symbol;
 
-public class ASTNode {
-    public static final List<ASTNode> NO_CHILDREN = List.of();
+public class ParseNode {
+    public static final List<ParseNode> NO_CHILDREN = List.of();
     private final Symbol symbol;
-    private final List<ASTNode> children;
+    private final List<ParseNode> children;
 
-    public ASTNode(Symbol symbol, List<ASTNode> children) {
+    public ParseNode(Symbol symbol, List<ParseNode> children) {
         this.symbol = symbol;
         this.children = children;
     }
@@ -18,36 +18,36 @@ public class ASTNode {
         return symbol;
     }
 
-    public List<ASTNode> getChildren() {
+    public List<ParseNode> getChildren() {
         return children;
     }
 
-    public ASTNode getChild(int index) {
+    public ParseNode getChild(int index) {
         return children.get(index);
     }
 
-    public ASTNode withChild(int index, ASTNode newChild) {
+    public ParseNode withChild(int index, ParseNode newChild) {
         if (this.children.size() == 1 && index == 0) {
-            return new ASTNode(symbol, List.of(newChild));
+            return new ParseNode(symbol, List.of(newChild));
         } else if (this.children.size() == 2) {
             switch (index) {
                 case 0:
-                    return new ASTNode(symbol, List.of(newChild, children.get(1)));
+                    return new ParseNode(symbol, List.of(newChild, children.get(1)));
                 case 1:
-                    return new ASTNode(symbol, List.of(children.get(0), newChild));
+                    return new ParseNode(symbol, List.of(children.get(0), newChild));
             }
         }
-        ASTNode[] newChildren = children.toArray(ASTNode[]::new);
+        ParseNode[] newChildren = children.toArray(ParseNode[]::new);
         newChildren[index] = newChild;
-        return new ASTNode(symbol, List.of(newChildren));
+        return new ParseNode(symbol, List.of(newChildren));
     }
 
-    public ASTNode withChildren(int index, List<ASTNode> newChildren) {
-        return new ASTNode(symbol, newChildren);
+    public ParseNode withChildren(int index, List<ParseNode> newChildren) {
+        return new ParseNode(symbol, newChildren);
     }
 
-    public static ASTNode make(Symbol symbol, List<ASTNode> children) {
-        return new ASTNode(symbol, children);
+    public static ParseNode make(Symbol symbol, List<ParseNode> children) {
+        return new ParseNode(symbol, children);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class ASTNode {
         String separator = "";
         if (!children.isEmpty()) {
             builder.append("(");
-            for (ASTNode child : children) {
+            for (ParseNode child : children) {
                 builder.append(separator);
                 separator = ", ";
                 builder.append(child);

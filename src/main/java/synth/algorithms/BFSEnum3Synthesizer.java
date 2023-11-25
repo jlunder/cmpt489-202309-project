@@ -26,16 +26,16 @@ public class BFSEnum3Synthesizer implements ISynthesizer {
         boolean produceOneGeneration(int maxNewProductions) {
             for (var s : nonTerminals) {
                 var argumentSymbols = Grammar.getOperatorArguments(s);
-                var ast = new ArrayDeque<Symbol>();
-                // k specifies which argument should *only* use ASTs from the last generation --
-                // this ensures we only generate fresh ASTs, otherwise we will duplicate all of
+                var tree = new ArrayDeque<Symbol>();
+                // k specifies which argument should *only* use trees from the last generation --
+                // this ensures we only generate fresh trees, otherwise we will duplicate all of
                 // the previous generation in addition to creating new ones
                 for (int k = 0; k < argumentSymbols.size(); ++k) {
-                    ast.add(s);
-                    if (!produceASTs(s, ast, argumentSymbols, 0, k, newProductions, maxNewProductions)) {
+                    tree.add(s);
+                    if (!produceParseTrees(s, tree, argumentSymbols, 0, k, newProductions, maxNewProductions)) {
                         return false;
                     }
-                    ast.clear();
+                    tree.clear();
                 }
             }
             return true;
@@ -47,47 +47,47 @@ public class BFSEnum3Synthesizer implements ISynthesizer {
             newProductions.clear();
         }
 
-        boolean produceASTs(Symbol s, Deque<Symbol> ast, List<Symbol> argumentSymbols, int i, int k,
+        boolean produceParseTrees(Symbol s, Deque<Symbol> tree, List<Symbol> argumentSymbols, int i, int k,
                 List<List<Symbol>> newProds, int maxNewProductions) {
             if (newProds.size() >= maxNewProductions) {
                 return false;
             }
             if (i == 0 && argumentSymbols.size() == 0) {
-                newProds.add(new ArrayList<Symbol>(ast));
+                newProds.add(new ArrayList<Symbol>(tree));
                 return true;
             }
             var argSP = (argumentSymbols.get(i) == Symbol.E) ? eProductions : bProductions;
             int n = argSP.productions.size();
             for (int j = (i == k ? argSP.lastGenStart : 0); j < n; ++j) {
                 var pJ = argSP.productions.get(j);
-                int astMark = ast.size();
-                ast.addAll(pJ);
+                int treeMark = tree.size();
+                tree.addAll(pJ);
                 if (i + 1 < argumentSymbols.size()) {
-                    if (!produceASTs(s, ast, argumentSymbols, i + 1, k, newProds, maxNewProductions)) {
+                    if (!produceParseTrees(s, tree, argumentSymbols, i + 1, k, newProds, maxNewProductions)) {
                         return false;
                     }
                 } else {
                     if (newProds.size() >= maxNewProductions) {
                         return false;
                     }
-                    newProds.add(new ArrayList<Symbol>(ast));
+                    newProds.add(new ArrayList<Symbol>(tree));
                 }
-                while (ast.size() > astMark) {
-                    ast.removeLast();
+                while (tree.size() > treeMark) {
+                    tree.removeLast();
                 }
             }
             return true;
         }
     }
 
-    private static ASTNode buildFromPreorder(Iterator<Symbol> preorder) {
+    private static ParseNode buildFromPreorder(Iterator<Symbol> preorder) {
         var s = preorder.next();
         var n = Grammar.getOperatorArguments(s).size();
-        var children = new ArrayList<ASTNode>(n);
+        var children = new ArrayList<ParseNode>(n);
         for (int i = 0; i < n; ++i) {
             children.add(buildFromPreorder(preorder));
         }
-        return new ASTNode(s, children);
+        return new ParseNode(s, children);
     }
 
     private static SymbolProductions eProductions = new SymbolProductions(Symbol.E);

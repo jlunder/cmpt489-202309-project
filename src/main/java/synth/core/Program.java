@@ -1,13 +1,13 @@
 package synth.core;
 
 public class Program {
-    private final ASTNode root;
+    private final ParseNode root;
 
-    public Program(ASTNode root) {
+    public Program(ParseNode root) {
         this.root = root;
     }
 
-    public ASTNode getRoot() {
+    public ParseNode getRoot() {
         return root;
     }
 

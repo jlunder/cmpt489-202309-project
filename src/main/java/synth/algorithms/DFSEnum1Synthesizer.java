@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.function.*;
 
 public class DFSEnum1Synthesizer implements ISynthesizer {
-    private static class ASTBuilder {
+    private static class ParseTreeBuilder {
         private record State(int size) {
         }
 
@@ -35,8 +35,8 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
             return Arrays.stream(preorder, 0, size).iterator();
         }
 
-        public ASTNode build() {
-            // System.out.print("Building AST: [ ");
+        public ParseNode build() {
+            // System.out.print("Building parse tree: [ ");
             // for (int i = 0; i < size; ++i) {
             // System.out.print(preorder[i] + ", ");
             // }
@@ -44,14 +44,14 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
             return buildFromPreorder(preorder());
         }
 
-        private static ASTNode buildFromPreorder(Iterator<Symbol> preorder) {
+        private static ParseNode buildFromPreorder(Iterator<Symbol> preorder) {
             var s = preorder.next();
             var n = Grammar.getOperatorArguments(s).size();
-            var children = new ArrayList<ASTNode>(n);
+            var children = new ArrayList<ParseNode>(n);
             for (int i = 0; i < n; ++i) {
                 children.add(buildFromPreorder(preorder));
             }
-            return new ASTNode(s, children);
+            return new ParseNode(s, children);
         }
 
         public int computeHeight() {
@@ -69,8 +69,8 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
         }
     }
 
-    private boolean enumerateProductions(int maxHeight, Symbol symbol, ASTBuilder builder,
-            Function<ASTBuilder, Boolean> progressConsumer) {
+    private boolean enumerateProductions(int maxHeight, Symbol symbol, ParseTreeBuilder builder,
+            Function<ParseTreeBuilder, Boolean> progressConsumer) {
         assert maxHeight >= 0;
         for (var op : Grammar.getProductionOperators(symbol)) {
             var n = Grammar.getOperatorArguments(op).size();
@@ -91,7 +91,7 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
                         return true;
                     }
                 } else if (maxHeight > 0) {
-                    // Add symbol to AST
+                    // Add symbol to parse tree
                     builder.add(op);
                     // Add parameters
                     if (enumerateParameters(maxHeight - 1, Grammar.getOperatorArguments(op), 0, builder, progressConsumer)) {
@@ -99,7 +99,7 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
                     }
                 }
             } finally {
-                // Revert AST
+                // Revert tree
                 builder.reset(oldState);
             }
         }
@@ -109,8 +109,8 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
 
     private boolean enumerateParameters(int maxHeight, List<Symbol> argumentSymbols,
             int argumentIndex,
-            ASTBuilder builder,
-            Function<ASTBuilder, Boolean> progressConsumer) {
+            ParseTreeBuilder builder,
+            Function<ParseTreeBuilder, Boolean> progressConsumer) {
         if (argumentIndex >= argumentSymbols.size()) {
             return progressConsumer.apply(builder);
         }
@@ -133,7 +133,7 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
 
         for (int targetHeight = 0; targetHeight <= maxHeight && results.isEmpty(); ++targetHeight) {
             var captureTargetHeight = targetHeight;
-            enumerateProductions(targetHeight, Grammar.startSymbol(), new ASTBuilder(), (builder) -> {
+            enumerateProductions(targetHeight, Grammar.startSymbol(), new ParseTreeBuilder(), (builder) -> {
                 if (builder.computeHeight() != captureTargetHeight) {
                     return false;
                 }
@@ -153,7 +153,7 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
         return results.get(0);
     }
 
-    private boolean validate(List<Example> examples, ASTBuilder program) {
+    private boolean validate(List<Example> examples, ParseTreeBuilder program) {
         // Run the program in each interpreter env representing a particular example,
         // and check whether the output is as expected
         for (Example ex : examples) {

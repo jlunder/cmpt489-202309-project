@@ -26,10 +26,10 @@ public class InterpreterTests {
     public void testInterpreter1() {
         // Add(x, y)
         Program program = new Program(
-                new ASTNode(Symbol.Add,
+                new ParseNode(Symbol.Add,
                         List.of(
-                                new ASTNode(Symbol.VarX, Collections.emptyList()),
-                                new ASTNode(Symbol.VarY, Collections.emptyList()))));
+                                new ParseNode(Symbol.VarX, Collections.emptyList()),
+                                new ParseNode(Symbol.VarY, Collections.emptyList()))));
         int result = Semantics.evaluate(program, buildEnvironment());
         Assert.assertEquals(25, result);
     }
@@ -38,10 +38,10 @@ public class InterpreterTests {
     public void testInterpreter2() {
         // Multiply(z, 2)
         Program program = new Program(
-                new ASTNode(Symbol.Multiply,
+                new ParseNode(Symbol.Multiply,
                         List.of(
-                                new ASTNode(Symbol.VarZ, Collections.emptyList()),
-                                new ASTNode(Symbol.Const2, Collections.emptyList()))));
+                                new ParseNode(Symbol.VarZ, Collections.emptyList()),
+                                new ParseNode(Symbol.Const2, Collections.emptyList()))));
         int result = Semantics.evaluate(program, buildEnvironment());
         Assert.assertEquals(40, result);
     }
@@ -50,20 +50,20 @@ public class InterpreterTests {
     public void testInterpreter3() {
         // Ite(Lt(x, 3), Add(y, z), Multiply(y, z))
         Program program = new Program(
-                new ASTNode(Symbol.Ite,
+                new ParseNode(Symbol.Ite,
                         List.of(
-                                new ASTNode(Symbol.Lt,
+                                new ParseNode(Symbol.Lt,
                                         List.of(
-                                                new ASTNode(Symbol.VarX, Collections.emptyList()),
-                                                new ASTNode(Symbol.Const3, Collections.emptyList()))),
-                                new ASTNode(Symbol.Add,
+                                                new ParseNode(Symbol.VarX, Collections.emptyList()),
+                                                new ParseNode(Symbol.Const3, Collections.emptyList()))),
+                                new ParseNode(Symbol.Add,
                                         List.of(
-                                                new ASTNode(Symbol.VarY, Collections.emptyList()),
-                                                new ASTNode(Symbol.VarZ, Collections.emptyList()))),
-                                new ASTNode(Symbol.Multiply,
+                                                new ParseNode(Symbol.VarY, Collections.emptyList()),
+                                                new ParseNode(Symbol.VarZ, Collections.emptyList()))),
+                                new ParseNode(Symbol.Multiply,
                                         List.of(
-                                                new ASTNode(Symbol.VarY, Collections.emptyList()),
-                                                new ASTNode(Symbol.VarZ, Collections.emptyList()))))));
+                                                new ParseNode(Symbol.VarY, Collections.emptyList()),
+                                                new ParseNode(Symbol.VarZ, Collections.emptyList()))))));
         int result = Semantics.evaluate(program, buildEnvironment());
         Assert.assertEquals(300, result);
     }

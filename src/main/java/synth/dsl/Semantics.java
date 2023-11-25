@@ -17,11 +17,11 @@ public class Semantics {
         return evalExpr(program.getRoot(), env);
     }
 
-    public static int evaluate(ASTNode program, Environment env) {
+    public static int evaluate(ParseNode program, Environment env) {
         return evalExpr(program, env);
     }
 
-    private static int evalExpr(ASTNode expr, Environment env) {
+    private static int evalExpr(ParseNode expr, Environment env) {
         switch (expr.getSymbol()) {
             case Ite:
                 return evalIte(expr, env);
@@ -46,7 +46,7 @@ public class Semantics {
         }
     }
 
-    private static boolean evalPred(ASTNode pred, Environment env) {
+    private static boolean evalPred(ParseNode pred, Environment env) {
         switch (pred.getSymbol()) {
             case Lt:
                 return evalLt(pred, env);
@@ -63,7 +63,7 @@ public class Semantics {
         }
     }
 
-    private static int evalIte(ASTNode ite, Environment env) {
+    private static int evalIte(ParseNode ite, Environment env) {
         if (evalPred(ite.getChild(0), env)) {
             return evalExpr(ite.getChild(1), env);
         } else {
@@ -71,31 +71,31 @@ public class Semantics {
         }
     }
 
-    private static int evalAdd(ASTNode add, Environment env) {
+    private static int evalAdd(ParseNode add, Environment env) {
         return evalExpr(add.getChild(0), env) + evalExpr(add.getChild(1), env);
     }
 
-    private static int evalMultiply(ASTNode multiply, Environment env) {
+    private static int evalMultiply(ParseNode multiply, Environment env) {
         return evalExpr(multiply.getChild(0), env) * evalExpr(multiply.getChild(1), env);
     }
 
-    private static boolean evalLt(ASTNode lt, Environment env) {
+    private static boolean evalLt(ParseNode lt, Environment env) {
         return evalExpr(lt.getChild(0), env) < evalExpr(lt.getChild(1), env);
     }
 
-    private static boolean evalEq(ASTNode eq, Environment env) {
+    private static boolean evalEq(ParseNode eq, Environment env) {
         return evalExpr(eq.getChild(0), env) == evalExpr(eq.getChild(1), env);
     }
 
-    private static boolean evalAnd(ASTNode and, Environment env) {
+    private static boolean evalAnd(ParseNode and, Environment env) {
         return evalPred(and.getChild(0), env) && evalPred(and.getChild(1), env);
     }
 
-    private static boolean evalOr(ASTNode or, Environment env) {
+    private static boolean evalOr(ParseNode or, Environment env) {
         return evalPred(or.getChild(0), env) || evalPred(or.getChild(1), env);
     }
 
-    private static boolean evalNot(ASTNode not, Environment env) {
+    private static boolean evalNot(ParseNode not, Environment env) {
         return !evalPred(not.getChild(0), env);
     }
 

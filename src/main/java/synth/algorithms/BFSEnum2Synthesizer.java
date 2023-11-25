@@ -10,8 +10,8 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
     private static final int MAX_PRODUCTIONS = 20000000;
 
     private static class SymbolProductions {
-        final ArrayList<ASTNode> productions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
-        final ArrayList<ASTNode> newProductions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
+        final ArrayList<ParseNode> productions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
+        final ArrayList<ParseNode> newProductions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
         final Symbol[] terminals;
         final Symbol[] nonTerminals;
         int lastGenStart = 0;
@@ -26,12 +26,12 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
         boolean produceOneGeneration(int maxNewProductions) {
             for (var s : nonTerminals) {
                 var argumentSymbols = Grammar.getOperatorArguments(s);
-                var tempChildren = new ASTNode[argumentSymbols.size()];
-                // k specifies which argument should *only* use ASTs from the last generation --
-                // this ensures we only generate fresh ASTs, otherwise we will duplicate all of
-                // the previous generation in addition to creating new ones
+                var tempChildren = new ParseNode[argumentSymbols.size()];
+                // k specifies which argument should *only* use trees from the last generation
+                // -- this ensures we only generate fresh trees, otherwise we will duplicate all
+                // of the previous generation in addition to creating new ones
                 for (int k = 0; k < argumentSymbols.size(); ++k) {
-                    if (!produceASTs(s, tempChildren, argumentSymbols, 0, k, newProductions, maxNewProductions)) {
+                    if (!produceParseTrees(s, tempChildren, argumentSymbols, 0, k, newProductions, maxNewProductions)) {
                         return false;
                     }
                 }
@@ -45,13 +45,13 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
             newProductions.clear();
         }
 
-        boolean produceASTs(Symbol s, ASTNode[] tempChildren, List<Symbol> argumentSymbols, int i, int k,
-                List<ASTNode> newProds, int maxNewProductions) {
+        boolean produceParseTrees(Symbol s, ParseNode[] tempChildren, List<Symbol> argumentSymbols, int i, int k,
+                List<ParseNode> newProds, int maxNewProductions) {
             if (newProds.size() >= maxNewProductions) {
                 return false;
             }
             if (i == 0 && argumentSymbols.size() == 0) {
-                newProds.add(ASTNode.make(s, List.of(tempChildren)));
+                newProds.add(ParseNode.make(s, List.of(tempChildren)));
                 return true;
             }
             var argSP = (argumentSymbols.get(i) == Symbol.E) ? eProductions : bProductions;
@@ -60,14 +60,14 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
                 var pJ = argSP.productions.get(j);
                 tempChildren[i] = pJ;
                 if (i + 1 < tempChildren.length) {
-                    if (!produceASTs(s, tempChildren, argumentSymbols, i + 1, k, newProds, maxNewProductions)) {
+                    if (!produceParseTrees(s, tempChildren, argumentSymbols, i + 1, k, newProds, maxNewProductions)) {
                         return false;
                     }
                 } else {
                     if (newProds.size() >= maxNewProductions) {
                         return false;
                     }
-                    newProds.add(ASTNode.make(s, List.of(tempChildren)));
+                    newProds.add(ParseNode.make(s, List.of(tempChildren)));
                 }
             }
             return true;
@@ -79,7 +79,7 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
 
     static {
         for (var s : eProductions.terminals) {
-            eProductions.productions.add(ASTNode.make(s, ASTNode.NO_CHILDREN));
+            eProductions.productions.add(ParseNode.make(s, ParseNode.NO_CHILDREN));
         }
     }
 
@@ -123,7 +123,7 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
         return null;
     }
 
-    private boolean validate(List<Example> examples, ASTNode program) {
+    private boolean validate(List<Example> examples, ParseNode program) {
         // Run the program in each interpreter env representing a particular example,
         // and check whether the output is as expected
         for (Example ex : examples) {

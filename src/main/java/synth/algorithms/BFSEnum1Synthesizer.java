@@ -8,7 +8,7 @@ import java.util.function.*;
 
 public class BFSEnum1Synthesizer implements ISynthesizer {
     private static class EnumerationJob {
-        // AST written out postfix order, with null for holes
+        // Parse tree written out postfix order, with null for holes
         private final Symbol[] productions;
 
         // Locations of holes (in symbols) -- this is stored explicitly so that the
@@ -24,12 +24,13 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
         }
 
         /**
-         * Enumerates all ASTs produced by filling in holes in this job's partial AST.
+         * Enumerates all parse trees produced by filling in holes in this job's partial
+         * parse tree.
          *
-         * @param asts function receiving finished ASTs; if the function returns true
-         *             when executed, enumeration stops
-         * @param jobs consumer receiving jobs for ASTs which still have holes -- the
-         *             job will enumerate ASTs which fill a further hole
+         * @param validate function receiving finished trees; if the function returns
+         *                 true when executed, enumeration stops
+         * @param jobs     consumer receiving jobs for trees which still have holes --
+         *                 the job will enumerate trees which fill a further hole
          * @return a new index
          */
 
@@ -42,7 +43,7 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
                 var args = Grammar.getOperatorArguments(op);
                 productions[i] = op;
                 if (args.isEmpty() && (holeLocations.length == 1)) {
-                    var program = new Program(constructAST(new ProductionsStack(productions)));
+                    var program = new Program(constructParseTree(new ProductionsStack(productions)));
                     if (validate.apply(program)) {
                         return program;
                     }
@@ -51,7 +52,7 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
                     int remainingHoles = carryoverHoles + args.size();
 
                     if (remainingHoles == 0) {
-                        var program = new Program(constructAST(new ProductionsStack(productions)));
+                        var program = new Program(constructParseTree(new ProductionsStack(productions)));
                         if (validate.apply(program)) {
                             return program;
                         }
@@ -102,25 +103,25 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
             }
         }
 
-        private static List<ASTNode> noChildren = List.of();
+        private static List<ParseNode> noChildren = List.of();
 
         /**
-         * Construct an AST from a post-order array of productions. E.g., an array
+         * Construct a parse tree from a post-order array of productions. E.g., an array
          * like { x, y, Add } becomes Add(x, y); {x, y, Add, z, Add } becomes Add(z,
          * Add(x, y)).
          */
-        private ASTNode constructAST(ProductionsStack stack) {
+        private ParseNode constructParseTree(ProductionsStack stack) {
             var op = stack.pop();
             assert op != null;
             var argSymbols = Grammar.getOperatorArguments(op);
-            List<ASTNode> children = noChildren;
+            List<ParseNode> children = noChildren;
             if (!argSymbols.isEmpty()) {
-                children = new ArrayList<ASTNode>(argSymbols.size());
+                children = new ArrayList<ParseNode>(argSymbols.size());
                 for (int i = 0; i < argSymbols.size(); ++i) {
-                    children.add(constructAST(stack));
+                    children.add(constructParseTree(stack));
                 }
             }
-            return ASTNode.make(op, children);
+            return ParseNode.make(op, children);
         }
     }
 
