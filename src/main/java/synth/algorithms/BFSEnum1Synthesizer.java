@@ -6,7 +6,7 @@ import synth.dsl.*;
 import java.util.*;
 import java.util.function.*;
 
-public class BFSEnum1Synthesizer implements ISynthesizer {
+public class BFSEnum1Synthesizer extends SynthesizerBase {
     private static class EnumerationJob {
         // Parse tree written out postfix order, with null for holes
         private final Symbol[] productions;
@@ -146,7 +146,7 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
                 }
                 aborting = true;
             }
-            var program = j.enumerate(candidate -> validate(examples, candidate), aborting ? job -> {
+            var program = j.enumerate(candidate -> validate(examples, candidate.getRoot()), aborting ? job -> {
                 return;
             } : job -> jobs.offer(job));
             if (program != null) {
@@ -156,19 +156,6 @@ public class BFSEnum1Synthesizer implements ISynthesizer {
         // No jobs left -- we failed to generate a program. This shouldn't happen
         // without a recursion limit..?
         return null;
-    }
-
-    private boolean validate(List<Example> examples, Program program) {
-        // Run the program in each interpreter env representing a particular example,
-        // and check whether the output is as expected
-        for (Example ex : examples) {
-            if (Semantics.evaluate(program, ex.getInput()) != ex.getOutput()) {
-                // This example produces incorrect output
-                return false;
-            }
-        }
-        // No examples failed, we have a winner!
-        return true;
     }
 
 }

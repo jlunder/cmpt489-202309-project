@@ -5,7 +5,7 @@ import synth.dsl.*;
 
 import java.util.*;
 
-public class BFSEnum3Synthesizer implements ISynthesizer {
+public class BFSEnum3Synthesizer extends SynthesizerBase {
     private static final int ASSUME_MIN_PRODUCTIONS = 100000;
     private static final int MAX_PRODUCTIONS = 20000000;
 
@@ -117,7 +117,7 @@ public class BFSEnum3Synthesizer implements ISynthesizer {
         do {
             while (n < eProductions.productions.size()) {
                 var candidate = eProductions.productions.get(n++);
-                if (validate(examples, candidate)) {
+                if (validate(examples, candidate.iterator())) {
                     return new Program(buildFromPreorder(candidate.iterator()));
                 }
             }
@@ -137,19 +137,6 @@ public class BFSEnum3Synthesizer implements ISynthesizer {
 
         // enumeration stopped?
         return null;
-    }
-
-    private boolean validate(List<Example> examples, List<Symbol> program) {
-        // Run the program in each interpreter env representing a particular example,
-        // and check whether the output is as expected
-        for (Example ex : examples) {
-            if (Semantics.evaluate(program.iterator(), ex.getInput()) != ex.getOutput()) {
-                // This example produces incorrect output
-                return false;
-            }
-        }
-        // No examples failed, we have a winner!
-        return true;
     }
 
 }

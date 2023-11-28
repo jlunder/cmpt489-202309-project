@@ -6,7 +6,7 @@ import synth.dsl.*;
 import java.util.*;
 import java.util.function.*;
 
-public class DFSEnum1Synthesizer implements ISynthesizer {
+public class DFSEnum1Synthesizer extends SynthesizerBase {
     private static class ParseTreeBuilder {
         private record State(int size) {
         }
@@ -139,7 +139,7 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
                 }
                 // var candidate = new Program(builder.build());
                 // System.out.println("trying: " + candidate);
-                if (validate(examples, builder)) {
+                if (validate(examples, builder.preorder())) {
                     results.add(new Program(builder.build()));
                     return true;
                 }
@@ -151,19 +151,6 @@ public class DFSEnum1Synthesizer implements ISynthesizer {
             return null;
         }
         return results.get(0);
-    }
-
-    private boolean validate(List<Example> examples, ParseTreeBuilder program) {
-        // Run the program in each interpreter env representing a particular example,
-        // and check whether the output is as expected
-        for (Example ex : examples) {
-            if (Semantics.evaluate(program.preorder(), ex.getInput()) != ex.getOutput()) {
-                // This example produces incorrect output
-                return false;
-            }
-        }
-        // No examples failed, we have a winner!
-        return true;
     }
 
 }

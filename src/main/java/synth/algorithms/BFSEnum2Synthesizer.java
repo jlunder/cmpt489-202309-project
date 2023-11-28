@@ -5,7 +5,7 @@ import synth.dsl.*;
 
 import java.util.*;
 
-public class BFSEnum2Synthesizer implements ISynthesizer {
+public class BFSEnum2Synthesizer extends SynthesizerBase {
     private static final int ASSUME_MIN_PRODUCTIONS = 100000;
     private static final int MAX_PRODUCTIONS = 20000000;
 
@@ -121,19 +121,6 @@ public class BFSEnum2Synthesizer implements ISynthesizer {
 
         // enumeration stopped?
         return null;
-    }
-
-    private boolean validate(List<Example> examples, ParseNode program) {
-        // Run the program in each interpreter env representing a particular example,
-        // and check whether the output is as expected
-        for (Example ex : examples) {
-            if (Semantics.evaluate(program, ex.getInput()) != ex.getOutput()) {
-                // This example produces incorrect output
-                return false;
-            }
-        }
-        // No examples failed, we have a winner!
-        return true;
     }
 
 }
