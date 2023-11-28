@@ -4,30 +4,24 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "java",
-            "name": "Main (examples.txt)",
+            "name": "Main (phase1/0300.txt)",
             "request": "launch",
             "mainClass": "synth.Main",
             "projectName": "synth",
             "vmArgs": [
-                //"-ea",
-                //"-Xmx4096m"
+                "-ea",
+                "-Xmx4096m"
             ],
             "args": [
-                "examples.txt",
-                "test-data/0100.txt",
-                "test-data/0200.txt",
-                "test-data/0300.txt",
-                "test-data/0400.txt",
-                "test-data/0500.txt",
-                "test-data/0600.txt",
-                "test-data/0700.txt",
+                "test-data/phase1/0300.txt",
             ]
         },
         {
             "type": "java",
-            "name": "Main (test-data/...)",
+            "name": "Main (phase2/...)",
             "request": "launch",
             "mainClass": "synth.Main",
             "projectName": "synth",

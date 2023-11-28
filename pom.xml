@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>synth.core</groupId>
@@ -15,30 +16,24 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.microsoft.z3</groupId>
-            <artifactId>z3</artifactId>
-            <scope>system</scope>
-            <version>4.8.10</version>
-            <systemPath>${pom.basedir}/lib/com.microsoft.z3.jar</systemPath>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+        <!--
+            Install Z3 (and its JNI bits) and then install the appropriate .jar
+            file in your local Maven repository:
+                mvn install:install-file -Dfile=/usr/share/java/com.microsoft.z3.jar \ -DgroupId=com.microsoft.z3 -DartifactId=libz3.java.linux \ -Dversion=4.8.12 -Dpackaging=jar
+        -->
+        <dependency>
+            <groupId>tools.aqua</groupId>
+            <artifactId>z3-turnkey</artifactId>
+            <version>4.12.2.1</version>
+        </dependency>
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
