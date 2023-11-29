@@ -18,7 +18,7 @@ public class SolutionSpace {
     }
 
     public int numSolutions() {
-        return terms.length;
+        return solutions.length;
     }
 
     public List<Integer> getSolution(int i) {
