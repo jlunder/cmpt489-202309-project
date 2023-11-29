@@ -24,7 +24,7 @@ public abstract class SynthesizerBase implements ISynthesizer {
         // Run the program in each interpreter env representing a particular example,
         // and check whether the output is as expected
         for (Example ex : examples) {
-            if (evaluator.apply(ex.getInput()) != ex.getOutput()) {
+            if (evaluator.apply(ex.input()) != ex.output()) {
                 // This example produces incorrect output
                 return false;
             }

@@ -17,11 +17,11 @@ public class Example {
         this.output = output;
     }
 
-    public Environment getInput() {
+    public Environment input() {
         return input;
     }
 
-    public int getOutput() {
+    public int output() {
         return output;
     }
 

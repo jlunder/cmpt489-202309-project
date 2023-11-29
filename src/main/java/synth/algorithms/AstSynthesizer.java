@@ -7,7 +7,6 @@ import synth.dsl.*;
 import java.util.*;
 
 public class AstSynthesizer implements ISynthesizer {
-
     /**
      * Synthesize a program f(x, y, z) based on examples
      *
@@ -16,20 +15,9 @@ public class AstSynthesizer implements ISynthesizer {
      */
     @Override
     public Program synthesize(List<Example> examples) {
-        LinearSolver linSolv = new LinearSolver();
+        LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(3, 3, 3));
         try {
-            Equation[] eqns = {
-                    new Equation(List.of(
-                            new Term("a", 1),
-                            new Term("b", 1)), 3),
-                    // new Equation(List.of(
-                    //         new Term("a", 2),
-                    //         new Term("b", 1)), 3),
-                    // new Equation(List.of(
-                    //         new Term("a", 3),
-                    //         new Term("b", 3)), 3),
-            };
-            var solSpace = linSolv.solve(eqns);
+            var solSpace = linSolv.solve(examples);
             for (int j = 0; j < solSpace.numSolutions(); ++j) {
                 var soln = solSpace.getSolution(j);
                 System.out.println("Solution " + j + ":");

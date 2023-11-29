@@ -7,7 +7,7 @@
 
         {
             "type": "java",
-            "name": "Main (phase1/0300.txt)",
+            "name": "Main (No ITE, phase1/0700.txt)",
             "request": "launch",
             "mainClass": "synth.Main",
             "projectName": "synth",
@@ -16,7 +16,7 @@
                 "-Xmx4096m"
             ],
             "args": [
-                "test-data/phase1/0300.txt",
+                "test-data/phase1/0700.txt",
             ]
         },
         {
