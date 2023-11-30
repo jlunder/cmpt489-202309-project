@@ -8,7 +8,16 @@ import java.util.function.*;
 
 public class DFSEnum1Synthesizer extends SynthesizerBase {
     private static class ParseTreeBuilder {
-        private record State(int size) {
+        private static class State {
+            private final int size;
+
+            public int size() {
+                return size;
+            }
+
+            public State(int size) {
+                this.size = size;
+            }
         }
 
         private Symbol[] preorder = new Symbol[1000];
@@ -94,7 +103,8 @@ public class DFSEnum1Synthesizer extends SynthesizerBase {
                     // Add symbol to parse tree
                     builder.add(op);
                     // Add parameters
-                    if (enumerateParameters(maxHeight - 1, Grammar.getOperatorArguments(op), 0, builder, progressConsumer)) {
+                    if (enumerateParameters(maxHeight - 1, Grammar.getOperatorArguments(op), 0, builder,
+                            progressConsumer)) {
                         return true;
                     }
                 }

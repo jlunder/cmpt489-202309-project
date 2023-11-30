@@ -3,5 +3,6 @@
         "**/.venv/**": true,
         "**/dist-newstyle/**": true,
         "**/target/**": true
-    }
+    },
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

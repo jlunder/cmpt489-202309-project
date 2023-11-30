@@ -56,7 +56,7 @@ public enum Symbol {
         if (productionOps == null) {
             // This is fairly threadsafe: worst case is we have multiple identical operator
             // lists floating about
-            productionOps = Arrays.stream(values()).filter(sym -> sym != this && sym.returnSym == this).toList();
+            productionOps = List.of(Arrays.stream(values()).filter(sym -> sym != this && sym.returnSym == this).toArray(Symbol[]::new));
         }
         return productionOps;
     }

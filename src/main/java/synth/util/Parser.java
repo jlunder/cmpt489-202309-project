@@ -8,7 +8,22 @@ import java.util.List;
 
 public class Parser {
 
-    private record VarValuePair(String varName, int value) {
+    private static class VarValuePair {
+        private String varName;
+        private int value;
+
+        public String varName() {
+            return varName;
+        }
+
+        public int value() {
+            return value;
+        }
+
+        public VarValuePair(String varName, int value) {
+            this.varName = varName;
+            this.value = value;
+        }
     }
 
     /**
