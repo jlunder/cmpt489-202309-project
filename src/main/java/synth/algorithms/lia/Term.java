@@ -4,9 +4,9 @@ import java.util.HashMap;
 
 import synth.core.Environment;
 
-public class Term implements Comparable<Term> {
-    private static final int MAX_INDEX_POWER = 1024;
-    private static final int MAX_INDEX = MAX_INDEX_POWER * MAX_INDEX_POWER * MAX_INDEX_POWER;
+public final class Term implements Comparable<Term> {
+    public static final int MAX_INDEX_POWER = 1024;
+    public static final int MAX_INDEX = MAX_INDEX_POWER * MAX_INDEX_POWER * MAX_INDEX_POWER;
 
     // private static final Term[] arrayCache = new Term[4096];
     private static final HashMap<Integer, Term> hashCache = new HashMap<>();

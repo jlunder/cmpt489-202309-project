@@ -9,7 +9,7 @@ import synth.core.Example;
 public class LinearSolver implements AutoCloseable {
     private List<Term> terms;
     private Context z3 = new Context();
-    private int maxSols = 20;
+    private int maxSols = 3;
 
     public static List<Term> makeAllTerms(int order) {
         Term[] terms = new Term[(order + 1) * (order + 1) * (order + 1)];
@@ -22,6 +22,7 @@ public class LinearSolver implements AutoCloseable {
             }
         }
         assert n == terms.length;
+        Arrays.sort(terms);
         return List.of(terms);
     }
 
@@ -29,76 +30,90 @@ public class LinearSolver implements AutoCloseable {
         this.terms = terms;
     }
 
-    public SolutionSet solve(List<Example> examples) {
-        Solver solver = z3.mkSolver();
-        HashMap<Term, IntExpr> z3Coeffs = new HashMap<>();
-        addEquations(solver, z3Coeffs, examples);
-        addBasicTermConstraints(solver, z3Coeffs);
-
-        var status = solver.check();
-        var solMaps = new ArrayList<Map<Term, Integer>>();
-        var usedTerms = new TreeSet<Term>();
-
-        while (status == Status.SATISFIABLE && solMaps.size() < maxSols) {
-            var z3Model = solver.getModel();
-            var solMap = new HashMap<Term, Integer>(z3Coeffs.size());
-            z3Coeffs.forEach(
-                    (term, coeff) -> solMap.put(term, ((IntNum) (z3Model.getConstInterp(coeff))).getInt()));
-            usedTerms.addAll(solMap.keySet());
-            solMaps.add(solMap);
-            // That was a nice solution, let's try something different
-            addBlockingClause(solver, z3Coeffs, solMap);
-            status = solver.check();
-        }
-
-        if (!solMaps.isEmpty()) {
-            Term[] terms = usedTerms.toArray(Term[]::new);
-            int[][] sols = new int[solMaps.size()][terms.length];
-            int i = 0;
-            for (var s : solMaps) {
-                for (int j = 0; j < terms.length; ++j) {
-                    var t = terms[j];
-                    sols[i][j] = s.get(t);
-                }
-                ++i;
-            }
-            return new SolutionSet(terms, sols);
-        }
-        return SolutionSet.EMPTY;
+    public SolveSession startSession() {
+        return new SolveSession();
     }
 
-    @SuppressWarnings("unchecked")
-    private void addEquations(Solver solver, HashMap<Term, IntExpr> z3Coeffs, List<Example> examples) {
-        ArrayList<ArithExpr<IntSort>> z3Terms = new ArrayList<>();
-        for (var e : examples) {
-            z3Terms.clear();
+    public class SolveSession {
+        private Solver z3Solver = z3.mkSolver();
+        private IntExpr z3Zero = z3.mkInt(0);
+        private HashMap<Term, IntExpr> z3Coeffs = new HashMap<>();
+        private Status z3Status = Status.UNKNOWN;
+
+        SolveSession() {
+        }
+
+        @SuppressWarnings("unchecked")
+        public void addEquation(Example example) {
+            if (z3Status == Status.UNSATISFIABLE) {
+                // not much point continuing
+                return;
+            }
+            z3Status = Status.UNKNOWN;
+
+            var z3Consts = new ArrayList<ArithExpr<IntSort>>();
             for (var term : terms) {
-                var c = z3Coeffs.computeIfAbsent(term, t -> z3.mkIntConst(t.name()));
-                z3Terms.add(z3.mkMul(z3.mkInt(term.evalTerm(e.input())), c));
+                var z3C = z3Coeffs.computeIfAbsent(term, t -> {
+                    var newC = z3.mkIntConst(t.name());
+                    // Term constants must be >= 0
+                    z3Solver.add(z3.mkGe(newC, z3Zero));
+                    return newC;
+                });
+                z3Consts.add(z3.mkMul(z3.mkInt(term.evalTerm(example.input())), z3C));
             }
-            var sum = z3.mkAdd(z3Terms.toArray(ArithExpr[]::new));
-            var eqn = z3.mkEq(sum, z3.mkInt(e.output()));
-            solver.add(eqn);
+            var sum = z3.mkAdd(z3Consts.toArray(ArithExpr[]::new));
+            var eqn = z3.mkEq(sum, z3.mkInt(example.output()));
+            z3Solver.add(eqn);
         }
-    }
 
-    @SuppressWarnings("unchecked")
-    private void addBasicTermConstraints(Solver solver, HashMap<Term, IntExpr> z3Coeffs) {
-        var z3Zero = z3.mkInt(0);
-        for (var c : z3Coeffs.values()) {
-            var eqn = z3.mkGe(c, z3Zero);
-            solver.add(eqn);
+        public boolean checkSatisfiable() {
+            if (z3Status == Status.UNKNOWN) {
+                z3Status = z3Solver.check();
+            }
+            if (z3Status == Status.SATISFIABLE) {
+                return true;
+            } else {
+                return false;
+            }
         }
-    }
 
-    @SuppressWarnings("unchecked")
-    private void addBlockingClause(Solver solver, HashMap<Term, IntExpr> z3Coeffs,
-            HashMap<Term, Integer> disallowedSolution) {
-        var clause = z3.mkOr(disallowedSolution.entrySet().stream()
-                .map(e -> z3.mkNot(z3.mkEq(z3Coeffs.get(e.getKey()), z3.mkInt(e.getValue())))).toArray(Expr[]::new));
-        // System.out.println("Solver:\n" + solver);
-        // System.out.println("\nClause: " + clause + "\n");
-        solver.add(clause);
+        public SolutionSet solve() {
+            var solutions = new HashSet<Solution>();
+
+            while (checkSatisfiable() && solutions.size() < maxSols) {
+                var z3Model = z3Solver.getModel();
+                var solMap = new HashMap<Term, Integer>(z3Coeffs.size());
+                for (var entry : z3Coeffs.entrySet()) {
+                    int coeff = ((IntNum) (z3Model.getConstInterp(entry.getValue()))).getInt();
+                    assert coeff >= 0;
+                    if (coeff > 0) {
+                        solMap.put(entry.getKey(), coeff);
+                    }
+                }
+                solutions.add(new Solution(solMap));
+                // That was a nice solution, let's try something different
+                addBlockingClause(z3Solver, z3Coeffs, solMap);
+            }
+
+            if (solutions.isEmpty()) {
+                return SolutionSet.EMPTY;
+            }
+            return new SolutionSet(solutions);
+        }
+
+        @SuppressWarnings("unchecked")
+        private void addBlockingClause(Solver solver, HashMap<Term, IntExpr> z3Coeffs,
+                HashMap<Term, Integer> disallowedSolution) {
+            assert z3Status == Status.SATISFIABLE;
+            z3Status = Status.UNKNOWN;
+            var clause = z3.mkOr(disallowedSolution.entrySet().stream()
+                    .map(e -> z3.mkNot(z3.mkEq(z3Coeffs.get(e.getKey()), z3.mkInt(e.getValue()))))
+                    .toArray(Expr[]::new));
+            // System.out.println("Solver:\n" + solver);
+            // System.out.println("\nClause: " + clause + "\n");
+            z3Solver.add(clause);
+        }
+
     }
 
     @Override

@@ -7,39 +7,50 @@ import synth.core.*;
 import java.util.*;
 
 public class AstSynthesizer extends SynthesizerBase {
-    // for (int j = 0; j < sol.numSolutions(); ++j) {
-    // var soln = sol.getSolution(j);
-    // System.out.println("Solution " + j + ":");
-    // for (int i = 0; i < sol.numTerms(); ++i) {
-    // System.out.println(" " + sol.getTerm(i) + " = " + soln.get(i));
-    // }
-    // System.out.println();
-    // }
+    private LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(2));
 
     /**
      * For each example, compute a solution set using the linear solver.
      */
-    private Map<Example, SolutionSet> computeSolutionSets(List<Example> examples) {
-        LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(3));
-        try {
-            HashMap<Example, SolutionSet> sets = new HashMap<>();
-            for (var e : examples) {
-                var sol = linSolv.solve(List.of(e));
-                sets.put(e, sol);
+    private Map<SolutionSet, Set<Example>> computeSolutionSets(List<Example> examples) {
+        var sets = new HashMap<SolutionSet, Set<Example>>();
+        assert examples.size() > 0;
+        int i = 0, j;
+        while (i < examples.size()) {
+            System.out.println("i = " + i);
+            var sess = linSolv.startSession();
+            Example ei = examples.get(i);
+            sess.addEquation(ei);
+            j = i + 1;
+            while (j < examples.size()) {
+                System.out.println("  j = " + j);
+                Example ej = examples.get(j);
+                sess.addEquation(ej);
+                if (!sess.checkSatisfiable()) {
+                    System.out.println("  UNSAT");
+                    break;
+                }
+                ++j;
             }
-            return sets;
-        } finally {
-            linSolv.close();
+            var exs = new HashSet<Example>(j - i);
+            sess = linSolv.startSession();
+            for (int k = i; k < j; ++k) {
+                var ek = examples.get(k);
+                sess.addEquation(ek);
+                exs.add(ek);
+            }
+            var sols = sess.solve();
+            assert !sols.isEmpty();
+            for (var sol : sols.solutions()) {
+                System.out.println("  solution:");
+                for (var termC : sol.coefficients().entrySet()) {
+                    System.out.println("    " + (termC.getValue() > 1 ? termC.getValue() + " * " : "") + termC.getKey());
+                }
+            }
+            sets.put(sols, exs);
+            i = j;
         }
-    }
-
-    /**
-     * Find all distinct solutions in the provided sets, and use them to identify
-     * subsets of the examples which have common solutions.
-     */
-    private Map<SolutionSet, Set<Example>> groupSolutions(Map<Example, SolutionSet> solutions) {
-        var examples = solutions.keySet();
-        return null;
+        return sets;
     }
 
     /**
@@ -49,14 +60,31 @@ public class AstSynthesizer extends SynthesizerBase {
      * 3. minimizes the number of distinct solutions.
      */
     private Map<SolutionSet, Set<Example>> minimizeSolutionCover(Map<SolutionSet, Set<Example>> groups) {
-        return null;
+        return groups;
     }
 
     /**
      * Build a program which implements the solutions in the solution cover.
      */
     private ExprNode buildAstFromSolutions(Map<SolutionSet, Set<Example>> cover) {
-        return null;
+        int solsN = 1;
+        for (var sols : cover.entrySet()) {
+            System.out.println("solution set " + solsN + ":");
+            ++solsN;
+
+            int solN = 1;
+            for (var sol : sols.getKey().solutions()) {
+                System.out.println("  solution " + solN + ":");
+                ++solN;
+
+                for (var termC : sol.coefficients().entrySet()) {
+                    System.out.println("    " + termC.getKey() + " = " + termC.getValue());
+                }
+                System.out.println();
+            }
+        }
+
+        return new ExprConstNode(1);
     }
 
     /**
@@ -67,16 +95,20 @@ public class AstSynthesizer extends SynthesizerBase {
      */
     @Override
     public Program synthesize(List<Example> examples) {
-        // pseudocode steps:
-        // partitions = partition(examples);
-        // recognizedPartitions = developRecognizers(partitions);
-        var allSolutions = computeSolutionSets(examples);
-        var solutionGroups = groupSolutions(allSolutions);
-        var cover = minimizeSolutionCover(solutionGroups);
-        var ast = buildAstFromSolutions(cover);
-        var program = new Program(ast.reify());
-        assert validate(examples, program);
-        return program;
+        try {
+            // pseudocode steps:
+            // partitions = partition(examples);
+            // recognizedPartitions = developRecognizers(partitions);
+            var solutions = computeSolutionSets(examples);
+            // var solutionGroups = groupExamplesBySolution(solutions);
+            var cover = minimizeSolutionCover(solutions);
+            var ast = buildAstFromSolutions(cover);
+            var program = new Program(ast.reify());
+            assert validate(examples, program);
+            return program;
+        } finally {
+            linSolv.close();
+        }
     }
 
 }
