@@ -27,7 +27,7 @@ public class Example {
 
     @Override
     public int hashCode() {
-        return input.hashCode() ^ output;
+        return input.hashCode() * 1077022273 + output;
     }
 
     @Override

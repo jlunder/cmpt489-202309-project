@@ -11,13 +11,13 @@ public class LinearSolver implements AutoCloseable {
     private Context z3 = new Context();
     private int maxSols = 20;
 
-    public static List<Term> makeAllTerms(int xOrder, int yOrder, int zOrder) {
-        Term[] terms = new Term[(xOrder + 1) * (yOrder + 1) * (zOrder + 1)];
+    public static List<Term> makeAllTerms(int order) {
+        Term[] terms = new Term[(order + 1) * (order + 1) * (order + 1)];
         int n = 0;
-        for (int i = 0; i <= xOrder; ++i) {
-            for (int j = 0; j <= yOrder; ++j) {
-                for (int k = 0; k <= zOrder; ++k) {
-                    terms[n++] = new Term(i, j, k);
+        for (int i = 0; i <= order; ++i) {
+            for (int j = 0; j <= order; ++j) {
+                for (int k = 0; k <= order; ++k) {
+                    terms[n++] = Term.make(i, j, k);
                 }
             }
         }
@@ -29,21 +29,21 @@ public class LinearSolver implements AutoCloseable {
         this.terms = terms;
     }
 
-    public SolutionSpace solve(List<Example> examples) {
+    public SolutionSet solve(List<Example> examples) {
         Solver solver = z3.mkSolver();
-        HashMap<String, IntExpr> z3Coeffs = new HashMap<>();
+        HashMap<Term, IntExpr> z3Coeffs = new HashMap<>();
         addEquations(solver, z3Coeffs, examples);
         addBasicTermConstraints(solver, z3Coeffs);
 
         var status = solver.check();
-        var solMaps = new ArrayList<Map<String, Integer>>();
-        var usedTerms = new TreeSet<String>();
+        var solMaps = new ArrayList<Map<Term, Integer>>();
+        var usedTerms = new TreeSet<Term>();
 
         while (status == Status.SATISFIABLE && solMaps.size() < maxSols) {
             var z3Model = solver.getModel();
-            var solMap = new HashMap<String, Integer>(z3Coeffs.size());
+            var solMap = new HashMap<Term, Integer>(z3Coeffs.size());
             z3Coeffs.forEach(
-                    (name, coeff) -> solMap.put(name, ((IntNum) (z3Model.getConstInterp(coeff))).getInt()));
+                    (term, coeff) -> solMap.put(term, ((IntNum) (z3Model.getConstInterp(coeff))).getInt()));
             usedTerms.addAll(solMap.keySet());
             solMaps.add(solMap);
             // That was a nice solution, let's try something different
@@ -52,7 +52,7 @@ public class LinearSolver implements AutoCloseable {
         }
 
         if (!solMaps.isEmpty()) {
-            String[] terms = usedTerms.toArray(String[]::new);
+            Term[] terms = usedTerms.toArray(Term[]::new);
             int[][] sols = new int[solMaps.size()][terms.length];
             int i = 0;
             for (var s : solMaps) {
@@ -62,19 +62,19 @@ public class LinearSolver implements AutoCloseable {
                 }
                 ++i;
             }
-            return new SolutionSpace(terms, sols);
+            return new SolutionSet(terms, sols);
         }
-        return SolutionSpace.EMPTY;
+        return SolutionSet.EMPTY;
     }
 
     @SuppressWarnings("unchecked")
-    private void addEquations(Solver solver, HashMap<String, IntExpr> z3Coeffs, List<Example> examples) {
+    private void addEquations(Solver solver, HashMap<Term, IntExpr> z3Coeffs, List<Example> examples) {
         ArrayList<ArithExpr<IntSort>> z3Terms = new ArrayList<>();
         for (var e : examples) {
             z3Terms.clear();
-            for (var t : terms) {
-                var c = z3Coeffs.computeIfAbsent(t.name(), name -> z3.mkIntConst(name));
-                z3Terms.add(z3.mkMul(z3.mkInt(t.evalTerm(e.input())), c));
+            for (var term : terms) {
+                var c = z3Coeffs.computeIfAbsent(term, t -> z3.mkIntConst(t.name()));
+                z3Terms.add(z3.mkMul(z3.mkInt(term.evalTerm(e.input())), c));
             }
             var sum = z3.mkAdd(z3Terms.toArray(ArithExpr[]::new));
             var eqn = z3.mkEq(sum, z3.mkInt(e.output()));
@@ -83,7 +83,7 @@ public class LinearSolver implements AutoCloseable {
     }
 
     @SuppressWarnings("unchecked")
-    private void addBasicTermConstraints(Solver solver, HashMap<String, IntExpr> z3Coeffs) {
+    private void addBasicTermConstraints(Solver solver, HashMap<Term, IntExpr> z3Coeffs) {
         var z3Zero = z3.mkInt(0);
         for (var c : z3Coeffs.values()) {
             var eqn = z3.mkGe(c, z3Zero);
@@ -92,8 +92,8 @@ public class LinearSolver implements AutoCloseable {
     }
 
     @SuppressWarnings("unchecked")
-    private void addBlockingClause(Solver solver, HashMap<String, IntExpr> z3Coeffs,
-            HashMap<String, Integer> disallowedSolution) {
+    private void addBlockingClause(Solver solver, HashMap<Term, IntExpr> z3Coeffs,
+            HashMap<Term, Integer> disallowedSolution) {
         var clause = z3.mkOr(disallowedSolution.entrySet().stream()
                 .map(e -> z3.mkNot(z3.mkEq(z3Coeffs.get(e.getKey()), z3.mkInt(e.getValue())))).toArray(Expr[]::new));
         // System.out.println("Solver:\n" + solver);
