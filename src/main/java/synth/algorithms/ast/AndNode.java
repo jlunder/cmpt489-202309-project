@@ -21,9 +21,9 @@ public class AndNode extends BoolNode {
         return children.get(0).evalBool(env) && children.get(1).evalBool(env);
     }
 
-    public ParseNode reified() {
+    public ParseNode reify() {
         if (this.reified == null) {
-            this.reified = new ParseNode(Symbol.And, List.of(children.get(0).reified(), children.get(1).reified()));
+            this.reified = new ParseNode(Symbol.And, List.of(children.get(0).reify(), children.get(1).reify()));
         }
         return this.reified;
     }

@@ -62,6 +62,7 @@ public class Term implements Comparable<Term> {
     }
 
     private final String name;
+    private final String asString;
     private final int xPower;
     private final int yPower;
     private final int zPower;
@@ -76,10 +77,16 @@ public class Term implements Comparable<Term> {
         assert xPower >= 0 && yPower >= 0 && zPower >= 0;
         if (xPower == 0 && yPower == 0 && zPower == 0) {
             this.name = "c";
+            this.asString = "1";
         } else {
-            this.name = "a_" + (xPower > 0 ? "x" + (xPower > 1 ? Integer.toString(xPower) : "") : "")
-                    + (yPower > 0 ? "y" + (yPower > 1 ? Integer.toString(yPower) : "") : "")
-                    + (zPower > 0 ? "z" + (zPower > 1 ? Integer.toString(zPower) : "") : "");
+            this.name = "a_" + (xPower > 0 ? "x" + (xPower > 1 ? xPower : "") : "")
+                    + (yPower > 0 ? "y" + (yPower > 1 ? yPower : "") : "")
+                    + (zPower > 0 ? "z" + (zPower > 1 ? zPower : "") : "");
+            this.asString = (xPower > 0 ? "x" + (xPower > 1 ? "^" + xPower : "") : "")
+                    + (xPower > 0 && yPower > 0 ? " " : "")
+                    + (yPower > 0 ? "y" + (yPower > 1 ? "^" + yPower : "") : "")
+                    + ((xPower > 0 || yPower > 0) && (zPower > 0) ? " " : "")
+                    + (zPower > 0 ? "z" + (zPower > 1 ? "^" + zPower : "") : "");
         }
         this.xPower = xPower;
         this.yPower = yPower;
@@ -160,4 +167,10 @@ public class Term implements Comparable<Term> {
         }
         return 0;
     }
+
+    @Override
+    public String toString() {
+        return asString;
+    }
+
 }

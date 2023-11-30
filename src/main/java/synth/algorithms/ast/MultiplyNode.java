@@ -21,10 +21,10 @@ public class MultiplyNode extends ExprNode {
         return children.get(0).evalExpr(env) * children.get(1).evalExpr(env);
     }
 
-    public ParseNode reified() {
+    public ParseNode reify() {
         if (this.reified == null) {
             this.reified = new ParseNode(Symbol.Multiply,
-                    List.of(children.get(0).reified(), children.get(1).reified()));
+                    List.of(children.get(0).reify(), children.get(1).reify()));
         }
         return this.reified;
     }

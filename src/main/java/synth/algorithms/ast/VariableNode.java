@@ -5,7 +5,7 @@ import java.util.*;
 import synth.core.*;
 import synth.dsl.Symbol;
 
-class VariableNode extends ExprNode {
+public class VariableNode extends ExprNode {
     public static ParseNode REIFIED_X = new ParseNode(Symbol.VarX, ParseNode.NO_CHILDREN);
     public static ParseNode REIFIED_Y = new ParseNode(Symbol.VarY, ParseNode.NO_CHILDREN);
     public static ParseNode REIFIED_Z = new ParseNode(Symbol.VarZ, ParseNode.NO_CHILDREN);
@@ -38,7 +38,7 @@ class VariableNode extends ExprNode {
         }
     }
 
-    public ParseNode reified() {
+    public ParseNode reify() {
         switch (this.variable) {
             case VarX:
                 return REIFIED_X;

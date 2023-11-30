@@ -13,5 +13,5 @@ public abstract class AstNode {
 
     public abstract int evalExpr(Environment env);
 
-    public abstract ParseNode reified();
+    public abstract ParseNode reify();
 }

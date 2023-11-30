@@ -5,7 +5,7 @@ import java.util.List;
 import synth.core.*;
 import synth.dsl.Symbol;
 
-class BoolConstNode extends BoolNode {
+public class BoolConstNode extends BoolNode {
     private static final ParseNode REIFIED_TRUE = new ParseNode(Symbol.Eq,
             List.of(ExprConstNode.REIFIED_1, ExprConstNode.REIFIED_1));
     private static final ParseNode REIFIED_FALSE = new ParseNode(Symbol.Eq,
@@ -29,7 +29,7 @@ class BoolConstNode extends BoolNode {
         return value;
     }
 
-    public ParseNode reified() {
+    public ParseNode reify() {
         if (this.value) {
             return REIFIED_TRUE;
         } else {

@@ -21,9 +21,9 @@ public class NotNode extends BoolNode {
         return children.get(0).evalBool(env);
     }
 
-    public ParseNode reified() {
+    public ParseNode reify() {
         if (this.reified == null) {
-            this.reified = new ParseNode(Symbol.Not, List.of(children.get(0).reified()));
+            this.reified = new ParseNode(Symbol.Not, List.of(children.get(0).reify()));
         }
         return this.reified;
     }

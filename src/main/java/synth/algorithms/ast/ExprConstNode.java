@@ -5,7 +5,7 @@ import java.util.*;
 import synth.core.*;
 import synth.dsl.Symbol;
 
-class ExprConstNode extends ExprNode {
+public class ExprConstNode extends ExprNode {
     public static ParseNode REIFIED_1 = new ParseNode(Symbol.Const1, ParseNode.NO_CHILDREN);
     public static ParseNode REIFIED_2 = new ParseNode(Symbol.Const2, ParseNode.NO_CHILDREN);
     public static ParseNode REIFIED_3 = new ParseNode(Symbol.Const3, ParseNode.NO_CHILDREN);
@@ -36,7 +36,7 @@ class ExprConstNode extends ExprNode {
         return value;
     }
 
-    public ParseNode reified() {
+    public ParseNode reify() {
         return computeReified(this.value);
     }
 

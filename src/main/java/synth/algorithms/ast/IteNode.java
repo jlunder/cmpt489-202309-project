@@ -25,10 +25,10 @@ public class IteNode extends ExprNode {
         }
     }
 
-    public ParseNode reified() {
+    public ParseNode reify() {
         if (this.reified == null) {
             this.reified = new ParseNode(Symbol.Ite,
-                    List.of(children.get(0).reified(), children.get(1).reified(), children.get(2).reified()));
+                    List.of(children.get(0).reify(), children.get(1).reify(), children.get(2).reify()));
         }
         return this.reified;
     }
