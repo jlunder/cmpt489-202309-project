@@ -7,12 +7,12 @@ public class Grammar {
         return Symbol.E;
     }
 
-    public static boolean isTerminal(Symbol symbol) {
-        return symbol.isTerminal();
+    public static boolean isTerminalProduction(Symbol symbol) {
+        return !symbol.isTerminalProduction();
     }
 
-    public static boolean isNonTerminal(Symbol symbol) {
-        return symbol.isTerminal();
+    public static boolean requiresArguments(Symbol symbol) {
+        return symbol.requiresArguments();
     }
 
     public static Symbol getReturnSymbol(Symbol symbol) {

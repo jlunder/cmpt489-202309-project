@@ -40,17 +40,12 @@ public class DFSEnum1Synthesizer extends SynthesizerBase {
             size = state.size();
         }
 
-        public Iterator<Symbol> preorder() {
-            return Arrays.stream(preorder, 0, size).iterator();
+        public List<Symbol> preorder() {
+            return new ArraySliceList<Symbol>(preorder, 0, size);
         }
 
         public ParseNode build() {
-            // System.out.print("Building parse tree: [ ");
-            // for (int i = 0; i < size; ++i) {
-            // System.out.print(preorder[i] + ", ");
-            // }
-            // System.out.println("]");
-            return buildFromPreorder(preorder());
+            return buildFromPreorder(preorder().iterator());
         }
 
         private static ParseNode buildFromPreorder(Iterator<Symbol> preorder) {
@@ -64,7 +59,7 @@ public class DFSEnum1Synthesizer extends SynthesizerBase {
         }
 
         public int computeHeight() {
-            return computeHeightFromPreorder(preorder());
+            return computeHeightFromPreorder(preorder().iterator());
         }
 
         private static int computeHeightFromPreorder(Iterator<Symbol> preorder) {
@@ -139,7 +134,7 @@ public class DFSEnum1Synthesizer extends SynthesizerBase {
     @Override
     public Program synthesize(List<Example> examples) {
         ArrayList<Program> results = new ArrayList<>();
-        int maxHeight = 5;
+        int maxHeight = 2;
 
         for (int targetHeight = 0; targetHeight <= maxHeight && results.isEmpty(); ++targetHeight) {
             var captureTargetHeight = targetHeight;

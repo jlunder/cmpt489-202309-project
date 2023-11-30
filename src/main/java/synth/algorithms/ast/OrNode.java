@@ -1,6 +1,6 @@
 package synth.algorithms.ast;
 
-import java.util.List;
+import java.util.*;
 
 import synth.core.*;
 import synth.dsl.Symbol;
@@ -26,5 +26,10 @@ public class OrNode extends BoolNode {
             this.reified = new ParseNode(Symbol.Or, List.of(children.get(0).reify(), children.get(1).reify()));
         }
         return this.reified;
+    }
+
+    public AstNode substituteMarkers(Map<Integer, AstNode> substitution) {
+        return new OrNode((BoolNode) children.get(0).substituteMarkers(substitution),
+                (BoolNode) children.get(1).substituteMarkers(substitution));
     }
 }

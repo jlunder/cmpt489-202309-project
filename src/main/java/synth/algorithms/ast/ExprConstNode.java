@@ -25,7 +25,7 @@ public class ExprConstNode extends ExprNode {
     }
 
     public int value() {
-        return this.value;
+        return value;
     }
 
     public List<AstNode> children() {
@@ -44,20 +44,20 @@ public class ExprConstNode extends ExprNode {
         return reifiedCache.computeIfAbsent(value, val -> {
             // Should already be seeded with 1-3, < 1 is impossible
             if (val <= REIFY_SMALL_VALUE_MAX)
-                return reifiedSmallValue(value);
+                return reifySmallValue(value);
             int divVal = val / REIFY_BASE;
             int modVal = val % REIFY_BASE;
             assert divVal > 0;
             if (modVal == 0) {
                 return new ParseNode(Symbol.Multiply, List.of(
-                        reifiedSmallValue(REIFY_BASE), computeReified(divVal)));
+                        reifySmallValue(REIFY_BASE), computeReified(divVal)));
             }
-            return new ParseNode(Symbol.Add, List.of(reifiedSmallValue(modVal),
-                    new ParseNode(Symbol.Multiply, List.of(reifiedSmallValue(REIFY_BASE), computeReified(divVal)))));
+            return new ParseNode(Symbol.Add, List.of(reifySmallValue(modVal),
+                    new ParseNode(Symbol.Multiply, List.of(reifySmallValue(REIFY_BASE), computeReified(divVal)))));
         });
     }
 
-    private static ParseNode reifiedSmallValue(int value) {
+    private static ParseNode reifySmallValue(int value) {
         switch (value) {
             case 1:
                 return REIFIED_1;

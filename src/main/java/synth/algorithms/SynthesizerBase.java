@@ -16,8 +16,8 @@ public abstract class SynthesizerBase implements ISynthesizer {
         return validate(examples, env -> Semantics.evaluate(program, env));
     }
 
-    protected static boolean validate(List<Example> examples, Iterator<Symbol> program) {
-        return validate(examples, env -> Semantics.evaluate(program, env));
+    protected static boolean validate(List<Example> examples, List<Symbol> program) {
+        return validate(examples, env -> Semantics.evaluate(program.iterator(), env));
     }
 
     protected static boolean validate(List<Example> examples, Function<Environment, Integer> evaluator) {

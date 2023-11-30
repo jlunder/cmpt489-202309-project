@@ -1,6 +1,6 @@
 package synth.algorithms.ast;
 
-import java.util.List;
+import java.util.*;
 
 import synth.core.*;
 import synth.dsl.Symbol;
@@ -31,5 +31,11 @@ public class IteNode extends ExprNode {
                     List.of(children.get(0).reify(), children.get(1).reify(), children.get(2).reify()));
         }
         return this.reified;
+    }
+
+    public AstNode substituteMarkers(Map<Integer, AstNode> substitution) {
+        return new IteNode((BoolNode) children.get(0).substituteMarkers(substitution),
+                (ExprNode) children.get(1).substituteMarkers(substitution),
+                (ExprNode) children.get(2).substituteMarkers(substitution));
     }
 }

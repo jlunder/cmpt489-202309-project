@@ -12,19 +12,19 @@ public class BFSEnum2Synthesizer extends SynthesizerBase {
     private static class SymbolProductions {
         final ArrayList<ParseNode> productions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
         final ArrayList<ParseNode> newProductions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
-        final Symbol[] terminals;
-        final Symbol[] nonTerminals;
+        final Symbol[] noArgs;
+        final Symbol[] reqArgs;
         int lastGenStart = 0;
 
         SymbolProductions(Symbol returnSymbol) {
-            this.terminals = Grammar.getProductionOperators(returnSymbol).stream()
-                    .filter(s -> s.isTerminal()).toArray(Symbol[]::new);
-            this.nonTerminals = Grammar.getProductionOperators(returnSymbol).stream()
-                    .filter(s -> s.isNonTerminal()).toArray(Symbol[]::new);
+            this.noArgs = Grammar.getProductionOperators(returnSymbol).stream()
+                    .filter(s -> s.isTerminalProduction() && !s.requiresArguments()).toArray(Symbol[]::new);
+            this.reqArgs = Grammar.getProductionOperators(returnSymbol).stream()
+                    .filter(s -> s.isTerminalProduction() && s.requiresArguments()).toArray(Symbol[]::new);
         }
 
         boolean produceOneGeneration(int maxNewProductions) {
-            for (var s : nonTerminals) {
+            for (var s : reqArgs) {
                 var argumentSymbols = Grammar.getOperatorArguments(s);
                 var tempChildren = new ParseNode[argumentSymbols.size()];
                 // k specifies which argument should *only* use trees from the last generation
@@ -78,7 +78,7 @@ public class BFSEnum2Synthesizer extends SynthesizerBase {
     private static SymbolProductions bProductions = new SymbolProductions(Symbol.B);
 
     static {
-        for (var s : eProductions.terminals) {
+        for (var s : eProductions.noArgs) {
             eProductions.productions.add(ParseNode.make(s, ParseNode.NO_CHILDREN));
         }
     }

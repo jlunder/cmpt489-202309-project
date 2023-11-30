@@ -10,6 +10,7 @@ public class ParseNode {
     private final List<ParseNode> children;
 
     public ParseNode(Symbol symbol, List<ParseNode> children) {
+        assert children.size() == symbol.operatorArguments().size();
         this.symbol = symbol;
         this.children = children;
     }

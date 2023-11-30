@@ -12,19 +12,19 @@ public class BFSEnum3Synthesizer extends SynthesizerBase {
     private static class SymbolProductions {
         final ArrayList<List<Symbol>> productions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
         final ArrayList<List<Symbol>> newProductions = new ArrayList<>(ASSUME_MIN_PRODUCTIONS);
-        final Symbol[] terminals;
-        final Symbol[] nonTerminals;
+        final Symbol[] noArgs;
+        final Symbol[] reqArgs;
         int lastGenStart = 0;
 
         SymbolProductions(Symbol returnSymbol) {
-            this.terminals = Grammar.getProductionOperators(returnSymbol).stream()
-                    .filter(s -> s.isTerminal()).toArray(Symbol[]::new);
-            this.nonTerminals = Grammar.getProductionOperators(returnSymbol).stream()
-                    .filter(s -> s.isNonTerminal()).toArray(Symbol[]::new);
+            this.noArgs = Grammar.getProductionOperators(returnSymbol).stream()
+                    .filter(s -> s.isTerminalProduction() && !s.requiresArguments()).toArray(Symbol[]::new);
+            this.reqArgs = Grammar.getProductionOperators(returnSymbol).stream()
+                    .filter(s -> s.isTerminalProduction() && s.requiresArguments()).toArray(Symbol[]::new);
         }
 
         boolean produceOneGeneration(int maxNewProductions) {
-            for (var s : nonTerminals) {
+            for (var s : reqArgs) {
                 var argumentSymbols = Grammar.getOperatorArguments(s);
                 var tree = new ArrayDeque<Symbol>();
                 // k specifies which argument should *only* use trees from the last generation --
@@ -94,7 +94,7 @@ public class BFSEnum3Synthesizer extends SynthesizerBase {
     private static SymbolProductions bProductions = new SymbolProductions(Symbol.B);
 
     static {
-        for (var s : eProductions.terminals) {
+        for (var s : eProductions.noArgs) {
             eProductions.productions.add(List.of(s));
         }
     }
@@ -117,7 +117,7 @@ public class BFSEnum3Synthesizer extends SynthesizerBase {
         do {
             while (n < eProductions.productions.size()) {
                 var candidate = eProductions.productions.get(n++);
-                if (validate(examples, candidate.iterator())) {
+                if (validate(examples, candidate)) {
                     return new Program(buildFromPreorder(candidate.iterator()));
                 }
             }

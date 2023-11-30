@@ -20,39 +20,39 @@ public enum Symbol {
     Or("Or", B, List.of(B, B)),
     Not("Not", B, List.of(B));
 
-    private final String name;
+    private final String token;
     private final boolean terminal;
     private final Symbol returnSym;
     private List<Symbol> productionOps;
     private final List<Symbol> operatorArgs;
 
-    private Symbol(String name, Symbol returnSym, List<Symbol> operatorArgs) {
-        assert name != null && !name.isEmpty();
+    private Symbol(String token, Symbol returnSym, List<Symbol> operatorArgs) {
+        assert token != null && !token.isEmpty();
         assert (returnSym == null) == (operatorArgs == null);
-        this.name = name;
-        this.terminal = operatorArgs != null && operatorArgs.isEmpty();
+        this.token = token;
+        this.terminal = operatorArgs != null;
         this.returnSym = returnSym != null ? returnSym : this;
         this.operatorArgs = operatorArgs;
     }
 
-    public String getName() {
-        return name;
+    public String token() {
+        return token;
     }
 
-    public boolean isTerminal() {
+    public boolean requiresArguments() {
+        return operatorArgs != null && operatorArgs.size() > 0;
+    }
+
+    public boolean isTerminalProduction() {
         return terminal;
     }
 
-    public boolean isNonTerminal() {
-        return !terminal;
-    }
-
-    Symbol returnSymbol() {
+    public Symbol returnSymbol() {
         return returnSym;
     }
 
-    List<Symbol> productionOperators() {
-        assert !this.terminal;
+    public List<Symbol> productionOperators() {
+        assert !terminal;
         if (productionOps == null) {
             // This is fairly threadsafe: worst case is we have multiple identical operator
             // lists floating about
@@ -61,8 +61,8 @@ public enum Symbol {
         return productionOps;
     }
 
-    List<Symbol> operatorArguments() {
-        assert this.terminal;
+    public List<Symbol> operatorArguments() {
+        assert terminal;
         return operatorArgs;
     }
 }

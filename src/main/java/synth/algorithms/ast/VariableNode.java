@@ -17,8 +17,8 @@ public class VariableNode extends ExprNode {
         this.variable = variable;
     }
 
-    public int variable() {
-        return this.variable();
+    public Symbol variable() {
+        return variable;
     }
 
     public List<AstNode> children() {
@@ -26,7 +26,7 @@ public class VariableNode extends ExprNode {
     }
 
     public int evalExpr(Environment env) {
-        switch (this.variable) {
+        switch (variable) {
             case VarX:
                 return env.x();
             case VarY:
@@ -34,12 +34,13 @@ public class VariableNode extends ExprNode {
             case VarZ:
                 return env.z();
             default:
-                throw new IllegalArgumentException("variable should be VarX, VarY, or VarZ");
+                assert "variable should be VarX, VarY, or VarZ" == null;
+                return 1;
         }
     }
 
     public ParseNode reify() {
-        switch (this.variable) {
+        switch (variable) {
             case VarX:
                 return REIFIED_X;
             case VarY:
@@ -47,7 +48,8 @@ public class VariableNode extends ExprNode {
             case VarZ:
                 return REIFIED_Z;
             default:
-                throw new IllegalArgumentException("variable should be VarX, VarY, or VarZ");
+                assert "variable should be VarX, VarY, or VarZ" == null;
+                return ExprConstNode.REIFIED_1;
         }
     }
 }

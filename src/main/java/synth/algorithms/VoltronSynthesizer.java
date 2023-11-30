@@ -6,8 +6,9 @@ import synth.core.*;
 
 import java.util.*;
 
-public class AstSynthesizer extends SynthesizerBase {
+public class VoltronSynthesizer extends SynthesizerBase {
     private LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(2));
+    private static final boolean logGroups = false;
 
     /**
      * For each example, compute a solution set using the linear solver.
@@ -17,17 +18,23 @@ public class AstSynthesizer extends SynthesizerBase {
         assert examples.size() > 0;
         int i = 0, j;
         while (i < examples.size()) {
-            System.out.println("i = " + i);
+            if (logGroups) {
+                System.out.println("i = " + i);
+            }
             var sess = linSolv.startSession();
             Example ei = examples.get(i);
             sess.addEquation(ei);
             j = i + 1;
             while (j < examples.size()) {
-                System.out.println("  j = " + j);
+                if (logGroups) {
+                    System.out.println("  j = " + j);
+                }
                 Example ej = examples.get(j);
                 sess.addEquation(ej);
                 if (!sess.checkSatisfiable()) {
-                    System.out.println("  UNSAT");
+                    if (logGroups) {
+                        System.out.println("  UNSAT");
+                    }
                     break;
                 }
                 ++j;
@@ -41,10 +48,13 @@ public class AstSynthesizer extends SynthesizerBase {
             }
             var sols = sess.solve();
             assert !sols.isEmpty();
-            for (var sol : sols.solutions()) {
-                System.out.println("  solution:");
-                for (var termC : sol.coefficients().entrySet()) {
-                    System.out.println("    " + (termC.getValue() > 1 ? termC.getValue() + " * " : "") + termC.getKey());
+            if (logGroups) {
+                for (var sol : sols.solutions()) {
+                    System.out.println("  solution:");
+                    for (var termC : sol.coefficients().entrySet()) {
+                        System.out.println(
+                                "    " + (termC.getValue() > 1 ? termC.getValue() + " * " : "") + termC.getKey());
+                    }
                 }
             }
             sets.put(sols, exs);
@@ -63,6 +73,10 @@ public class AstSynthesizer extends SynthesizerBase {
         return groups;
     }
 
+    private ExprNode synthesizeClassifier(Map<Integer, Set<Example>> categories) {
+        return null;
+    }
+
     /**
      * Build a program which implements the solutions in the solution cover.
      */
@@ -78,9 +92,14 @@ public class AstSynthesizer extends SynthesizerBase {
                 ++solN;
 
                 for (var termC : sol.coefficients().entrySet()) {
-                    System.out.println("    " + termC.getKey() + " = " + termC.getValue());
+                    System.out.println(
+                            "    " + (termC.getValue() > 1 ? termC.getValue() + " * " : "") + termC.getKey());
                 }
                 System.out.println();
+            }
+            System.out.println("  examples:");
+            for (var ex : sols.getValue()) {
+                System.out.println("    " + ex);
             }
         }
 

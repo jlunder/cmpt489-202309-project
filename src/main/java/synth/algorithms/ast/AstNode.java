@@ -1,6 +1,6 @@
 package synth.algorithms.ast;
 
-import java.util.List;
+import java.util.*;
 
 import synth.core.*;
 
@@ -14,4 +14,8 @@ public abstract class AstNode {
     public abstract int evalExpr(Environment env);
 
     public abstract ParseNode reify();
+
+    public AstNode substituteMarkers(Map<Integer, AstNode> substitution) {
+        return this;
+    }
 }
