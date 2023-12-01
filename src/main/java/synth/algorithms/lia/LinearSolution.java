@@ -2,7 +2,7 @@ package synth.algorithms.lia;
 
 import java.util.*;
 
-public class Solution implements Comparable<Solution> {
+public class LinearSolution implements Comparable<LinearSolution> {
     private final Map<Term, Integer> coefficientMap;
 
     // A packed map of the terms and their values; negative values are (negated)
@@ -14,7 +14,7 @@ public class Solution implements Comparable<Solution> {
         return coefficientMap;
     }
 
-    public Solution(Map<Term, Integer> coefficientMap) {
+    public LinearSolution(Map<Term, Integer> coefficientMap) {
         this.coefficientMap = coefficientMap;
 
         var accum = new ArrayList<Integer>(coefficientMap.size() * 2);
@@ -39,8 +39,8 @@ public class Solution implements Comparable<Solution> {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj == this) || (obj instanceof Solution)
-                && (Arrays.equals(signature, ((Solution) obj).signature));
+        return (obj == this) || (obj instanceof LinearSolution)
+                && (Arrays.equals(signature, ((LinearSolution) obj).signature));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class Solution implements Comparable<Solution> {
     }
 
     @Override
-    public int compareTo(Solution other) {
+    public int compareTo(LinearSolution other) {
         if (other == null) {
             return 1;
         }

@@ -7,6 +7,8 @@ import com.microsoft.z3.*;
 import synth.core.Example;
 
 public class LinearSolver implements AutoCloseable {
+    private static final boolean logGroups = false;
+
     private List<Term> terms;
     private int cMax;
     private Context z3 = new Context();
@@ -30,6 +32,59 @@ public class LinearSolver implements AutoCloseable {
     public LinearSolver(List<Term> terms, int cMax) {
         this.terms = terms;
         this.cMax = cMax;
+    }
+
+    /**
+     * For each example, compute a solution set using the linear solver.
+     */
+    public Map<SolutionSet, Set<Example>> computeSolutionSets(List<Example> examples) {
+        var sets = new HashMap<SolutionSet, Set<Example>>();
+        assert examples.size() > 0;
+        int i = 0, j;
+        while (i < examples.size()) {
+            if (logGroups) {
+                System.out.println("i = " + i);
+            }
+            var sess = startSession();
+            Example ei = examples.get(i);
+            sess.addEquation(ei);
+            j = i + 1;
+            while (j < examples.size()) {
+                if (logGroups) {
+                    System.out.println("  j = " + j);
+                }
+                Example ej = examples.get(j);
+                sess.addEquation(ej);
+                if (!sess.checkSatisfiable()) {
+                    if (logGroups) {
+                        System.out.println("  UNSAT");
+                    }
+                    break;
+                }
+                ++j;
+            }
+            var exs = new HashSet<Example>(j - i);
+            sess = startSession();
+            for (int k = i; k < j; ++k) {
+                var ek = examples.get(k);
+                sess.addEquation(ek);
+                exs.add(ek);
+            }
+            var sols = sess.solve();
+            assert !sols.isEmpty();
+            if (logGroups) {
+                for (var sol : sols.solutions()) {
+                    System.out.println("  solution:");
+                    for (var termC : sol.coefficients().entrySet()) {
+                        System.out.println(
+                                "    " + (termC.getValue() > 1 ? termC.getValue() + " * " : "") + termC.getKey());
+                    }
+                }
+            }
+            sets.put(sols, exs);
+            i = j;
+        }
+        return sets;
     }
 
     public SolveSession startSession() {
@@ -84,7 +139,7 @@ public class LinearSolver implements AutoCloseable {
         }
 
         public SolutionSet solve() {
-            var solutions = new HashSet<Solution>();
+            var solutions = new HashSet<LinearSolution>();
 
             while (checkSatisfiable() && solutions.size() < maxSols) {
                 var z3Model = z3Solver.getModel();
@@ -96,7 +151,7 @@ public class LinearSolver implements AutoCloseable {
                         solMap.put(entry.getKey(), coeff);
                     }
                 }
-                solutions.add(new Solution(solMap));
+                solutions.add(new LinearSolution(solMap));
                 // That was a nice solution, let's try something different
                 addBlockingClause(z3Solver, z3Coeffs, solMap);
             }

@@ -5,13 +5,13 @@ import java.util.*;
 public final class SolutionSet {
     public static SolutionSet EMPTY = new SolutionSet();
 
-    private final Set<Solution> solutions;
+    private final Set<LinearSolution> solutions;
 
     public boolean isEmpty() {
         return solutions.isEmpty();
     }
 
-    public Set<Solution> solutions() {
+    public Set<LinearSolution> solutions() {
         return solutions;
     }
 
@@ -19,8 +19,8 @@ public final class SolutionSet {
         solutions = Set.of();
     }
 
-    public SolutionSet(Collection<Solution> solutions) {
-        this.solutions = new HashSet<Solution>(solutions);
+    public SolutionSet(Collection<LinearSolution> solutions) {
+        this.solutions = new HashSet<LinearSolution>(solutions);
     }
 
     SolutionSet intersect(SolutionSet other) {
