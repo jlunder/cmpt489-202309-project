@@ -6,36 +6,25 @@ import synth.core.*;
 import synth.dsl.Symbol;
 
 public class IteNode extends ExprNode {
-    private final List<AstNode> children;
-    private ParseNode reified = null;
-
-    public IteNode(BoolNode cond, ExprNode ifCond, ExprNode elseCond) {
-        children = List.of(cond, ifCond, elseCond);
-    }
-
-    public List<AstNode> children() {
-        return children;
+    public IteNode(AstNode... children) {
+        super(children);
+        assert children.length == 3 && (children[0] instanceof BoolNode) && (children[1] instanceof ExprNode)
+                && (children[2] instanceof ExprNode);
     }
 
     public int evalExpr(Environment env) {
-        if (children.get(0).evalBool(env)) {
-            return children.get(1).evalExpr(env);
+        if (child(0).evalBool(env)) {
+            return child(1).evalExpr(env);
         } else {
-            return children.get(2).evalExpr(env);
+            return child(2).evalExpr(env);
         }
     }
 
-    public ParseNode reify() {
-        if (this.reified == null) {
-            this.reified = new ParseNode(Symbol.Ite,
-                    List.of(children.get(0).reify(), children.get(1).reify(), children.get(2).reify()));
-        }
-        return this.reified;
+    protected ParseNode makeReified() {
+        return new ParseNode(Symbol.Ite, List.of(child(0).reify(), child(1).reify(), child(2).reify()));
     }
 
-    public AstNode substituteMarkers(Map<Integer, AstNode> substitution) {
-        return new IteNode((BoolNode) children.get(0).substituteMarkers(substitution),
-                (ExprNode) children.get(1).substituteMarkers(substitution),
-                (ExprNode) children.get(2).substituteMarkers(substitution));
+    public AstNode withChildren(AstNode... children) {
+        return new IteNode(children);
     }
 }

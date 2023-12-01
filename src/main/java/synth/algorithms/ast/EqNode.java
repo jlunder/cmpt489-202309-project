@@ -6,30 +6,20 @@ import synth.core.*;
 import synth.dsl.Symbol;
 
 public class EqNode extends BoolNode {
-    private final List<AstNode> children;
-    private ParseNode reified = null;
-
-    public EqNode(ExprNode left, ExprNode right) {
-        children = List.of(left, right);
-    }
-
-    public List<AstNode> children() {
-        return children;
+    public EqNode(AstNode... children) {
+        super(children);
+        assert children.length == 2 && (children[0] instanceof ExprNode) && (children[1] instanceof ExprNode);
     }
 
     public boolean evalBool(Environment env) {
-        return children.get(0).evalExpr(env) == children.get(1).evalExpr(env);
+        return child(0).evalExpr(env) == child(1).evalExpr(env);
     }
 
-    public ParseNode reify() {
-        if (this.reified == null) {
-            this.reified = new ParseNode(Symbol.Eq, List.of(children.get(0).reify(), children.get(1).reify()));
-        }
-        return this.reified;
+    protected ParseNode makeReified() {
+        return new ParseNode(Symbol.Eq, List.of(child(0).reify(), child(1).reify()));
     }
 
-    public AstNode substituteMarkers(Map<Integer, AstNode> substitution) {
-        return new EqNode((ExprNode) children.get(0).substituteMarkers(substitution),
-                (ExprNode) children.get(1).substituteMarkers(substitution));
+    public AstNode withChildren(AstNode... children) {
+        return new EqNode(children);
     }
 }

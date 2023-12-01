@@ -15,16 +15,16 @@ public class BoolMarkerNode extends BoolNode {
         return marker;
     }
 
-    public List<AstNode> children() {
-        return NO_CHILDREN;
-    }
-
     public boolean evalBool(Environment env) {
         throw new UnsupportedOperationException("markers cannot be evaluated");
     }
 
     public ParseNode reify() {
         throw new UnsupportedOperationException("markers cannot be reified");
+    }
+
+    public AstNode withChildren(AstNode... children) {
+        return new BoolMarkerNode(marker);
     }
 
     public AstNode substituteMarkers(Map<Integer, AstNode> substitution) {

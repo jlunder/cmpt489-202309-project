@@ -7,7 +7,7 @@ import synth.core.*;
 import java.util.*;
 
 public class VoltronSynthesizer extends SynthesizerBase {
-    private LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(2));
+    private LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(2), 2);
     private static final boolean logGroups = false;
 
     /**

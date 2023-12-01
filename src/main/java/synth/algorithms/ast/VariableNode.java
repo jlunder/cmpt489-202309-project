@@ -1,7 +1,5 @@
 package synth.algorithms.ast;
 
-import java.util.*;
-
 import synth.core.*;
 import synth.dsl.Symbol;
 
@@ -15,14 +13,24 @@ public class VariableNode extends ExprNode {
     public VariableNode(Symbol variable) {
         assert variable == Symbol.VarX || variable == Symbol.VarY || variable == Symbol.VarZ;
         this.variable = variable;
+        switch (variable) {
+            case VarX:
+                this.reified = REIFIED_X;
+                break;
+            case VarY:
+                this.reified = REIFIED_Y;
+                break;
+            case VarZ:
+                this.reified = REIFIED_Z;
+                break;
+            default:
+                assert "variable should be VarX, VarY, or VarZ" == null;
+                break;
+        }
     }
 
     public Symbol variable() {
         return variable;
-    }
-
-    public List<AstNode> children() {
-        return NO_CHILDREN;
     }
 
     public int evalExpr(Environment env) {
@@ -39,17 +47,7 @@ public class VariableNode extends ExprNode {
         }
     }
 
-    public ParseNode reify() {
-        switch (variable) {
-            case VarX:
-                return REIFIED_X;
-            case VarY:
-                return REIFIED_Y;
-            case VarZ:
-                return REIFIED_Z;
-            default:
-                assert "variable should be VarX, VarY, or VarZ" == null;
-                return ExprConstNode.REIFIED_1;
-        }
+    public AstNode withChildren(AstNode... children) {
+        return new VariableNode(variable);
     }
 }

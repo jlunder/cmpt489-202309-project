@@ -1,36 +1,29 @@
 package synth.algorithms.ast;
 
-import java.util.*;
+import java.util.Arrays;
 
 import synth.core.*;
 import synth.dsl.Symbol;
 
 public class MultiplyNode extends ExprNode {
-    private final List<AstNode> children;
-    private ParseNode reified = null;
-
-    public MultiplyNode(ExprNode left, ExprNode right) {
-        children = List.of(left, right);
-    }
-
-    public List<AstNode> children() {
-        return children;
+    public MultiplyNode(AstNode... children) {
+        super(children);
+        assert children.length >= 2 && Arrays.stream(children).allMatch(c -> c instanceof ExprNode);
     }
 
     public int evalExpr(Environment env) {
-        return children.get(0).evalExpr(env) * children.get(1).evalExpr(env);
-    }
-
-    public ParseNode reify() {
-        if (this.reified == null) {
-            this.reified = new ParseNode(Symbol.Multiply,
-                    List.of(children.get(0).reify(), children.get(1).reify()));
+        int accum = 1;
+        for (int i = 0; i < numChildren(); ++i) {
+            accum *= child(i).evalExpr(env);
         }
-        return this.reified;
+        return accum;
     }
 
-    public AstNode substituteMarkers(Map<Integer, AstNode> substitution) {
-        return new MultiplyNode((ExprNode) children.get(0).substituteMarkers(substitution),
-                (ExprNode) children.get(1).substituteMarkers(substitution));
+    protected ParseNode makeReified() {
+        return makeReifiedAssociativeBinaryOperator(Symbol.Multiply);
+    }
+
+    public AstNode withChildren(AstNode... children) {
+        return new MultiplyNode(children);
     }
 }

@@ -22,22 +22,15 @@ public class ExprConstNode extends ExprNode {
     public ExprConstNode(int value) {
         assert value > 0;
         this.value = value;
+        this.reified = computeReified(value);
     }
 
     public int value() {
         return value;
     }
 
-    public List<AstNode> children() {
-        return NO_CHILDREN;
-    }
-
     public int evalExpr(Environment env) {
         return value;
-    }
-
-    public ParseNode reify() {
-        return computeReified(this.value);
     }
 
     private static ParseNode computeReified(int value) {
@@ -74,5 +67,9 @@ public class ExprConstNode extends ExprNode {
             default:
                 throw new IllegalArgumentException("requires 1 <= value <= " + REIFY_SMALL_VALUE_MAX);
         }
+    }
+
+    public AstNode withChildren(AstNode... children) {
+        return new ExprConstNode(value);
     }
 }

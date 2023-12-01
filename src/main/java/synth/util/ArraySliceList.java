@@ -1,4 +1,4 @@
-package synth.algorithms;
+package synth.util;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,10 +11,22 @@ public class ArraySliceList<T> implements List<T> {
     private int fromIndex;
     private int toIndex;
 
-    ArraySliceList(T[] items, int fromIndex, int toIndex) {
+    public ArraySliceList(T[] items, int fromIndex, int toIndex) {
+        if ((fromIndex < 0) || (fromIndex > items.length)) {
+            throw new IndexOutOfBoundsException(fromIndex);
+        }
+        if ((toIndex < 0) || (fromIndex < toIndex)) {
+            throw new IndexOutOfBoundsException(toIndex);
+        }
         this.items = items;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
+    }
+
+    public ArraySliceList(T[] items) {
+        this.items = items;
+        this.fromIndex = 0;
+        this.toIndex = items.length;
     }
 
     @Override
@@ -59,6 +71,9 @@ public class ArraySliceList<T> implements List<T> {
 
     @Override
     public T get(int index) {
+        if ((index < 0) || (index >= fromIndex - toIndex)) {
+            throw new IndexOutOfBoundsException(index);
+        }
         return items[fromIndex + index];
     }
 
@@ -120,16 +135,22 @@ public class ArraySliceList<T> implements List<T> {
 
             @Override
             public T next() {
+                if (!hasNext()) {
+                    throw new java.util.NoSuchElementException();
+                }
                 return items[i++];
             }
 
             @Override
             public int nextIndex() {
-                return i + 1;
+                return i + 1 - fromIndex;
             }
 
             @Override
             public T previous() {
+                if (!hasPrevious()) {
+                    throw new java.util.NoSuchElementException();
+                }
                 return items[--i];
             }
 
@@ -182,6 +203,12 @@ public class ArraySliceList<T> implements List<T> {
 
     @Override
     public List<T> subList(int from, int to) {
+        if ((from < 0) || (from > size())) {
+            throw new IndexOutOfBoundsException(from);
+        }
+        if ((to < 0) || (from < to)) {
+            throw new IndexOutOfBoundsException(to);
+        }
         return new ArraySliceList<T>(items, fromIndex + from, fromIndex + to);
     }
 

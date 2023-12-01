@@ -8,6 +8,7 @@ import synth.core.Example;
 
 public class LinearSolver implements AutoCloseable {
     private List<Term> terms;
+    private int cMax;
     private Context z3 = new Context();
     private int maxSols = 3;
 
@@ -26,8 +27,9 @@ public class LinearSolver implements AutoCloseable {
         return List.of(terms);
     }
 
-    public LinearSolver(List<Term> terms) {
+    public LinearSolver(List<Term> terms, int cMax) {
         this.terms = terms;
+        this.cMax = cMax;
     }
 
     public SolveSession startSession() {
@@ -37,6 +39,7 @@ public class LinearSolver implements AutoCloseable {
     public class SolveSession {
         private Solver z3Solver = z3.mkSolver();
         private IntExpr z3Zero = z3.mkInt(0);
+        private IntExpr z3CMax = z3.mkInt(cMax);
         private HashMap<Term, IntExpr> z3Coeffs = new HashMap<>();
         private Status z3Status = Status.UNKNOWN;
 
@@ -57,6 +60,9 @@ public class LinearSolver implements AutoCloseable {
                     var newC = z3.mkIntConst(t.name());
                     // Term constants must be >= 0
                     z3Solver.add(z3.mkGe(newC, z3Zero));
+                    // Term constants must be <= CMax -- unreasonably large constants imply a deep
+                    // parse tree
+                    z3Solver.add(z3.mkLe(newC, z3CMax));
                     return newC;
                 });
                 z3Consts.add(z3.mkMul(z3.mkInt(term.evalTerm(example.input())), z3C));

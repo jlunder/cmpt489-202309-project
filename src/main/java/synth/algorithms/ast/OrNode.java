@@ -1,35 +1,30 @@
 package synth.algorithms.ast;
 
-import java.util.*;
+import java.util.Arrays;
 
 import synth.core.*;
 import synth.dsl.Symbol;
 
 public class OrNode extends BoolNode {
-    private final List<AstNode> children;
-    private ParseNode reified = null;
-
-    public OrNode(BoolNode left, BoolNode right) {
-        children = List.of(left, right);
-    }
-
-    public List<AstNode> children() {
-        return children;
+    public OrNode(AstNode... children) {
+        super(children);
+        assert children.length >= 2 && Arrays.stream(children).allMatch(c -> c instanceof BoolNode);
     }
 
     public boolean evalBool(Environment env) {
-        return children.get(0).evalBool(env) || children.get(1).evalBool(env);
-    }
-
-    public ParseNode reify() {
-        if (this.reified == null) {
-            this.reified = new ParseNode(Symbol.Or, List.of(children.get(0).reify(), children.get(1).reify()));
+        for (int i = 0; i < numChildren(); ++i) {
+            if(child(i).evalBool(env)) {
+                return true;
+            }
         }
-        return this.reified;
+        return false;
     }
 
-    public AstNode substituteMarkers(Map<Integer, AstNode> substitution) {
-        return new OrNode((BoolNode) children.get(0).substituteMarkers(substitution),
-                (BoolNode) children.get(1).substituteMarkers(substitution));
+    protected ParseNode makeReified() {
+        return makeReifiedAssociativeBinaryOperator(Symbol.Or);
+    }
+
+    public AstNode withChildren(AstNode... children) {
+        return new OrNode(children);
     }
 }

@@ -2,6 +2,7 @@ package synth.algorithms;
 
 import synth.core.*;
 import synth.dsl.*;
+import synth.util.ArraySliceList;
 
 import java.util.*;
 import java.util.function.*;

@@ -15,25 +15,22 @@ public class BoolConstNode extends BoolNode {
 
     public BoolConstNode(boolean value) {
         this.value = value;
+        if (value) {
+            reified = REIFIED_TRUE;
+        } else {
+            reified = REIFIED_FALSE;
+        }
     }
 
     public boolean value() {
         return this.value;
     }
 
-    public List<AstNode> children() {
-        return NO_CHILDREN;
-    }
-
     public boolean evalBool(Environment env) {
         return value;
     }
 
-    public ParseNode reify() {
-        if (this.value) {
-            return REIFIED_TRUE;
-        } else {
-            return REIFIED_FALSE;
-        }
+    public AstNode withChildren(AstNode... children) {
+        return new BoolConstNode(value);
     }
 }
