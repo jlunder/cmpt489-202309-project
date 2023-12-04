@@ -305,7 +305,14 @@ public class VoltronSynthesizer extends SynthesizerBase {
             children.add(VariableNode.VAR_Z);
         }
 
-        return new MultiplyNode(children.toArray(ExprNode[]::new));
+        // Special case: if this is a unit term, we will have not added *any* children
+        if (children.size() == 0) {
+            return new ExprConstNode(1);
+        } else if (children.size() == 1) {
+            return children.get(0);
+        } else {
+            return new MultiplyNode(children.toArray(ExprNode[]::new));
+        }
     }
 
     private ExprNode buildAstFromLinearSolution(LinearSolution solution) {

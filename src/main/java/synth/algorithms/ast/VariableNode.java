@@ -4,13 +4,13 @@ import synth.core.*;
 import synth.dsl.Symbol;
 
 public class VariableNode extends ExprNode {
-    public static final VariableNode VAR_X = new VariableNode(Symbol.VarX);
-    public static final VariableNode VAR_Y = new VariableNode(Symbol.VarY);
-    public static final VariableNode VAR_Z = new VariableNode(Symbol.VarZ);
-
     public static final ParseNode REIFIED_X = ParseNode.VAR_X;
     public static final ParseNode REIFIED_Y = ParseNode.VAR_Y;
     public static final ParseNode REIFIED_Z = ParseNode.VAR_Z;
+
+    public static final VariableNode VAR_X = new VariableNode(Symbol.VarX);
+    public static final VariableNode VAR_Y = new VariableNode(Symbol.VarY);
+    public static final VariableNode VAR_Z = new VariableNode(Symbol.VarZ);
 
     private final Symbol variable;
 
