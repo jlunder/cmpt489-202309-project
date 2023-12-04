@@ -68,6 +68,18 @@ public final class Term implements Comparable<Term> {
     private final int zPower;
     private final int index;
 
+    public int xPower() {
+        return xPower;
+    }
+
+    public int yPower() {
+        return yPower;
+    }
+
+    public int zPower() {
+        return zPower;
+    }
+
     public static Term make(int xPower, int yPower, int zPower) {
         assert xPower < MAX_INDEX_POWER && yPower < MAX_INDEX_POWER && zPower < MAX_INDEX_POWER;
         return fromIndex(computeIndex(xPower, yPower, zPower));

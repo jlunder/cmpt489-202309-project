@@ -4,21 +4,21 @@ import synth.core.*;
 import synth.dsl.*;
 
 public class Asts {
-    ExprNode optimizeExprAst(ExprNode node) {
+    public static ExprNode optimizeExprAst(ExprNode node) {
         // fold constants
         // merge nested associative nodes
         // canonicalize order
         return node;
     }
 
-    BoolNode optimizeBoolAst(BoolNode node) {
+    public static BoolNode optimizeBoolAst(BoolNode node) {
         // fold constants
         // merge nested associative nodes
         // canonicalize order
         return node;
     }
 
-    ParseNode optimizeParse(ParseNode node) {
+    public static ParseNode optimizeParse(ParseNode node) {
         if (node.getSymbol().returnSymbol() == Symbol.E) {
             return optimizeExprAst(makeExprAstFromParse(node)).reify();
         } else if (node.getSymbol().returnSymbol() == Symbol.B) {
@@ -29,7 +29,7 @@ public class Asts {
 
     }
 
-    ExprNode makeExprAstFromParse(ParseNode parse) {
+    public static ExprNode makeExprAstFromParse(ParseNode parse) {
         switch (parse.getSymbol()) {
             case Const1:
                 return ExprConstNode.CONST_1;
@@ -56,7 +56,7 @@ public class Asts {
         }
     }
 
-    BoolNode makeBoolAstFromParse(ParseNode parse) {
+    public static BoolNode makeBoolAstFromParse(ParseNode parse) {
         switch (parse.getSymbol()) {
             case Lt:
                 return new LtNode(makeExprAstFromParse(parse.getChild(0)), makeExprAstFromParse(parse.getChild(1)));

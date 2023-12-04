@@ -5,10 +5,15 @@ import java.util.*;
 public final class SolutionSet {
     public static SolutionSet EMPTY = new SolutionSet();
 
+    private final LinearSolution representativeSolution;
     private final Set<LinearSolution> solutions;
 
     public boolean isEmpty() {
-        return solutions.isEmpty();
+        return representativeSolution == null;
+    }
+
+    public LinearSolution representativeSolution() {
+        return representativeSolution;
     }
 
     public Set<LinearSolution> solutions() {
@@ -16,15 +21,32 @@ public final class SolutionSet {
     }
 
     private SolutionSet() {
+        representativeSolution = null;
         solutions = Set.of();
     }
 
     public SolutionSet(Collection<LinearSolution> solutions) {
+        this.representativeSolution = solutions.iterator().next();
         this.solutions = new HashSet<LinearSolution>(solutions);
     }
 
+    private SolutionSet(LinearSolution representativeSolution, Set<LinearSolution> solutions) {
+        assert solutions.contains(representativeSolution);
+        this.representativeSolution = representativeSolution;
+        this.solutions = solutions;
+    }
+
     SolutionSet intersect(SolutionSet other) {
-        return null;
+        var intersectedSols = new HashSet<LinearSolution>(solutions);
+        if (intersectedSols.isEmpty()) {
+            return EMPTY;
+        }
+        intersectedSols.retainAll(other.solutions());
+        var rep = representativeSolution;
+        if (!intersectedSols.contains(rep)) {
+            rep = intersectedSols.iterator().next();
+        }
+        return new SolutionSet(rep, intersectedSols);
     }
 
     @Override

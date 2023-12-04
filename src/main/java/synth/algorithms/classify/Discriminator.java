@@ -1,16 +1,24 @@
 package synth.algorithms.classify;
 
-import java.util.List;
+import java.util.Collection;
 
 import synth.algorithms.ast.*;
 import synth.core.Example;
 
 public class Discriminator {
-    Classification classification;
-    BoolNode condition;
+    private Classification classification;
+    private BoolNode condition;
     // complexity metric?
 
-    public Discriminator(BoolNode condition, List<Example> examples) {
+    public Classification classification() {
+        return classification;
+    }
+
+    public BoolNode condition() {
+        return condition;
+    }
+
+    public Discriminator(BoolNode condition, Collection<Example> examples) {
         this.classification = Classification.makeFromCondition(condition, examples);
         this.condition = condition;
     }

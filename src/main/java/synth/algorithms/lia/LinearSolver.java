@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.microsoft.z3.*;
 
+import synth.algorithms.classify.Classification;
 import synth.core.Example;
 
 public class LinearSolver implements AutoCloseable {
@@ -37,8 +38,8 @@ public class LinearSolver implements AutoCloseable {
     /**
      * For each example, compute a solution set using the linear solver.
      */
-    public Map<SolutionSet, Set<Example>> computeSolutionSets(List<Example> examples) {
-        var sets = new HashMap<SolutionSet, Set<Example>>();
+    public Map<SolutionSet, Classification> computeSolutionSets(List<Example> examples) {
+        var sets = new HashMap<SolutionSet, Classification>();
         assert examples.size() > 0;
         int i = 0, j;
         while (i < examples.size()) {
@@ -63,12 +64,12 @@ public class LinearSolver implements AutoCloseable {
                 }
                 ++j;
             }
-            var exs = new HashSet<Example>(j - i);
+            var included = new HashSet<Example>(j - i);
             sess = startSession();
             for (int k = i; k < j; ++k) {
                 var ek = examples.get(k);
                 sess.addEquation(ek);
-                exs.add(ek);
+                included.add(ek);
             }
             var sols = sess.solve();
             assert !sols.isEmpty();
@@ -81,7 +82,9 @@ public class LinearSolver implements AutoCloseable {
                     }
                 }
             }
-            sets.put(sols, exs);
+            var excluded = new HashSet<Example>(examples);
+            excluded.removeAll(included);
+            sets.put(sols, new Classification(included, excluded));
             i = j;
         }
         return sets;
