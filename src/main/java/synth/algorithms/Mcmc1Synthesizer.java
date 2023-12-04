@@ -1,8 +1,6 @@
 package synth.algorithms;
 
-import synth.algorithms.mcmc.McmcOptimizer;
 import synth.algorithms.mcmc.McmcProgramOptimizer;
-import synth.algorithms.rng.Xoshiro256SS;
 import synth.core.*;
 import synth.dsl.*;
 
@@ -30,8 +28,12 @@ public class Mcmc1Synthesizer extends SynthesizerBase {
      */
     @Override
     public Program synthesize(List<Example> examples) {
+        List<Example> limitedExamples = examples;
+        if (examples.size() > maxExamples) {
+            limitedExamples = examples.subList(0, maxExamples);
+        }
         McmcProgramOptimizer optimizer = new McmcProgramOptimizer(seed,
-                McmcProgramOptimizer.examplesCostFunction(examples), McmcProgramOptimizer.GENERAL_SYMBOLS);
+                McmcProgramOptimizer.examplesCostFunction(limitedExamples), McmcProgramOptimizer.GENERAL_SYMBOLS);
 
         try {
             var result = optimizer.optimize(new Symbol[maxProgramLength], 0.5f, maxIterations);
