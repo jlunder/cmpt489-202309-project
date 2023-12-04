@@ -42,7 +42,7 @@ public class Semantics {
             case Const3:
                 return 3;
             default:
-                throw new RuntimeException("Cannot evaluate expression " + expr);
+                throw new UnsupportedOperationException("Cannot evaluate expression " + expr);
         }
     }
 
@@ -59,7 +59,7 @@ public class Semantics {
             case Not:
                 return evalNot(pred, env);
             default:
-                throw new RuntimeException("Cannot evaluate predicate " + pred);
+                throw new UnsupportedOperationException("Cannot evaluate predicate " + pred);
         }
     }
 
@@ -132,7 +132,7 @@ public class Semantics {
             case Const3:
                 return 3;
             default:
-                throw new RuntimeException("Cannot evaluate expression " + sym);
+                throw new UnsupportedOperationException("Cannot evaluate expression " + sym);
         }
     }
 
@@ -150,7 +150,7 @@ public class Semantics {
             case Not:
                 return evalNot(pred, env);
             default:
-                throw new RuntimeException("Cannot evaluate predicate " + pred);
+                throw new UnsupportedOperationException("Cannot evaluate predicate " + pred);
         }
     }
 
@@ -285,7 +285,7 @@ public class Semantics {
                         pushBool(!bx);
                         break;
                     default:
-                        throw new RuntimeException("Cannot evaluate expression " + s);
+                        throw new UnsupportedOperationException("Cannot evaluate expression " + s);
                 }
             }
             return popExpr();
@@ -347,7 +347,7 @@ public class Semantics {
                         pushBoolNode(new ParseNode(Symbol.Not, List.of(x)));
                         break;
                     default:
-                        throw new RuntimeException("Cannot evaluate expression " + s);
+                        throw new UnsupportedOperationException("Cannot evaluate expression " + s);
                 }
             }
             return popExprNode();

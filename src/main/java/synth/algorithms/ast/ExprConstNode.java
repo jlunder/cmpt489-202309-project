@@ -6,12 +6,16 @@ import synth.core.*;
 import synth.dsl.Symbol;
 
 public class ExprConstNode extends ExprNode {
-    public static ParseNode REIFIED_1 = ParseNode.CONST_1;
-    public static ParseNode REIFIED_2 = ParseNode.CONST_2;
-    public static ParseNode REIFIED_3 = ParseNode.CONST_3;
-    public static ParseNode REIFIED_4 = new ParseNode(Symbol.Add, List.of(REIFIED_2, REIFIED_2));
-    public static ParseNode REIFIED_5 = new ParseNode(Symbol.Add, List.of(REIFIED_2, REIFIED_3));
-    public static ParseNode REIFIED_6 = new ParseNode(Symbol.Add, List.of(REIFIED_3, REIFIED_3));
+    public static final ExprConstNode CONST_1 = new ExprConstNode(1);
+    public static final ExprConstNode CONST_2 = new ExprConstNode(2);
+    public static final ExprConstNode CONST_3 = new ExprConstNode(3);
+
+    public static final ParseNode REIFIED_1 = ParseNode.CONST_1;
+    public static final ParseNode REIFIED_2 = ParseNode.CONST_2;
+    public static final ParseNode REIFIED_3 = ParseNode.CONST_3;
+    public static final ParseNode REIFIED_4 = new ParseNode(Symbol.Add, List.of(REIFIED_2, REIFIED_2));
+    public static final ParseNode REIFIED_5 = new ParseNode(Symbol.Add, List.of(REIFIED_2, REIFIED_3));
+    public static final ParseNode REIFIED_6 = new ParseNode(Symbol.Add, List.of(REIFIED_3, REIFIED_3));
 
     private static final int REIFY_BASE = 3;
     private static final int REIFY_SMALL_VALUE_MAX = 6;
