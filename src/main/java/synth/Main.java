@@ -20,7 +20,7 @@ public class Main {
 
             // run the synthesizer
             //ISynthesizer synthesizer = new BFSEnum2Synthesizer();
-            ISynthesizer synthesizer = new Mcmc1Synthesizer();
+            Synthesizer synthesizer = new MultiStrategySynthesizer();
             Program program = synthesizer.synthesize(examples);
             if (program == null) {
                 System.out.println("error: failed to generate!");

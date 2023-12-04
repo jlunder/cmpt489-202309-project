@@ -6,7 +6,7 @@ import synth.dsl.*;
 import java.util.*;
 import java.util.function.*;
 
-public abstract class SynthesizerBase implements ISynthesizer {
+public abstract class SynthesizerBase implements Synthesizer {
 
     protected static boolean validate(List<Example> examples, Program program) {
         return validate(examples, env -> Semantics.evaluate(program, env));

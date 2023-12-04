@@ -216,7 +216,17 @@ public class Semantics {
         private ParseNode[] boolNodeStack = new ParseNode[MAX_STACK];
         private int boolTop;
 
-        public int evaluate(Symbol[] program, Environment env) {
+        public int evaluateExpr(Symbol[] program, Environment env) {
+            evaluateProgram(program, env);
+            return popExpr();
+        }
+
+        public boolean evaluateBool(Symbol[] program, Environment env) {
+            evaluateProgram(program, env);
+            return popBool();
+        }
+
+        public void evaluateProgram(Symbol[] program, Environment env) {
             reset(program);
             for (int i = 0; i < program.length; ++i) {
                 var s = program[i];
@@ -288,10 +298,19 @@ public class Semantics {
                         throw new UnsupportedOperationException("Cannot evaluate expression " + s);
                 }
             }
-            return popExpr();
         }
 
-        public ParseNode makeParseTree(Symbol[] program) {
+        public ParseNode makeExprParseTree(Symbol[] program) {
+            makeParseTree(program);
+            return popExprNode();
+        }
+
+        public ParseNode makeBoolParseTree(Symbol[] program) {
+            makeParseTree(program);
+            return popBoolNode();
+        }
+
+        private void makeParseTree(Symbol[] program) {
             reset(program);
             for (int i = 0; i < program.length; ++i) {
                 var s = program[i];
@@ -350,7 +369,6 @@ public class Semantics {
                         throw new UnsupportedOperationException("Cannot evaluate expression " + s);
                 }
             }
-            return popExprNode();
         }
 
         private void reset(Symbol[] program) {
@@ -412,16 +430,30 @@ public class Semantics {
 
     private static ThreadLocal<PostOrderEvaluator> postOrderEvaluator = new ThreadLocal<>();
 
-    static {
-        postOrderEvaluator.set(new PostOrderEvaluator());
+    public static int evaluateExprPostOrder(Symbol[] program, Environment env) {
+        ensureThreadLocals();
+        return postOrderEvaluator.get().evaluateExpr(program, env);
     }
 
-    public static int evaluatePostOrder(Symbol[] program, Environment env) {
-        return postOrderEvaluator.get().evaluate(program, env);
+    public static boolean evaluateBoolPostOrder(Symbol[] program, Environment env) {
+        ensureThreadLocals();
+        return postOrderEvaluator.get().evaluateBool(program, env);
     }
 
-    public static ParseNode makeParseTreeFromPostOrder(Symbol[] program) {
-        return postOrderEvaluator.get().makeParseTree(program);
+    public static ParseNode makeExprParseTreeFromPostOrder(Symbol[] program) {
+        ensureThreadLocals();
+        return postOrderEvaluator.get().makeExprParseTree(program);
+    }
+
+    public static ParseNode makeBoolParseTreeFromPostOrder(Symbol[] program) {
+        ensureThreadLocals();
+        return postOrderEvaluator.get().makeBoolParseTree(program);
+    }
+
+    private static void ensureThreadLocals() {
+        if (postOrderEvaluator.get() == null) {
+            postOrderEvaluator.set(new PostOrderEvaluator());
+        }
     }
 
 }

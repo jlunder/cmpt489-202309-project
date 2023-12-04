@@ -23,7 +23,7 @@ public class BFSEnum2Synthesizer extends SynthesizerBase {
                     .filter(s -> s.isTerminalProduction() && s.requiresArguments()).toArray(Symbol[]::new);
         }
 
-        boolean produceOneGeneration(int maxNewProductions) {
+        boolean produceOneGeneration(int maxNewProductions) throws InterruptedException {
             for (var s : reqArgs) {
                 var argumentSymbols = Grammar.getOperatorArguments(s);
                 var tempChildren = new ParseNode[argumentSymbols.size()];
@@ -46,7 +46,7 @@ public class BFSEnum2Synthesizer extends SynthesizerBase {
         }
 
         boolean produceParseTrees(Symbol s, ParseNode[] tempChildren, List<Symbol> argumentSymbols, int i, int k,
-                List<ParseNode> newProds, int maxNewProductions) {
+                List<ParseNode> newProds, int maxNewProductions) throws InterruptedException {
             if (newProds.size() >= maxNewProductions) {
                 return false;
             }
@@ -57,6 +57,10 @@ public class BFSEnum2Synthesizer extends SynthesizerBase {
             var argSP = (argumentSymbols.get(i) == Symbol.E) ? eProductions : bProductions;
             int n = argSP.productions.size();
             for (int j = (i == k ? argSP.lastGenStart : 0); j < n; ++j) {
+                if (Thread.interrupted()) {
+                    throw new InterruptedException(
+                            "Thread interrupted during BFSEnum2Synthesizer.SymbolProductions::produceParseTrees()");
+                }
                 var pJ = argSP.productions.get(j);
                 tempChildren[i] = pJ;
                 if (i + 1 < tempChildren.length) {
@@ -98,26 +102,31 @@ public class BFSEnum2Synthesizer extends SynthesizerBase {
         int n = 0;
         boolean capped = false;
 
-        do {
-            while (n < eProductions.productions.size()) {
-                var candidate = eProductions.productions.get(n++);
-                if (validate(examples, candidate)) {
-                    return new Program(candidate);
+        try {
+            do {
+                while (n < eProductions.productions.size()) {
+                    var candidate = eProductions.productions.get(n++);
+                    if (validate(examples, candidate)) {
+                        return new Program(candidate);
+                    }
                 }
-            }
-            for (var p : List.of(eProductions, bProductions)) {
-                int productionsSoFar = eProductions.productions.size() + eProductions.newProductions.size()
-                        + bProductions.productions.size() + bProductions.newProductions.size();
-                capped = !p.produceOneGeneration(MAX_PRODUCTIONS - productionsSoFar);
-                if (capped) {
-                    System.out.println("warning: enumeration capped at " + MAX_PRODUCTIONS + " productions");
+                for (var p : List.of(eProductions, bProductions)) {
+                    int productionsSoFar = eProductions.productions.size() + eProductions.newProductions.size()
+                            + bProductions.productions.size() + bProductions.newProductions.size();
+                    capped = !p.produceOneGeneration(MAX_PRODUCTIONS - productionsSoFar);
+                    if (capped) {
+                        System.out.println("warning: enumeration capped at " + MAX_PRODUCTIONS + " productions");
+                    }
                 }
-            }
-            for (var p : List.of(eProductions, bProductions)) {
-                p.nextGeneration();
-            }
-            // While we are still producing new programs..
-        } while (n < eProductions.productions.size());
+                for (var p : List.of(eProductions, bProductions)) {
+                    p.nextGeneration();
+                }
+                // While we are still producing new programs..
+            } while (n < eProductions.productions.size());
+        } catch (InterruptedException e) {
+            System.out.println(e);
+            return null;
+        }
 
         // enumeration stopped?
         return null;

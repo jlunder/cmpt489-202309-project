@@ -2,7 +2,7 @@ package synth.core;
 
 import java.util.List;
 
-public interface ISynthesizer {
+public interface Synthesizer {
 
     public Program synthesize(List<Example> examples);
 

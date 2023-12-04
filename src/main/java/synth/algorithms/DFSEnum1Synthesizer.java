@@ -149,6 +149,9 @@ public class DFSEnum1Synthesizer extends SynthesizerBase {
                     results.add(new Program(builder.build()));
                     return true;
                 }
+                if (Thread.interrupted()) {
+                    return true;
+                }
                 return false;
             });
         }
