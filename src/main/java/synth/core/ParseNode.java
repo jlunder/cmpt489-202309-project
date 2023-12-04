@@ -6,6 +6,18 @@ import synth.dsl.Symbol;
 
 public class ParseNode {
     public static final List<ParseNode> NO_CHILDREN = List.of();
+
+    public static final ParseNode CONST_1 = new ParseNode(Symbol.Const1, ParseNode.NO_CHILDREN);
+    public static final ParseNode CONST_2 = new ParseNode(Symbol.Const2, ParseNode.NO_CHILDREN);
+    public static final ParseNode CONST_3 = new ParseNode(Symbol.Const3, ParseNode.NO_CHILDREN);
+
+    public static final ParseNode VAR_X = new ParseNode(Symbol.VarX, ParseNode.NO_CHILDREN);
+    public static final ParseNode VAR_Y = new ParseNode(Symbol.VarY, ParseNode.NO_CHILDREN);
+    public static final ParseNode VAR_Z = new ParseNode(Symbol.VarZ, ParseNode.NO_CHILDREN);
+
+    public static final ParseNode CONST_TRUE = new ParseNode(Symbol.Eq, List.of(CONST_1, CONST_1));
+    public static final ParseNode CONST_FALSE = new ParseNode(Symbol.Eq, List.of(CONST_1, CONST_2));
+
     private final Symbol symbol;
     private final List<ParseNode> children;
 

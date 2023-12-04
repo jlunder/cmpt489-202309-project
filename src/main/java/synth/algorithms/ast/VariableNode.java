@@ -4,9 +4,9 @@ import synth.core.*;
 import synth.dsl.Symbol;
 
 public class VariableNode extends ExprNode {
-    public static ParseNode REIFIED_X = new ParseNode(Symbol.VarX, ParseNode.NO_CHILDREN);
-    public static ParseNode REIFIED_Y = new ParseNode(Symbol.VarY, ParseNode.NO_CHILDREN);
-    public static ParseNode REIFIED_Z = new ParseNode(Symbol.VarZ, ParseNode.NO_CHILDREN);
+    public static ParseNode REIFIED_X = ParseNode.VAR_X;
+    public static ParseNode REIFIED_Y = ParseNode.VAR_Y;
+    public static ParseNode REIFIED_Z = ParseNode.VAR_Z;
 
     private final Symbol variable;
 

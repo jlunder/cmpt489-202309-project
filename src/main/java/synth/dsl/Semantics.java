@@ -205,4 +205,223 @@ public class Semantics {
         var val = evalPred(not, env);
         return !val;
     }
+
+    private static class PostOrderEvaluator {
+        private static final int MAX_STACK = 1000;
+
+        private int[] exprStack = new int[MAX_STACK];
+        private ParseNode[] exprNodeStack = new ParseNode[MAX_STACK];
+        private int exprTop;
+        private boolean[] boolStack = new boolean[MAX_STACK];
+        private ParseNode[] boolNodeStack = new ParseNode[MAX_STACK];
+        private int boolTop;
+
+        public int evaluate(Symbol[] program, Environment env) {
+            reset(program);
+            for (int i = 0; i < program.length; ++i) {
+                var s = program[i];
+                if (s == null) {
+                    continue;
+                }
+                int ex, ey;
+                boolean bx, by;
+                switch (s) {
+                    case Const1:
+                        pushExpr(1);
+                        break;
+                    case Const2:
+                        pushExpr(2);
+                        break;
+                    case Const3:
+                        pushExpr(3);
+                        break;
+                    case VarX:
+                        pushExpr(env.x());
+                        break;
+                    case VarY:
+                        pushExpr(env.y());
+                        break;
+                    case VarZ:
+                        pushExpr(env.z());
+                        break;
+                    case Ite:
+                        bx = popBool();
+                        ex = popExpr();
+                        ey = popExpr();
+                        pushExpr(bx ? ex : ey);
+                        break;
+                    case Add:
+                        ex = popExpr();
+                        ey = popExpr();
+                        pushExpr(ex + ey);
+                        break;
+                    case Multiply:
+                        ex = popExpr();
+                        ey = popExpr();
+                        pushExpr(ex * ey);
+                        break;
+                    case Lt:
+                        ex = popExpr();
+                        ey = popExpr();
+                        pushBool(ex < ey);
+                        break;
+                    case Eq:
+                        ex = popExpr();
+                        ey = popExpr();
+                        pushBool(ex == ey);
+                        break;
+                    case And:
+                        bx = popBool();
+                        by = popBool();
+                        pushBool(bx && by);
+                        break;
+                    case Or:
+                        bx = popBool();
+                        by = popBool();
+                        pushBool(bx || by);
+                        break;
+                    case Not:
+                        bx = popBool();
+                        pushBool(!bx);
+                        break;
+                    default:
+                        throw new RuntimeException("Cannot evaluate expression " + s);
+                }
+            }
+            return popExpr();
+        }
+
+        public ParseNode makeParseTree(Symbol[] program) {
+            reset(program);
+            for (int i = 0; i < program.length; ++i) {
+                var s = program[i];
+                if (s == null) {
+                    continue;
+                }
+                ParseNode c, x, y;
+                switch (s) {
+                    case Const1:
+                        pushExprNode(ParseNode.CONST_1);
+                        break;
+                    case Const2:
+                        pushExprNode(ParseNode.CONST_2);
+                        break;
+                    case Const3:
+                        pushExprNode(ParseNode.CONST_3);
+                        break;
+                    case VarX:
+                        pushExprNode(ParseNode.VAR_X);
+                        break;
+                    case VarY:
+                        pushExprNode(ParseNode.VAR_Y);
+                        break;
+                    case VarZ:
+                        pushExprNode(ParseNode.VAR_Z);
+                        break;
+                    case Ite:
+                        c = popBoolNode();
+                        x = popExprNode();
+                        y = popExprNode();
+                        pushExprNode(new ParseNode(Symbol.Ite, List.of(c, x, y)));
+                        break;
+                    case Add:
+                    case Multiply:
+                        x = popExprNode();
+                        y = popExprNode();
+                        pushExprNode(new ParseNode(s, List.of(x, y)));
+                        break;
+                    case Lt:
+                    case Eq:
+                        x = popExprNode();
+                        y = popExprNode();
+                        pushBoolNode(new ParseNode(s, List.of(x, y)));
+                        break;
+                    case And:
+                    case Or:
+                        x = popBoolNode();
+                        y = popBoolNode();
+                        pushBoolNode(new ParseNode(s, List.of(x, y)));
+                        break;
+                    case Not:
+                        x = popBoolNode();
+                        pushBoolNode(new ParseNode(Symbol.Not, List.of(x)));
+                        break;
+                    default:
+                        throw new RuntimeException("Cannot evaluate expression " + s);
+                }
+            }
+            return popExprNode();
+        }
+
+        private void reset(Symbol[] program) {
+            if (program.length > MAX_STACK) {
+                throw new UnsupportedOperationException("Program too long");
+            }
+            this.exprTop = 0;
+            this.boolTop = 0;
+        }
+
+        private void pushExpr(int value) {
+            exprStack[exprTop++] = value;
+        }
+
+        private int popExpr() {
+            if (exprTop > 0) {
+                return exprStack[--exprTop];
+            } else {
+                return 1;
+            }
+        }
+
+        private void pushBool(boolean value) {
+            boolStack[boolTop++] = value;
+        }
+
+        private boolean popBool() {
+            if (boolTop > 0) {
+                return boolStack[--boolTop];
+            } else {
+                return false;
+            }
+        }
+
+        private void pushExprNode(ParseNode node) {
+            exprNodeStack[exprTop++] = node;
+        }
+
+        private ParseNode popExprNode() {
+            if (exprTop > 0) {
+                return exprNodeStack[--exprTop];
+            } else {
+                return ParseNode.CONST_1;
+            }
+        }
+
+        private void pushBoolNode(ParseNode node) {
+            boolNodeStack[boolTop++] = node;
+        }
+
+        private ParseNode popBoolNode() {
+            if (boolTop > 0) {
+                return boolNodeStack[--boolTop];
+            } else {
+                return ParseNode.CONST_FALSE;
+            }
+        }
+    }
+
+    private static ThreadLocal<PostOrderEvaluator> postOrderEvaluator = new ThreadLocal<>();
+
+    static {
+        postOrderEvaluator.set(new PostOrderEvaluator());
+    }
+
+    public static int evaluatePostOrder(Symbol[] program, Environment env) {
+        return postOrderEvaluator.get().evaluate(program, env);
+    }
+
+    public static ParseNode makeParseTreeFromPostOrder(Symbol[] program) {
+        return postOrderEvaluator.get().makeParseTree(program);
+    }
+
 }

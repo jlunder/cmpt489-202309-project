@@ -6,9 +6,9 @@ import synth.core.*;
 import synth.dsl.Symbol;
 
 public class ExprConstNode extends ExprNode {
-    public static ParseNode REIFIED_1 = new ParseNode(Symbol.Const1, ParseNode.NO_CHILDREN);
-    public static ParseNode REIFIED_2 = new ParseNode(Symbol.Const2, ParseNode.NO_CHILDREN);
-    public static ParseNode REIFIED_3 = new ParseNode(Symbol.Const3, ParseNode.NO_CHILDREN);
+    public static ParseNode REIFIED_1 = ParseNode.CONST_1;
+    public static ParseNode REIFIED_2 = ParseNode.CONST_2;
+    public static ParseNode REIFIED_3 = ParseNode.CONST_3;
     public static ParseNode REIFIED_4 = new ParseNode(Symbol.Add, List.of(REIFIED_2, REIFIED_2));
     public static ParseNode REIFIED_5 = new ParseNode(Symbol.Add, List.of(REIFIED_2, REIFIED_3));
     public static ParseNode REIFIED_6 = new ParseNode(Symbol.Add, List.of(REIFIED_3, REIFIED_3));
@@ -20,9 +20,7 @@ public class ExprConstNode extends ExprNode {
     private final int value;
 
     public ExprConstNode(int value) {
-        assert value > 0;
         this.value = value;
-        this.reified = computeReified(value);
     }
 
     public int value() {
@@ -33,7 +31,13 @@ public class ExprConstNode extends ExprNode {
         return value;
     }
 
+    @Override
+    protected ParseNode makeReified() {
+        return computeReified(value);
+    }
+
     private static ParseNode computeReified(int value) {
+        assert value > 0;
         return reifiedCache.computeIfAbsent(value, val -> {
             // Should already be seeded with 1-3, < 1 is impossible
             if (val <= REIFY_SMALL_VALUE_MAX)

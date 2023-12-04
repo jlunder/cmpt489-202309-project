@@ -1,15 +1,10 @@
 package synth.algorithms.ast;
 
-import java.util.List;
-
 import synth.core.*;
-import synth.dsl.Symbol;
 
 public class BoolConstNode extends BoolNode {
-    private static final ParseNode REIFIED_TRUE = new ParseNode(Symbol.Eq,
-            List.of(ExprConstNode.REIFIED_1, ExprConstNode.REIFIED_1));
-    private static final ParseNode REIFIED_FALSE = new ParseNode(Symbol.Eq,
-            List.of(ExprConstNode.REIFIED_1, ExprConstNode.REIFIED_2));
+    private static final ParseNode REIFIED_TRUE = ParseNode.CONST_TRUE;
+    private static final ParseNode REIFIED_FALSE = ParseNode.CONST_FALSE;
 
     private boolean value;
 

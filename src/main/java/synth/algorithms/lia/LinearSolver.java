@@ -116,7 +116,12 @@ public class LinearSolver implements AutoCloseable {
                     // Term constants must be >= 0
                     z3Solver.add(z3.mkGe(newC, z3Zero));
                     // Term constants must be <= CMax -- unreasonably large constants imply a deep
-                    // parse tree
+                    // parse tree, and we should limit the complexity of the constants we generate
+                    // in proportion with other complexity limits.
+                    // (If term constants aren't bounded, and the example has negative numbers in
+                    // the input, the solver can spend a lot of time thinking about how different
+                    // combinations of even and odd powers of the inputs could add together to make
+                    // the precise target values you're looking for.)
                     z3Solver.add(z3.mkLe(newC, z3CMax));
                     return newC;
                 });

@@ -10,7 +10,7 @@ public class Classification {
     private Set<Example> excluded;
     private int cachedHashCode;
 
-    public static Classification fromCondition(BoolNode condition, List<Example> examples) {
+    public static Classification makeFromCondition(BoolNode condition, List<Example> examples) {
         var included = new HashSet<Example>(examples.size());
         var excluded = new HashSet<Example>(examples.size());
         for (var ex : examples) {

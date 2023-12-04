@@ -11,7 +11,7 @@ public class Discriminator {
     // complexity metric?
 
     public Discriminator(BoolNode condition, List<Example> examples) {
-        this.classification = Classification.fromCondition(condition, examples);
+        this.classification = Classification.makeFromCondition(condition, examples);
         this.condition = condition;
     }
 }
