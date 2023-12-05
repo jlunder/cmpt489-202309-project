@@ -185,6 +185,7 @@ randomExpr minHeight maxHeight
       -- minHeight <= 0 means min height achieved, and that's the only circumstance we are allowed terminals
       exprGens1 <- if minHeight <= 0 then exprGenHeight0 newMinHeight newMaxHeight else return []
       exprGens2 <- if maxHeight >= 1 then exprGenHeight1P newMinHeight newMaxHeight else return []
+      -- exprGens3 <- return []
       exprGens3 <- if maxHeight >= 2 then exprGenHeight2P newMinHeight newMaxHeight else return []
       let exprGens = exprGens1 ++ exprGens2 ++ exprGens3
       i <- getRandomR (0, length exprGens - 1)
@@ -281,7 +282,6 @@ boolGenHeight2P newMinHeight newMaxHeight
             return (Not b)
         ]
 
-
 randomMinHeights :: (MonadRandom m, Random b, Num b) => b -> Int -> m [b]
 randomMinHeights minHeight nBranches = do
   -- Only enforce minHeight on one branch -- others get random mins
@@ -305,7 +305,7 @@ bestExamples :: (MonadRandom m) => Int -> ExprNode -> Set.Set Env -> m [Env]
 bestExamples count program envs = do
   uniqueExamples <- computeUniqueExamples count program (Set.toList envs) Set.empty
   let unusedEnvs = Set.difference envs (Set.fromList uniqueExamples)
-  nonUniqueExamples <- computeNonUniqueExamples (count - length uniqueExamples) (Set.toList unusedEnvs)
+  nonUniqueExamples <- computeNonUniqueExamples (count - length uniqueExamples) program (Set.toList unusedEnvs)
   return $ uniqueExamples ++ nonUniqueExamples
   where
     computeUniqueExamples :: (MonadRandom m) => Int -> ExprNode -> [Env] -> Set.Set Integer -> m [Env]
@@ -317,21 +317,26 @@ bestExamples count program envs = do
       let e = envs !! i
       let remainEnvs = take i envs ++ drop (i + 1) envs
       let result = evalExpr e program
-      if Set.member result used
+      if Set.member result used || result < -2147483648 || result >= 2147483647
         then computeUniqueExamples count program remainEnvs used
         else do
           examples <- computeUniqueExamples (count - 1) program remainEnvs (Set.insert result used)
           return $ e : examples
 
-    computeNonUniqueExamples :: (MonadRandom m) => Int -> [Env] -> m [Env]
+    computeNonUniqueExamples :: (MonadRandom m) => Int -> ExprNode -> [Env] -> m [Env]
     -- computeNonUniqueExamples count envs | trace (printf "computeNonUniqueExamples %d <P> <E %d>" count (length envs)) False = undefined
-    computeNonUniqueExamples 0 envs = return []
-    computeNonUniqueExamples count envs = do
+    computeNonUniqueExamples 0 _ envs = return []
+    computeNonUniqueExamples _ _ [] = return []
+    computeNonUniqueExamples count program envs = do
       i <- getRandomR (0, length envs - 1)
       let e = envs !! i
       let remainEnvs = take i envs ++ drop (i + 1) envs
-      examples <- computeNonUniqueExamples (count - 1) remainEnvs
-      return $ e : examples
+      let result = evalExpr e program
+      if result < -2147483648 || result >= 2147483647
+        then computeNonUniqueExamples count program remainEnvs
+        else do
+          examples <- computeNonUniqueExamples (count - 1) program remainEnvs
+          return $ e : examples
 
 describeExample :: Env -> ExprNode -> String
 describeExample env@(Env x y z) program =
@@ -365,6 +370,7 @@ main = do
           ( \(i :: Int) -> do
               programText <- makeTestProgram d 1000
               writeFile (printf "output/%02d%02d.txt" d i) programText
+              print (d * 100 + i)
           )
           [0 .. 9]
     )
