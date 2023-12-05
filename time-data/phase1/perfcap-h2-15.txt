@@ -1,0 +1,209 @@
+# ../../Synth/test-data/phase1/0300.txt
+Ite(Lt(y, 2), x, Add(1, 3))
+# ../../Synth/test-data/phase1/0301.txt
+Add(z, Multiply(3, x))
+# ../../Synth/test-data/phase1/0302.txt
+Add(2, Add(x, y))
+# ../../Synth/test-data/phase1/0303.txt
+Multiply(2, Add(3, x))
+# ../../Synth/test-data/phase1/0304.txt
+Add(x, Multiply(3, x))
+# ../../Synth/test-data/phase1/0305.txt
+Add(2, Add(x, z))
+# ../../Synth/test-data/phase1/0306.txt
+Add(1, Add(x, y))
+# ../../Synth/test-data/phase1/0307.txt
+Add(2, 3)
+# ../../Synth/test-data/phase1/0308.txt
+Add(2, Add(x, x))
+# ../../Synth/test-data/phase1/0309.txt
+Ite(Lt(x, 2), 3, x)
+# ../../Synth/test-data/phase1/0310.txt
+Add(y, Multiply(3, x))
+# ../../Synth/test-data/phase1/0311.txt
+Ite(Lt(3, z), Add(y, y), 2)
+# ../../Synth/test-data/phase1/0312.txt
+Add(1, Add(y, y))
+# ../../Synth/test-data/phase1/0313.txt
+Multiply(2, Add(2, z))
+# ../../Synth/test-data/phase1/0314.txt
+Multiply(2, Multiply(3, x))
+# ../../Synth/test-data/phase1/0315.txt
+Multiply(x, Add(y, Multiply(y, z)))
+# ../../Synth/test-data/phase1/0316.txt
+Add(3, Multiply(3, x))
+# ../../Synth/test-data/phase1/0317.txt
+Ite(Eq(1, z), 3, Add(x, y))
+# ../../Synth/test-data/phase1/0318.txt
+Add(x, Add(y, z))
+# ../../Synth/test-data/phase1/0319.txt
+Add(2, Add(3, y))
+# ../../Synth/test-data/phase1/0320.txt
+Multiply(2, Add(3, x))
+# ../../Synth/test-data/phase1/0321.txt
+Ite(Lt(3, x), Add(2, x), y)
+# ../../Synth/test-data/phase1/0322.txt
+Multiply(3, Add(x, y))
+# ../../Synth/test-data/phase1/0323.txt
+Ite(Lt(3, x), z, Multiply(3, y))
+# ../../Synth/test-data/phase1/0324.txt
+Add(x, Multiply(z, z))
+# ../../Synth/test-data/phase1/0325.txt
+Add(2, Add(3, 3))
+# ../../Synth/test-data/phase1/0326.txt
+Multiply(2, Ite(Lt(z, 3), 2, x))
+# ../../Synth/test-data/phase1/0327.txt
+Add(3, Multiply(3, y))
+# ../../Synth/test-data/phase1/0328.txt
+Add(2, Add(x, Multiply(x, z)))
+# ../../Synth/test-data/phase1/0329.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(3, z), Add(3, 3), Multiply(y, z))
+# ../../Synth/test-data/phase1/0330.txt
+Add(2, Add(3, 3))
+# ../../Synth/test-data/phase1/0331.txt
+Add(3, Add(x, x))
+# ../../Synth/test-data/phase1/0332.txt
+Add(3, Add(x, y))
+# ../../Synth/test-data/phase1/0333.txt
+Ite(Lt(x, 2), z, Add(x, x))
+# ../../Synth/test-data/phase1/0334.txt
+Multiply(x, x)
+# ../../Synth/test-data/phase1/0335.txt
+Multiply(3, z)
+# ../../Synth/test-data/phase1/0336.txt
+Add(x, z)
+# ../../Synth/test-data/phase1/0337.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(1, z), Add(3, y), Multiply(3, 3))
+# ../../Synth/test-data/phase1/0338.txt
+Multiply(y, Add(3, y))
+# ../../Synth/test-data/phase1/0339.txt
+Ite(Lt(z, x), Add(3, z), 3)
+# ../../Synth/test-data/phase1/0340.txt
+Add(1, Add(3, 3))
+# ../../Synth/test-data/phase1/0341.txt
+Add(y, Add(y, z))
+# ../../Synth/test-data/phase1/0342.txt
+Add(3, Add(x, y))
+# ../../Synth/test-data/phase1/0343.txt
+Multiply(3, Add(2, x))
+# ../../Synth/test-data/phase1/0344.txt
+Multiply(3, Add(2, y))
+# ../../Synth/test-data/phase1/0345.txt
+Multiply(2, Multiply(3, z))
+# ../../Synth/test-data/phase1/0346.txt
+Multiply(2, Add(3, x))
+# ../../Synth/test-data/phase1/0347.txt
+Ite(Lt(y, x), 3, Multiply(3, 3))
+# ../../Synth/test-data/phase1/0348.txt
+Add(1, Add(x, z))
+# ../../Synth/test-data/phase1/0349.txt
+Ite(Lt(3, z), z, Add(2, z))
+# ../../Synth/test-data/phase2/0200.txt
+Multiply(x, Multiply(y, z))
+# ../../Synth/test-data/phase2/0201.txt
+Add(1, Add(x, x))
+# ../../Synth/test-data/phase2/0202.txt
+Multiply(2, Multiply(x, z))
+# ../../Synth/test-data/phase2/0203.txt
+Add(3, Add(y, Add(y, z)))
+# ../../Synth/test-data/phase2/0204.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(x, y), Multiply(x, x), Add(1, z))
+# ../../Synth/test-data/phase2/0205.txt
+Multiply(2, Multiply(y, Multiply(y, z)))
+# ../../Synth/test-data/phase2/0206.txt
+Add(x, Multiply(3, x))
+# ../../Synth/test-data/phase2/0207.txt
+Add(y, Multiply(3, 3))
+# ../../Synth/test-data/phase2/0208.txt
+Add(2, Add(x, x))
+# ../../Synth/test-data/phase2/0209.txt
+Multiply(3, Multiply(x, Multiply(x, y)))
+# ../../Synth/test-data/phase2/0200.txt
+Multiply(x, Multiply(y, z))
+# ../../Synth/test-data/phase2/0201.txt
+Add(1, Add(x, x))
+# ../../Synth/test-data/phase2/0202.txt
+Multiply(2, Multiply(x, z))
+# ../../Synth/test-data/phase2/0203.txt
+Add(3, Add(y, Add(y, z)))
+# ../../Synth/test-data/phase2/0204.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(x, y), Multiply(x, x), Add(1, z))
+# ../../Synth/test-data/phase2/0205.txt
+Multiply(2, Multiply(y, Multiply(y, z)))
+# ../../Synth/test-data/phase2/0206.txt
+Add(x, Multiply(3, x))
+# ../../Synth/test-data/phase2/0207.txt
+Add(y, Multiply(3, 3))
+# ../../Synth/test-data/phase2/0208.txt
+Add(2, Add(x, x))
+# ../../Synth/test-data/phase2/0209.txt
+Multiply(3, Multiply(x, Multiply(x, y)))
+# ../../Synth/test-data/phase2/0200.txt
+Multiply(x, Multiply(y, z))
+# ../../Synth/test-data/phase2/0201.txt
+Add(1, Add(x, x))
+# ../../Synth/test-data/phase2/0202.txt
+Multiply(2, Multiply(x, z))
+# ../../Synth/test-data/phase2/0203.txt
+Add(3, Add(y, Add(y, z)))
+# ../../Synth/test-data/phase2/0204.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(x, y), Multiply(x, x), Add(1, z))
+# ../../Synth/test-data/phase2/0205.txt
+Multiply(2, Multiply(y, Multiply(y, z)))
+# ../../Synth/test-data/phase2/0206.txt
+Add(x, Multiply(3, x))
+# ../../Synth/test-data/phase2/0207.txt
+Add(y, Multiply(3, 3))
+# ../../Synth/test-data/phase2/0208.txt
+Add(2, Add(x, x))
+# ../../Synth/test-data/phase2/0209.txt
+Multiply(3, Multiply(x, Multiply(x, y)))
+# ../../Synth/test-data/phase2/0200.txt
+Multiply(x, Multiply(y, z))
+# ../../Synth/test-data/phase2/0201.txt
+Add(1, Add(x, x))
+# ../../Synth/test-data/phase2/0202.txt
+Multiply(2, Multiply(x, z))
+# ../../Synth/test-data/phase2/0203.txt
+Add(3, Add(y, Add(y, z)))
+# ../../Synth/test-data/phase2/0204.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(x, y), Multiply(x, x), Add(1, z))
+# ../../Synth/test-data/phase2/0205.txt
+Multiply(2, Multiply(y, Multiply(y, z)))
+# ../../Synth/test-data/phase2/0206.txt
+Add(x, Multiply(3, x))
+# ../../Synth/test-data/phase2/0207.txt
+Add(y, Multiply(3, 3))
+# ../../Synth/test-data/phase2/0208.txt
+Add(2, Add(x, x))
+# ../../Synth/test-data/phase2/0209.txt
+Multiply(3, Multiply(x, Multiply(x, y)))
+# ../../Synth/test-data/phase2/0200.txt
+Multiply(x, Multiply(y, z))
+# ../../Synth/test-data/phase2/0201.txt
+Add(1, Add(x, x))
+# ../../Synth/test-data/phase2/0202.txt
+Multiply(2, Multiply(x, z))
+# ../../Synth/test-data/phase2/0203.txt
+Add(3, Add(y, Add(y, z)))
+# ../../Synth/test-data/phase2/0204.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(x, y), Multiply(x, x), Add(1, z))
+# ../../Synth/test-data/phase2/0205.txt
+Multiply(2, Multiply(y, Multiply(y, z)))
+# ../../Synth/test-data/phase2/0206.txt
+Add(x, Multiply(3, x))
+# ../../Synth/test-data/phase2/0207.txt
+Add(y, Multiply(3, 3))
+# ../../Synth/test-data/phase2/0208.txt
+Add(2, Add(x, x))
+# ../../Synth/test-data/phase2/0209.txt
+Multiply(3, Multiply(x, Multiply(x, y)))
+167.38user 10.98system 1:00.72elapsed 293%CPU (0avgtext+0avgdata 4269052maxresident)k
+0inputs+272outputs (0major+2728498minor)pagefaults 0swaps

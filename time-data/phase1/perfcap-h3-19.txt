@@ -1,0 +1,277 @@
+# ../../Synth/test-data/phase1/0400.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(3, x), 3, Add(3, Multiply(3, 3)))
+# ../../Synth/test-data/phase1/0401.txt
+Add(2, Multiply(2, Add(x, z)))
+# ../../Synth/test-data/phase1/0402.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0403.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(Add(2, y), Add(3, Add(x, y)))
+# ../../Synth/test-data/phase1/0404.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(1, Ite(Eq(3, x), 3, Add(3, z)))
+# ../../Synth/test-data/phase1/0405.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0406.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(1, x), 3, Multiply(2, Multiply(3, y)))
+# ../../Synth/test-data/phase1/0407.txt
+Add(y, Multiply(2, Multiply(x, y)))
+# ../../Synth/test-data/phase1/0408.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0409.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(3, x), 1, Multiply(3, Multiply(3, x)))
+# ../../Synth/test-data/phase1/0410.txt
+Add(z, Multiply(z, Add(3, x)))
+# ../../Synth/test-data/phase1/0411.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(3, Add(z, Multiply(y, z))))
+# ../../Synth/test-data/phase1/0412.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0413.txt
+Add(3, Add(x, Add(x, y)))
+# ../../Synth/test-data/phase1/0414.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0415.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0416.txt
+Add(1, Add(3, Add(y, z)))
+# ../../Synth/test-data/phase1/0417.txt
+Add(3, Multiply(2, Multiply(3, y)))
+# ../../Synth/test-data/phase1/0418.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(1, Ite(Eq(2, z), 3, Add(y, y)))
+# ../../Synth/test-data/phase1/0419.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(x, 2), 3, Multiply(z, Add(2, 3)))
+# ../../Synth/test-data/phase1/0420.txt
+Multiply(y, Add(3, Add(z, z)))
+# ../../Synth/test-data/phase1/0421.txt
+x
+# ../../Synth/test-data/phase1/0422.txt
+Multiply(3, Multiply(x, Multiply(y, y)))
+# ../../Synth/test-data/phase1/0423.txt
+Multiply(z, Add(3, Add(3, y)))
+# ../../Synth/test-data/phase1/0424.txt
+Add(y, Multiply(2, Multiply(x, y)))
+# ../../Synth/test-data/phase1/0425.txt
+Multiply(3, Multiply(z, Add(3, x)))
+# ../../Synth/test-data/phase1/0426.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0427.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0428.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0429.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0430.txt
+Ite(Lt(x, y), z, 3)
+# ../../Synth/test-data/phase1/0431.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0432.txt
+x
+# ../../Synth/test-data/phase1/0433.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0434.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0435.txt
+Ite(Eq(1, x), Add(1, 3), z)
+# ../../Synth/test-data/phase1/0436.txt
+Add(3, Multiply(y, Add(2, x)))
+# ../../Synth/test-data/phase1/0437.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(2, Multiply(3, Multiply(x, z))))
+# ../../Synth/test-data/phase1/0438.txt
+Add(3, Multiply(2, Multiply(x, z)))
+# ../../Synth/test-data/phase1/0439.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0440.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(3, Add(x, Add(x, Add(y, z))))
+# ../../Synth/test-data/phase1/0441.txt
+Add(3, Multiply(y, Add(2, 3)))
+# ../../Synth/test-data/phase1/0442.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(2, Multiply(x, y)), 1, Multiply(x, z))
+# ../../Synth/test-data/phase1/0443.txt
+Add(2, Add(x, y))
+# ../../Synth/test-data/phase1/0444.txt
+Multiply(3, Multiply(x, Multiply(y, z)))
+# ../../Synth/test-data/phase1/0445.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(Add(2, 3), Add(x, z)), x, z)
+# ../../Synth/test-data/phase1/0446.txt
+Add(3, Add(x, Multiply(3, z)))
+# ../../Synth/test-data/phase1/0447.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0448.txt
+Add(x, Multiply(2, Multiply(3, y)))
+# ../../Synth/test-data/phase1/0449.txt
+3
+# ../../Synth/test-data/phase1/0450.txt
+Multiply(2, Add(3, z))
+# ../../Synth/test-data/phase1/0451.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0452.txt
+Add(3, Multiply(3, x))
+# ../../Synth/test-data/phase1/0453.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0454.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(Add(x, z), Add(y, Multiply(3, x)))
+# ../../Synth/test-data/phase1/0455.txt
+Ite(Eq(2, x), Add(3, 3), y)
+# ../../Synth/test-data/phase1/0456.txt
+Add(x, Multiply(x, y))
+# ../../Synth/test-data/phase1/0457.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(x, Multiply(2, Multiply(2, Add(3, y))))
+# ../../Synth/test-data/phase1/0458.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(2, z), 3, Add(2, Add(3, y)))
+# ../../Synth/test-data/phase1/0459.txt
+Add(1, Add(3, Add(z, Multiply(y, z))))
+# ../../Synth/test-data/phase1/0460.txt
+Add(2, Add(3, Add(3, y)))
+# ../../Synth/test-data/phase1/0461.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0462.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0463.txt
+y
+# ../../Synth/test-data/phase1/0464.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Eq(3, x), Add(y, Multiply(3, y)), x)
+# ../../Synth/test-data/phase1/0465.txt
+3
+# ../../Synth/test-data/phase1/0466.txt
+Multiply(y, Add(3, Add(x, z)))
+# ../../Synth/test-data/phase1/0467.txt
+Multiply(y, Ite(Lt(1, z), 2, z))
+# ../../Synth/test-data/phase1/0468.txt
+Add(x, Multiply(2, Multiply(3, x)))
+# ../../Synth/test-data/phase1/0469.txt
+Ite(Lt(2, y), 2, x)
+# ../../Synth/test-data/phase1/0470.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0471.txt
+Multiply(2, Multiply(y, Multiply(y, z)))
+# ../../Synth/test-data/phase1/0472.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(2, Multiply(3, Multiply(y, z))))
+# ../../Synth/test-data/phase1/0473.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0474.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(y, 2), 2, Multiply(2, Multiply(3, z)))
+# ../../Synth/test-data/phase1/0475.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(2, z), y, Add(x, Multiply(3, 3)))
+# ../../Synth/test-data/phase1/0476.txt
+warning: enumeration capped at 10000000 pending jobs
+Ite(Lt(y, Multiply(z, z)), x, Add(1, 3))
+# ../../Synth/test-data/phase1/0477.txt
+Multiply(2, Multiply(3, Add(3, y)))
+# ../../Synth/test-data/phase1/0478.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(Add(1, Add(y, z)), Add(2, 3))
+# ../../Synth/test-data/phase1/0479.txt
+Add(2, Multiply(3, Multiply(x, y)))
+# ../../Synth/test-data/phase1/0480.txt
+Add(2, Multiply(3, x))
+# ../../Synth/test-data/phase1/0481.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0482.txt
+Multiply(3, Add(2, z))
+# ../../Synth/test-data/phase1/0483.txt
+Add(y, Add(y, z))
+# ../../Synth/test-data/phase1/0484.txt
+Ite(Eq(2, z), Add(y, y), y)
+# ../../Synth/test-data/phase1/0485.txt
+Ite(Lt(1, y), 1, Add(1, x))
+# ../../Synth/test-data/phase1/0486.txt
+Add(x, Multiply(3, Add(3, z)))
+# ../../Synth/test-data/phase1/0487.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(2, Multiply(2, Multiply(3, z))))
+# ../../Synth/test-data/phase1/0488.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0489.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0490.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(3, Multiply(3, Multiply(z, z))))
+# ../../Synth/test-data/phase1/0491.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0492.txt
+Ite(Lt(x, 2), y, Multiply(x, x))
+# ../../Synth/test-data/phase1/0493.txt
+Add(1, Multiply(x, Multiply(x, z)))
+# ../../Synth/test-data/phase1/0494.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase1/0495.txt
+Add(1, Multiply(3, Multiply(x, y)))
+# ../../Synth/test-data/phase1/0496.txt
+Add(x, z)
+# ../../Synth/test-data/phase1/0497.txt
+Multiply(x, y)
+# ../../Synth/test-data/phase1/0498.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(2, Add(3, Add(3, z))))
+# ../../Synth/test-data/phase1/0499.txt
+Multiply(3, Add(3, Add(3, x)))
+# ../../Synth/test-data/phase2/0300.txt
+warning: enumeration capped at 10000000 pending jobs
+Add(y, Multiply(Add(2, x), Add(3, x)))
+# ../../Synth/test-data/phase2/0301.txt
+Multiply(Add(2, x), Add(2, y))
+# ../../Synth/test-data/phase2/0302.txt
+warning: enumeration capped at 10000000 pending jobs
+Multiply(2, Multiply(2, Multiply(2, Multiply(3, y))))
+# ../../Synth/test-data/phase2/0303.txt
+Multiply(2, Add(3, x))
+# ../../Synth/test-data/phase2/0304.txt
+Add(1, Multiply(z, z))
+# ../../Synth/test-data/phase2/0305.txt
+Add(1, Add(x, Multiply(3, y)))
+# ../../Synth/test-data/phase2/0306.txt
+Multiply(3, Multiply(x, Add(3, z)))
+# ../../Synth/test-data/phase2/0307.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase2/0308.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+# ../../Synth/test-data/phase2/0309.txt
+warning: enumeration capped at 10000000 pending jobs
+error: failed to generate!
+1664.03user 76.66system 7:14.53elapsed 400%CPU (0avgtext+0avgdata 5108348maxresident)k
+1176inputs+1240outputs (0major+12485383minor)pagefaults 0swaps
