@@ -8,7 +8,7 @@ import synth.algorithms.classify.Classification;
 import synth.core.Example;
 
 public class LinearSolver implements AutoCloseable {
-    private static final boolean logGroups = false;
+    private static final boolean logGroups = true;
 
     private List<Term> terms;
     private int cMax;
@@ -35,42 +35,55 @@ public class LinearSolver implements AutoCloseable {
         this.cMax = cMax;
     }
 
+    public static final int SHORT_TIMEOUT_MS = 500;
+
     /**
      * For each example, compute a solution set using the linear solver.
      */
     public Map<SolutionSet, Classification> computeSolutionSets(List<Example> examples) {
         var sets = new HashMap<SolutionSet, Classification>();
         assert examples.size() > 0;
-        int i = 0, j;
-        while (i < examples.size()) {
-            if (logGroups) {
-                System.out.println("i = " + i);
+        var ungroupedExamples = new HashSet<Example>(examples);
+        for (var ei : examples) {
+            if (!ungroupedExamples.contains(ei)) {
+                // Already dealt with this one in an earlier pass
+                continue;
             }
-            var sess = startSession();
-            Example ei = examples.get(i);
+
+            // Start a new group for this example
+            var included = new HashSet<Example>();
+            included.add(ei);
+            ungroupedExamples.remove(ei);
+
+            if (logGroups) {
+                System.out.println("e = " + ei);
+            }
+
+            // Test against all other examples and include them greedily as long as the
+            // whole group remains consistent
+            var sess = startSession(SHORT_TIMEOUT_MS);
             sess.addEquation(ei);
-            j = i + 1;
-            while (j < examples.size()) {
+            for (var ej : List.copyOf(ungroupedExamples)) {
                 if (logGroups) {
-                    System.out.println("  j = " + j);
+                    System.out.println("  j = " + ej);
                 }
-                Example ej = examples.get(j);
                 sess.addEquation(ej);
-                if (!sess.checkSatisfiable()) {
+                if (sess.checkSatisfiable()) {
+                    included.add(ej);
+                    ungroupedExamples.remove(ej);
+                } else {
                     if (logGroups) {
                         System.out.println("  UNSAT");
+                        // restart the session
+                        sess = startSession(SHORT_TIMEOUT_MS);
+                        for (var es : included) {
+                            sess.addEquation(es);
+                        }
                     }
-                    break;
                 }
-                ++j;
             }
-            var included = new HashSet<Example>(j - i);
-            sess = startSession();
-            for (int k = i; k < j; ++k) {
-                var ek = examples.get(k);
-                sess.addEquation(ek);
-                included.add(ek);
-            }
+
+            // Get the actual solution models for this group
             var sols = sess.solve();
             assert !sols.isEmpty();
             if (logGroups) {
@@ -85,13 +98,13 @@ public class LinearSolver implements AutoCloseable {
             var excluded = new HashSet<Example>(examples);
             excluded.removeAll(included);
             sets.put(sols, new Classification(included, excluded));
-            i = j;
+            ungroupedExamples.removeAll(included);
         }
         return sets;
     }
 
-    public SolveSession startSession() {
-        return new SolveSession();
+    public SolveSession startSession(int timeoutMs) {
+        return new SolveSession(timeoutMs);
     }
 
     public class SolveSession {
@@ -101,7 +114,10 @@ public class LinearSolver implements AutoCloseable {
         private HashMap<Term, IntExpr> z3Coeffs = new HashMap<>();
         private Status z3Status = Status.UNKNOWN;
 
-        SolveSession() {
+        SolveSession(int timeoutMs) {
+            var params = z3.mkParams();
+            params.add("timeout", timeoutMs);
+            z3Solver.setParameters(params);
         }
 
         @SuppressWarnings("unchecked")
