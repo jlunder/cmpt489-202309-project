@@ -2,7 +2,11 @@ package synth.algorithms.lia;
 
 import java.util.*;
 
-public class LinearSolution implements Comparable<LinearSolution> {
+import synth.algorithms.ast.*;
+import synth.algorithms.representation.ExprRepresentation;
+import synth.core.*;
+
+public class LinearSolution implements Comparable<LinearSolution>, ExprRepresentation {
     private final Map<Term, Integer> coefficientMap;
 
     // A packed map of the terms and their values; negative values are (negated)
@@ -57,5 +61,60 @@ public class LinearSolution implements Comparable<LinearSolution> {
             return 0;
         }
         return Arrays.compare(signature, other.signature);
+    }
+
+    @Override
+    public ExprNode reifyAsExprAst() {
+        assert coefficientMap.size() > 0;
+        var children = new ArrayList<ExprNode>();
+        for (var termC : coefficientMap.entrySet()) {
+            children.add(buildAstFromTerm(termC.getValue(), termC.getKey().xPower(), termC.getKey().yPower(),
+                    termC.getKey().zPower()));
+        }
+        if (children.size() == 1) {
+            return children.get(0);
+        } else {
+            return new AddNode(children.toArray(ExprNode[]::new));
+        }
+    }
+
+    private ExprNode buildAstFromTerm(int coeff, int xOrder, int yOrder, int zOrder) {
+        assert coeff > 0 && xOrder >= 0 && yOrder >= 0 && zOrder >= 0;
+        var children = new ArrayList<ExprNode>();
+        if (coeff > 1) {
+            children.add(new ExprConstNode(coeff));
+        }
+        for (int i = 0; i < xOrder; ++i) {
+            children.add(VariableNode.VAR_X);
+        }
+        for (int i = 0; i < yOrder; ++i) {
+            children.add(VariableNode.VAR_Y);
+        }
+        for (int i = 0; i < zOrder; ++i) {
+            children.add(VariableNode.VAR_Z);
+        }
+
+        // Special case: if this is a unit term, we will have not added *any* children
+        if (children.size() == 0) {
+            return new ExprConstNode(1);
+        } else if (children.size() == 1) {
+            return children.get(0);
+        } else {
+            return new MultiplyNode(children.toArray(ExprNode[]::new));
+        }
+    }
+
+    @Override
+    public ParseNode reifyAsExprParse() {
+        return reifyAsExprAst().reify();
+    }
+
+    @Override
+    public int evalExpr(Environment env) {
+        int sum = 0;
+        for (var e : coefficientMap.entrySet()) {
+            sum += e.getValue() * e.getKey().evalTerm(env);
+        }
+        return sum;
     }
 }

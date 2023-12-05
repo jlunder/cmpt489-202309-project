@@ -41,23 +41,23 @@ public class VoltronSynthesizer extends SynthesizerBase {
         }
     }
 
-    private LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(2), 3 * 3);
+    private LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(2), 10);
 
     private Set<Example> allExamples;
-    private Map<SolutionSet, Classification> linearSolutionSets;
+    private Map<LinearSolution, Classification> linearSolutions;
     private List<Discriminator> discriminatorPool;
     private List<PartialSolution> approximatePartialSolutions;
 
     private void reset() {
         allExamples = null;
-        linearSolutionSets = null;
+        linearSolutions = null;
         discriminatorPool = null;
         approximatePartialSolutions = null;
     }
 
     private List<Discriminator> generateDiscriminatorPool() throws InterruptedException {
         var discriminators = new ArrayList<Discriminator>();
-        for (var sol : linearSolutionSets.entrySet()) {
+        for (var sol : linearSolutions.entrySet()) {
             var classification = sol.getValue();
 
             var positive = generateImperfectDiscriminator(
@@ -103,23 +103,23 @@ public class VoltronSynthesizer extends SynthesizerBase {
 
     private class RankedSolutions implements Comparable<RankedSolutions> {
         private int ranking;
-        private SolutionSet solutions;
+        private LinearSolution solution;
         private HashSet<Example> coveredExamples;
 
         // public int ranking() {
         // return ranking;
         // }
 
-        public SolutionSet solutions() {
-            return solutions;
+        public LinearSolution solution() {
+            return solution;
         }
 
         public HashSet<Example> coveredExamples() {
             return coveredExamples;
         }
 
-        public RankedSolutions(SolutionSet solutions, HashSet<Example> coveredExamples) {
-            this.solutions = solutions;
+        public RankedSolutions(LinearSolution solution, HashSet<Example> coveredExamples) {
+            this.solution = solution;
             this.coveredExamples = coveredExamples;
             ranking = coveredExamples.size();
         }
@@ -137,7 +137,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
             // ranking is all that really matters, the rest is just tie-breakers to make the
             // sorting stable
             if (res == 0) {
-                res = Integer.compare(solutions.hashCode(), other.solutions.hashCode());
+                res = Integer.compare(solution.hashCode(), other.solution.hashCode());
             }
             if (res == 0) {
                 res = Integer.compare(coveredExamples.hashCode(), other.coveredExamples.hashCode());
@@ -155,13 +155,13 @@ public class VoltronSynthesizer extends SynthesizerBase {
                 return false;
             }
             RankedSolutions rsObj = (RankedSolutions) obj;
-            return ranking == rsObj.ranking && solutions.equals(rsObj.solutions)
+            return ranking == rsObj.ranking && solution.equals(rsObj.solution)
                     && coveredExamples.equals(rsObj.coveredExamples);
         }
 
         @Override
         public int hashCode() {
-            return (ranking * 1056019 + solutions.hashCode()) * 1056019 + coveredExamples.hashCode();
+            return (ranking * 1056019 + solution.hashCode()) * 1056019 + coveredExamples.hashCode();
         }
 
     }
@@ -174,7 +174,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
      */
     private List<PartialSolution> chooseApproximatePartialSolutions() {
         assert !allExamples.isEmpty();
-        assert !linearSolutionSets.isEmpty();
+        assert !linearSolutions.isEmpty();
         assert !discriminatorPool.isEmpty();
 
         var choice = new ArrayList<PartialSolution>();
@@ -185,14 +185,14 @@ public class VoltronSynthesizer extends SynthesizerBase {
         var usedDiscrims = new ArrayList<Discriminator>();
 
         // Initialize useful solutions with all available solutions
-        for (var sol : linearSolutionSets.entrySet()) {
+        for (var sol : linearSolutions.entrySet()) {
             usefulSols.add(new RankedSolutions(sol.getKey(), new HashSet<>(sol.getValue().included())));
         }
         for (var discrim : discriminatorPool) {
             usefulDiscrims.put(discrim, new HashSet<>(discrim.classification().included()));
         }
 
-        while (!usefulSols.isEmpty() && !usedDiscrims.isEmpty()) {
+        while (!usefulSols.isEmpty() && !usefulDiscrims.isEmpty()) {
             // Find a solution set which is (a) as well-covered as possible and (b) as large
             // as possible
             var rankedSols = new PriorityQueue<RankedSolutions>(usefulSols);
@@ -220,8 +220,8 @@ public class VoltronSynthesizer extends SynthesizerBase {
             assert bestCost >= 0f && bestCoveredSolutions != null && bestDiscrim != null;
 
             // Remove the solution we found, and all the examples it covers
-            var partial = new PartialSolution(bestCoveredSolutions.solutions().representativeSolution(),
-                    linearSolutionSets.get(bestCoveredSolutions.solutions()), List.of(bestDiscrim),
+            var partial = new PartialSolution(bestCoveredSolutions.solution(),
+                    linearSolutions.get(bestCoveredSolutions.solution()), List.of(bestDiscrim),
                     List.copyOf(usedDiscrims));
             choice.add(partial);
 
@@ -289,54 +289,14 @@ public class VoltronSynthesizer extends SynthesizerBase {
         return null;
     }
 
-    private ExprNode buildAstFromTerm(int coeff, int xOrder, int yOrder, int zOrder) {
-        assert coeff > 0 && xOrder >= 0 && yOrder >= 0 && zOrder >= 0;
-        var children = new ArrayList<ExprNode>();
-        if (coeff > 1) {
-            children.add(new ExprConstNode(coeff));
-        }
-        for (int i = 0; i < xOrder; ++i) {
-            children.add(VariableNode.VAR_X);
-        }
-        for (int i = 0; i < yOrder; ++i) {
-            children.add(VariableNode.VAR_Y);
-        }
-        for (int i = 0; i < zOrder; ++i) {
-            children.add(VariableNode.VAR_Z);
-        }
-
-        // Special case: if this is a unit term, we will have not added *any* children
-        if (children.size() == 0) {
-            return new ExprConstNode(1);
-        } else if (children.size() == 1) {
-            return children.get(0);
-        } else {
-            return new MultiplyNode(children.toArray(ExprNode[]::new));
-        }
-    }
-
-    private ExprNode buildAstFromLinearSolution(LinearSolution solution) {
-        assert solution.coefficients().size() > 0;
-        var children = new ArrayList<ExprNode>();
-        for (var termC : solution.coefficients().entrySet()) {
-            children.add(buildAstFromTerm(termC.getValue(), termC.getKey().xPower(), termC.getKey().yPower(),
-                    termC.getKey().zPower()));
-        }
-        if (children.size() == 1) {
-            return children.get(0);
-        } else {
-            return new AddNode(children.toArray(ExprNode[]::new));
-        }
-    }
-
     private ExprNode synthesizeAst(List<Example> examples) throws InterruptedException {
         allExamples = Set.copyOf(examples);
-        linearSolutionSets = linSolv.computeSolutionSets(examples);
+        linearSolutions = linSolv.computeSolutionSets(examples);
         // Check if any of our solution sets cover the whole space, and early-out if so!
-        for (var e : linearSolutionSets.entrySet()) {
+        for (var e : linearSolutions.entrySet()) {
             if (e.getValue().excluded().isEmpty()) {
                 // Trivial solution!
-                return buildAstFromLinearSolution(e.getKey().representativeSolution());
+                return e.getKey().reifyAsExprAst();
             }
         }
         discriminatorPool = generateDiscriminatorPool();

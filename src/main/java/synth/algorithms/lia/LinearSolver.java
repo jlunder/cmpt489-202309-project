@@ -8,12 +8,31 @@ import synth.algorithms.classify.Classification;
 import synth.core.Example;
 
 public class LinearSolver implements AutoCloseable {
+    public static class SolveResult {
+        private boolean solutionsAreDefinite;
+        private List<LinearSolution> solutions;
+
+        public boolean solutionsAreDefinite() {
+            return solutionsAreDefinite;
+        }
+
+        public List<LinearSolution> solutions() {
+            return solutions;
+        }
+
+        SolveResult(boolean hasDefiniteSolutions, List<LinearSolution> solutions) {
+            this.solutionsAreDefinite = hasDefiniteSolutions;
+            this.solutions = solutions;
+        }
+    }
+
     private static final boolean logGroups = true;
 
     private List<Term> terms;
     private int cMax;
     private Context z3 = new Context();
-    private int maxSols = 3;
+    private int maxSols = 5;
+    private Random rng = new Random();
 
     public static List<Term> makeAllTerms(int order) {
         Term[] terms = new Term[(order + 1) * (order + 1) * (order + 1)];
@@ -35,16 +54,34 @@ public class LinearSolver implements AutoCloseable {
         this.cMax = cMax;
     }
 
-    public static final int SHORT_TIMEOUT_MS = 500;
+    public static final int SHORT_TIMEOUT_MS = 5000;
+    //public static final int SHORT_TIMEOUT_MS = 500;
+
+    private ArrayList<Example> randomOrder(Collection<Example> examples) {
+        var scrambled = new ArrayList<Example>(examples);
+        var len = examples.size();
+        for (int i = 0; i < len; ++i) {
+            var j = rng.nextInt(len);
+            var tmp = scrambled.get(j);
+            scrambled.set(j, scrambled.get(i));
+            scrambled.set(i, tmp);
+        }
+        return scrambled;
+    }
 
     /**
      * For each example, compute a solution set using the linear solver.
      */
-    public Map<SolutionSet, Classification> computeSolutionSets(List<Example> examples) {
-        var sets = new HashMap<SolutionSet, Classification>();
+    public Map<LinearSolution, Classification> computeSolutionSets(List<Example> examples) {
         assert examples.size() > 0;
+
+        // avoid accidental or malicious bias
+        var scrambledExamples = randomOrder(examples);
+
+        var sets = new HashMap<LinearSolution, Classification>();
         var ungroupedExamples = new HashSet<Example>(examples);
-        for (var ei : examples) {
+
+        for (var ei : scrambledExamples) {
             if (!ungroupedExamples.contains(ei)) {
                 // Already dealt with this one in an earlier pass
                 continue;
@@ -53,54 +90,106 @@ public class LinearSolver implements AutoCloseable {
             // Start a new group for this example
             var included = new HashSet<Example>();
             included.add(ei);
-            ungroupedExamples.remove(ei);
 
             if (logGroups) {
                 System.out.println("e = " + ei);
             }
 
-            // Test against all other examples and include them greedily as long as the
-            // whole group remains consistent
+            var excluded = new HashSet<Example>(examples);
+            var res = findMoreGroupMembersWithZ3(excluded, included);
+            excluded.removeAll(included);
+            sets.put(res.solutions().iterator().next(), new Classification(included, excluded));
+            ungroupedExamples.removeAll(included);
+        }
+
+        assert ungroupedExamples.isEmpty();
+        return sets;
+    }
+
+    private SolveResult findMoreGroupMembersWithZ3(HashSet<Example> ungroupedExamples, HashSet<Example> included) {
+        var scrambledExamples = randomOrder(ungroupedExamples);
+        assert included.size() == 1;
+        // Test against all other examples, adding more until there's enough in the
+        // group for it to have a definite solution
+        SolveResult res = null;
+
+        ungroupedExamples.removeAll(included);
+
+        for (var ej : List.copyOf(scrambledExamples)) {
+            if (logGroups) {
+                System.out.println("  j = " + ej);
+            }
+
+            // Set up the Z3 solve session
             var sess = startSession(SHORT_TIMEOUT_MS);
-            sess.addEquation(ei);
-            for (var ej : List.copyOf(ungroupedExamples)) {
-                if (logGroups) {
-                    System.out.println("  j = " + ej);
+            for (var ei : included) {
+                sess.addEquation(ei);
+            }
+            sess.addEquation(ej);
+
+            if (sess.checkSatisfiable()) {
+                included.add(ej);
+                ungroupedExamples.remove(ej);
+                res = sess.solve();
+                if (res.solutionsAreDefinite()) {
+                    return completeGroupUsingSolutions(res.solutions(), ungroupedExamples, included);
                 }
-                sess.addEquation(ej);
-                if (sess.checkSatisfiable()) {
-                    included.add(ej);
-                    ungroupedExamples.remove(ej);
-                } else {
-                    if (logGroups) {
-                        System.out.println("  UNSAT");
-                        // restart the session
-                        sess = startSession(SHORT_TIMEOUT_MS);
-                        for (var es : included) {
-                            sess.addEquation(es);
+            } else {
+                if (logGroups) {
+                    System.out.println("  UNSAT");
+                }
+            }
+        }
+
+        // If there are at least 2 things in the set there must be a result from the
+        // solve() call left over...
+        if (res != null) {
+            return res;
+        }
+        assert included.size() == 1;
+        // Degenerate case -- not enough examples to be able to come up with a good
+        // solution
+        var ex = included.iterator().next();
+        if (ex.output() > 0) {
+            return new SolveResult(false, List.of(new LinearSolution(Map.of(Term.TERM_1, ex.output()))));
+        } else {
+            var sess = startSession(SHORT_TIMEOUT_MS);
+            sess.addEquation(ex);
+            return sess.solve();
+        }
+    }
+
+    private SolveResult completeGroupUsingSolutions(List<LinearSolution> solutions, HashSet<Example> ungroupedExamples,
+            HashSet<Example> included) {
+        if (logGroups) {
+            System.out.println(String.format("  Completing using %d solutions (%d grouped, %d remain)",
+                    solutions.size(), included.size(), ungroupedExamples.size()));
+        }
+        var viableSolutions = new HashSet<LinearSolution>(solutions);
+        for (var e : List.copyOf(ungroupedExamples)) {
+            boolean any = false, all = true;
+            for (var s : viableSolutions) {
+                var compatible = (s.evalExpr(e.input()) == e.output());
+                any |= compatible;
+                all &= compatible;
+            }
+            if (any) {
+                included.add(e);
+                ungroupedExamples.remove(e);
+                if (!all) {
+                    for (var s : List.copyOf(viableSolutions)) {
+                        if (s.evalExpr(e.input()) != e.output()) {
+                            viableSolutions.remove(s);
                         }
                     }
                 }
             }
-
-            // Get the actual solution models for this group
-            var sols = sess.solve();
-            assert !sols.isEmpty();
-            if (logGroups) {
-                for (var sol : sols.solutions()) {
-                    System.out.println("  solution:");
-                    for (var termC : sol.coefficients().entrySet()) {
-                        System.out.println(
-                                "    " + (termC.getValue() > 1 ? termC.getValue() + " * " : "") + termC.getKey());
-                    }
-                }
-            }
-            var excluded = new HashSet<Example>(examples);
-            excluded.removeAll(included);
-            sets.put(sols, new Classification(included, excluded));
-            ungroupedExamples.removeAll(included);
         }
-        return sets;
+        if (logGroups) {
+            System.out.println(String.format("  Done: winnowed to %d solutions (%d grouped, %d remain)",
+                    viableSolutions.size(), included.size(), ungroupedExamples.size()));
+        }
+        return new SolveResult(true, List.copyOf(viableSolutions));
     }
 
     public SolveSession startSession(int timeoutMs) {
@@ -162,8 +251,8 @@ public class LinearSolver implements AutoCloseable {
             }
         }
 
-        public SolutionSet solve() {
-            var solutions = new HashSet<LinearSolution>();
+        public SolveResult solve() {
+            var solutions = new ArrayList<LinearSolution>();
 
             while (checkSatisfiable() && solutions.size() < maxSols) {
                 var z3Model = z3Solver.getModel();
@@ -180,10 +269,7 @@ public class LinearSolver implements AutoCloseable {
                 addBlockingClause(z3Solver, z3Coeffs, solMap);
             }
 
-            if (solutions.isEmpty()) {
-                return SolutionSet.EMPTY;
-            }
-            return new SolutionSet(solutions);
+            return new SolveResult(solutions.size() < maxSols, solutions);
         }
 
         @SuppressWarnings("unchecked")

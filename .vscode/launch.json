@@ -21,7 +21,7 @@
         },
         {
             "type": "java",
-            "name": "Main (ITE, phase1/0704.txt)",
+            "name": "Main (ITE, phase2/0208.txt)",
             "request": "launch",
             "mainClass": "synth.Main",
             "projectName": "synth",
@@ -30,7 +30,35 @@
                 "-Xmx4096m"
             ],
             "args": [
-                "test-data/phase1/0704.txt",
+                "test-data/phase2/0208.txt",
+            ]
+        },
+        {
+            "type": "java",
+            "name": "Main (ITE, phase2/0502.txt)",
+            "request": "launch",
+            "mainClass": "synth.Main",
+            "projectName": "synth",
+            "vmArgs": [
+                "-ea",
+                "-Xmx4096m"
+            ],
+            "args": [
+                "test-data/phase2/0502.txt",
+            ]
+        },
+        {
+            "type": "java",
+            "name": "Main (ITE, phase2/0502.txt)",
+            "request": "launch",
+            "mainClass": "synth.Main",
+            "projectName": "synth",
+            "vmArgs": [
+                "-ea",
+                "-Xmx4096m"
+            ],
+            "args": [
+                "test-data/phase2/0502.txt",
             ]
         },
         {
@@ -44,7 +72,7 @@
                 "-Xmx4096m"
             ],
             "args": [
-                "test-data/phase2/0302.txt",
+                "test-data/phase2/0301.txt",
                 "test-data/phase2/0304.txt",
                 "test-data/phase2/0305.txt",
                 "test-data/phase2/0307.txt",

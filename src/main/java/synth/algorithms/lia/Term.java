@@ -11,6 +11,11 @@ public final class Term implements Comparable<Term> {
     // private static final Term[] arrayCache = new Term[4096];
     private static final HashMap<Integer, Term> hashCache = new HashMap<>();
 
+    public static final Term TERM_1 = make(0, 0, 0);
+    public static final Term TERM_X = make(1, 0, 0);
+    public static final Term TERM_Y = make(0, 1, 0);
+    public static final Term TERM_Z = make(0, 0, 1);
+
     public static Term fromIndex(int index) {
         assert index >= 0 && index < MAX_INDEX;
         // if (index < arrayCache.length) {
