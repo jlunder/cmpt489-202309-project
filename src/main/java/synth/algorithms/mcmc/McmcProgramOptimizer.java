@@ -1,6 +1,6 @@
 package synth.algorithms.mcmc;
 
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import synth.algorithms.classify.Classification;
@@ -49,17 +49,22 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
 
     private Symbol[] spare;
 
+    public McmcProgramOptimizer(Xoshiro256SS rng, Function<Symbol[], Float> costFunction, Symbol[] symbolPool) {
+        super(rng);
+        this.costFunction = costFunction;
+        this.symbolPool = symbolPool;
+    }
+
     public McmcProgramOptimizer(long seed, Function<Symbol[], Float> costFunction, Symbol[] symbolPool) {
         super(new Xoshiro256SS(seed));
         this.costFunction = costFunction;
         this.symbolPool = symbolPool;
     }
 
-    public static Function<Symbol[], Float> examplesCostFunction(List<Example> examples) {
+    public static Function<Symbol[], Float> examplesCostFunction(Collection<Example> examples) {
         return x -> {
             int failures = 0;
-            for (int i = 0; i < examples.size(); ++i) {
-                var e = examples.get(i);
+            for (var e : examples) {
                 if (Semantics.evaluateExprPostOrder(x, e.input()) != e.output()) {
                     ++failures;
                 }
@@ -68,16 +73,80 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         };
     }
 
-    public static Function<Symbol[], Float> classificationCostFunction(Classification classification) {
+    public static Function<Symbol[], Float> examplesCostFunction(List<Example> examples, Xoshiro256SS rng,
+            int sampleCount) {
         return x -> {
             int failures = 0;
-            for (var e : classification.included()) {
+            for (int i = 0; i < sampleCount; ++i) {
+                var e = examples.get(rng.nextInt(examples.size()));
+                if (Semantics.evaluateExprPostOrder(x, e.input()) != e.output()) {
+                    ++failures;
+                }
+            }
+            return (float) failures;
+        };
+    }
+
+    public static Function<Symbol[], Float> confusionCostFunction(Classification classification) {
+        var infn = inclusionsCostFunction(classification.included());
+        var exfn = exclusionsCostFunction(classification.excluded());
+        return x -> infn.apply(x) + exfn.apply(x);
+    }
+
+    public static Function<Symbol[], Float> confusionCostFunction(Classification classification, Xoshiro256SS rng,
+            int sampleCount) {
+        var infn = (classification.included().size() < sampleCount) ? inclusionsCostFunction(classification.included())
+                : inclusionsCostFunction(List.copyOf(classification.included()), rng, sampleCount);
+        var exfn = (classification.excluded().size() < sampleCount) ? exclusionsCostFunction(classification.excluded())
+                : exclusionsCostFunction(List.copyOf(classification.excluded()), rng, sampleCount);
+        return x -> infn.apply(x) + exfn.apply(x);
+    }
+
+    public static Function<Symbol[], Float> inclusionsCostFunction(Collection<Example> included) {
+        return x -> {
+            int failures = 0;
+            for (var e : included) {
                 if (!Semantics.evaluateBoolPostOrder(x, e.input())) {
                     ++failures;
                 }
             }
-            for (var e : classification.excluded()) {
-                if (Semantics.evaluateBoolPostOrder(x, e.input())) {
+            return (float) failures;
+        };
+    }
+
+    public static Function<Symbol[], Float> inclusionsCostFunction(List<Example> included, Xoshiro256SS rng,
+            int sampleCount) {
+        return x -> {
+            int failures = 0;
+            for (int i = 0; i < sampleCount; ++i) {
+                var e = included.get(rng.nextInt(included.size()));
+                if (!Semantics.evaluateBoolPostOrder(x, e.input())) {
+                    ++failures;
+                }
+            }
+            return (float) failures;
+        };
+    }
+
+    public static Function<Symbol[], Float> exclusionsCostFunction(Collection<Example> excluded) {
+        return x -> {
+            int failures = 0;
+            for (var e : excluded) {
+                if (!Semantics.evaluateBoolPostOrder(x, e.input())) {
+                    ++failures;
+                }
+            }
+            return (float) failures;
+        };
+    }
+
+    public static Function<Symbol[], Float> exclusionsCostFunction(List<Example> excluded, Xoshiro256SS rng,
+            int sampleCount) {
+        return x -> {
+            int failures = 0;
+            for (int i = 0; i < sampleCount; ++i) {
+                var e = excluded.get(rng.nextInt(excluded.size()));
+                if (!Semantics.evaluateBoolPostOrder(x, e.input())) {
                     ++failures;
                 }
             }

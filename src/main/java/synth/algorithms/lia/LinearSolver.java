@@ -1,13 +1,16 @@
 package synth.algorithms.lia;
 
 import java.util.*;
+import java.util.logging.*;
 
 import com.microsoft.z3.*;
 
 import synth.algorithms.classify.Classification;
 import synth.core.Example;
 
-public class LinearSolver implements AutoCloseable {
+public class LinearSolver {
+    private static Logger logger = Logger.getLogger(LinearSolver.class.getName());
+
     public static class SolveResult {
         private boolean solutionsAreDefinite;
         private List<LinearSolution> solutions;
@@ -26,11 +29,9 @@ public class LinearSolver implements AutoCloseable {
         }
     }
 
-    private static final boolean logGroups = true;
-
     private List<Term> terms;
     private int cMax;
-    private Context z3 = new Context();
+    private Context z3;
     private int maxSols = 5;
     private Random rng = new Random();
 
@@ -55,7 +56,7 @@ public class LinearSolver implements AutoCloseable {
     }
 
     public static final int SHORT_TIMEOUT_MS = 5000;
-    //public static final int SHORT_TIMEOUT_MS = 500;
+    // public static final int SHORT_TIMEOUT_MS = 500;
 
     private ArrayList<Example> randomOrder(Collection<Example> examples) {
         var scrambled = new ArrayList<Example>(examples);
@@ -72,52 +73,77 @@ public class LinearSolver implements AutoCloseable {
     /**
      * For each example, compute a solution set using the linear solver.
      */
-    public Map<LinearSolution, Classification> computeSolutionSets(List<Example> examples) {
-        assert examples.size() > 0;
+    public Map<LinearSolution, Classification> computeSolutionSets(List<Example> examples) throws InterruptedException {
+        try (var z3Managed = new Context()) {
+            z3 = z3Managed;
 
-        // avoid accidental or malicious bias
-        var scrambledExamples = randomOrder(examples);
+            assert examples.size() > 0;
 
-        var sets = new HashMap<LinearSolution, Classification>();
-        var ungroupedExamples = new HashSet<Example>(examples);
+            // avoid accidental or malicious bias
+            var scrambledExamples = randomOrder(examples);
+            var nonNegativeInputExamples = List.of(scrambledExamples.stream()
+                    .filter(e -> e.input().x() >= 0 && e.input().y() >= 0 && e.input().z() >= 0)
+                    .toArray(Example[]::new));
 
-        for (var ei : scrambledExamples) {
-            if (!ungroupedExamples.contains(ei)) {
-                // Already dealt with this one in an earlier pass
-                continue;
+            var solutions = new HashSet<LinearSolution>();
+            var ungroupedExamples = new HashSet<Example>(examples);
+
+            for (var exampleSubset : List.of(nonNegativeInputExamples, scrambledExamples)) {
+                for (var ei : exampleSubset) {
+                    if (Thread.interrupted()) {
+                        throw new InterruptedException("Interrupted in LinearSolver::computeSolutionSets()");
+                    }
+
+                    if (!ungroupedExamples.contains(ei)) {
+                        // Already dealt with this one in an earlier pass
+                        continue;
+                    }
+
+                    // Start a new group for this example
+                    var included = new HashSet<Example>();
+                    included.add(ei);
+
+                    logger.log(Level.INFO, "Building group around: {0}", new Object[] { ei });
+
+                    // For Z3, we only use the subset of examples, because its performance might be
+                    // affected by negative numbers. Not so the completion step, so we always let it
+                    // have the full example set.
+                    var res = findMoreGroupMembersWithZ3(exampleSubset, included);
+                    res = completeGroupUsingSolutions(res.solutions(), examples, included);
+                    solutions.addAll(res.solutions());
+                    ungroupedExamples.removeAll(included);
+                }
             }
 
-            // Start a new group for this example
-            var included = new HashSet<Example>();
-            included.add(ei);
-
-            if (logGroups) {
-                System.out.println("e = " + ei);
+            assert ungroupedExamples.isEmpty();
+            var solsClassifications = new HashMap<LinearSolution, Classification>();
+            for (var sol : solutions) {
+                solsClassifications.put(sol, Classification.makeFromExamples(sol, examples));
             }
-
-            var excluded = new HashSet<Example>(examples);
-            var res = findMoreGroupMembersWithZ3(excluded, included);
-            excluded.removeAll(included);
-            sets.put(res.solutions().iterator().next(), new Classification(included, excluded));
-            ungroupedExamples.removeAll(included);
+            return solsClassifications;
         }
-
-        assert ungroupedExamples.isEmpty();
-        return sets;
     }
 
-    private SolveResult findMoreGroupMembersWithZ3(HashSet<Example> ungroupedExamples, HashSet<Example> included) {
-        var scrambledExamples = randomOrder(ungroupedExamples);
+    private SolveResult findMoreGroupMembersWithZ3(Collection<Example> examples, HashSet<Example> included)
+            throws InterruptedException {
+        var ungroupedExamples = new HashSet<Example>(examples);
+        var scrambledExamples = randomOrder(examples);
         assert included.size() == 1;
         // Test against all other examples, adding more until there's enough in the
         // group for it to have a definite solution
         SolveResult res = null;
+        int rejectCount = 0;
 
         ungroupedExamples.removeAll(included);
 
         for (var ej : List.copyOf(scrambledExamples)) {
-            if (logGroups) {
-                System.out.println("  j = " + ej);
+            if (Thread.interrupted()) {
+                throw new InterruptedException("Interrupted in LinearSolver::findMoreGroupMembersWithZ3()");
+            }
+
+            if (!ungroupedExamples.contains(ej)) {
+                // Already dealt with this one in an earlier pass
+                continue;
             }
 
             // Set up the Z3 solve session
@@ -128,15 +154,19 @@ public class LinearSolver implements AutoCloseable {
             sess.addEquation(ej);
 
             if (sess.checkSatisfiable()) {
+                logger.log(Level.INFO, "-- Accepted by Z3: {0}", new Object[] { ej });
                 included.add(ej);
                 ungroupedExamples.remove(ej);
                 res = sess.solve();
-                if (res.solutionsAreDefinite()) {
-                    return completeGroupUsingSolutions(res.solutions(), ungroupedExamples, included);
+                if (included.size() > 3) {
+                    res = completeGroupUsingSolutions(res.solutions(), ungroupedExamples, included);
+                    ungroupedExamples.removeAll(included);
                 }
             } else {
-                if (logGroups) {
-                    System.out.println("  UNSAT");
+                logger.log(Level.INFO, "-- Rejected by Z3: {0}", new Object[] { ej });
+                ++rejectCount;
+                if (rejectCount > 3 && res != null) {
+                    return res;
                 }
             }
         }
@@ -148,23 +178,23 @@ public class LinearSolver implements AutoCloseable {
         }
         assert included.size() == 1;
         // Degenerate case -- not enough examples to be able to come up with a good
-        // solution
+        // solution, put the loner in its own group
         var ex = included.iterator().next();
         if (ex.output() > 0) {
+            // Generate a constant as our solution
             return new SolveResult(false, List.of(new LinearSolution(Map.of(Term.TERM_1, ex.output()))));
         } else {
+            // Ugh, it's not a positive number so we can't just generate a constant. Maybe
+            // Z3 has an idea?
             var sess = startSession(SHORT_TIMEOUT_MS);
             sess.addEquation(ex);
             return sess.solve();
         }
     }
 
-    private SolveResult completeGroupUsingSolutions(List<LinearSolution> solutions, HashSet<Example> ungroupedExamples,
+    private SolveResult completeGroupUsingSolutions(Collection<LinearSolution> solutions, Collection<Example> examples,
             HashSet<Example> included) {
-        if (logGroups) {
-            System.out.println(String.format("  Completing using %d solutions (%d grouped, %d remain)",
-                    solutions.size(), included.size(), ungroupedExamples.size()));
-        }
+        var ungroupedExamples = new HashSet<Example>(examples);
         var viableSolutions = new HashSet<LinearSolution>(solutions);
         for (var e : List.copyOf(ungroupedExamples)) {
             boolean any = false, all = true;
@@ -185,10 +215,9 @@ public class LinearSolver implements AutoCloseable {
                 }
             }
         }
-        if (logGroups) {
-            System.out.println(String.format("  Done: winnowed to %d solutions (%d grouped, %d remain)",
-                    viableSolutions.size(), included.size(), ungroupedExamples.size()));
-        }
+        logger.log(Level.INFO, "-- Fast grouping accepted {0}/{1} examples, {2} solutions winnowed to {3}",
+                new Object[] { included.size(), included.size() + ungroupedExamples.size(), solutions.size(),
+                        viableSolutions.size() });
         return new SolveResult(true, List.copyOf(viableSolutions));
     }
 
@@ -240,9 +269,12 @@ public class LinearSolver implements AutoCloseable {
             z3Solver.add(eqn);
         }
 
-        public boolean checkSatisfiable() {
+        public boolean checkSatisfiable() throws InterruptedException {
             if (z3Status == Status.UNKNOWN) {
                 z3Status = z3Solver.check();
+            }
+            if (Thread.interrupted()) {
+                throw new InterruptedException("Interrupted in LinearSolver::checkSatisfiable()");
             }
             if (z3Status == Status.SATISFIABLE) {
                 return true;
@@ -251,7 +283,7 @@ public class LinearSolver implements AutoCloseable {
             }
         }
 
-        public SolveResult solve() {
+        public SolveResult solve() throws InterruptedException {
             var solutions = new ArrayList<LinearSolution>();
 
             while (checkSatisfiable() && solutions.size() < maxSols) {
@@ -280,15 +312,7 @@ public class LinearSolver implements AutoCloseable {
             var clause = z3.mkOr(disallowedSolution.entrySet().stream()
                     .map(e -> z3.mkNot(z3.mkEq(z3Coeffs.get(e.getKey()), z3.mkInt(e.getValue()))))
                     .toArray(Expr[]::new));
-            // System.out.println("Solver:\n" + solver);
-            // System.out.println("\nClause: " + clause + "\n");
             z3Solver.add(clause);
         }
-
-    }
-
-    @Override
-    public void close() {
-        z3.close();
     }
 }

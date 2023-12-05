@@ -33,6 +33,7 @@ public class Xoshiro256SS implements Cloneable {
             0x39109bb02acbe635L };
 
     private long s0, s1, s2, s3;
+    private boolean jumpClone, longJumpClone;
 
     public Xoshiro256SS() {
         reset();
@@ -132,12 +133,39 @@ public class Xoshiro256SS implements Cloneable {
         return (double) (nextLong() >>> (64 - 53)) * 1.1102230246251565E-16;
     }
 
+    public Xoshiro256SS nextSubsequence() {
+        if (jumpClone) {
+            throw new UnsupportedOperationException(
+                    "This RNG was cloned from a parent sequence, taking more subsequences from it "
+                            + "will cause collisions with the parent stream.");
+        }
+        var cloned = new Xoshiro256SS(this);
+        cloned.jumpClone = true;
+        cloned.longJumpClone = true;
+        // Jump past the subsequence we just spawned
+        jump();
+        return cloned;
+    }
+
+    public Xoshiro256SS nextLongSubsequence() {
+        if (longJumpClone) {
+            throw new UnsupportedOperationException(
+                    "This RNG was cloned from a parent sequence, taking more subsequences from it "
+                            + "will cause collisions with the parent stream.");
+        }
+        var cloned = new Xoshiro256SS(this);
+        cloned.longJumpClone = true;
+        // Jump past the subsequence we just spawned (and its subsequences)
+        longJump();
+        return cloned;
+    }
+
     /**
      * This is the jump function for the generator. It is equivalent
      * to 2^128 calls to next(); it can be used to generate 2^128
      * non-overlapping subsequences for parallel computations.
      */
-    public void jump() {
+    protected void jump() {
         long s0T = 0, s1T = 0, s2T = 0, s3T = 0;
 
         for (int i = 0; i < JUMP.length; i++) {
@@ -164,7 +192,7 @@ public class Xoshiro256SS implements Cloneable {
      * from each of which jump() will generate 2^64 non-overlapping
      * subsequences for parallel distributed computations.
      */
-    public void longJump() {
+    protected void longJump() {
         long s0T = 0, s1T = 0, s2T = 0, s3T = 0;
 
         for (int i = 0; i < LONG_JUMP.length; i++) {

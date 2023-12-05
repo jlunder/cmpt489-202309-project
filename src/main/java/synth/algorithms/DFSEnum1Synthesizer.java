@@ -143,8 +143,6 @@ public class DFSEnum1Synthesizer extends SynthesizerBase {
                 if (builder.computeHeight() != captureTargetHeight) {
                     return false;
                 }
-                // var candidate = new Program(builder.build());
-                // System.out.println("trying: " + candidate);
                 if (validate(examples, builder.preorder())) {
                     results.add(new Program(builder.build()));
                     return true;

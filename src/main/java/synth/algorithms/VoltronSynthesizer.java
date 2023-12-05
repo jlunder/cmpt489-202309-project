@@ -4,19 +4,24 @@ import synth.algorithms.ast.*;
 import synth.algorithms.classify.*;
 import synth.algorithms.lia.*;
 import synth.algorithms.mcmc.McmcProgramOptimizer;
+import synth.algorithms.representation.*;
+import synth.algorithms.rng.Xoshiro256SS;
 import synth.core.*;
 import synth.dsl.*;
 
 import java.util.*;
+import java.util.logging.*;
 
 public class VoltronSynthesizer extends SynthesizerBase {
+    private static Logger logger = Logger.getLogger(VoltronSynthesizer.class.getName());
+
     private static class PartialSolution {
-        private LinearSolution solution;
+        private ExprRepresentation solution;
         private Classification application;
         private List<Discriminator> positiveDiscriminators;
         private List<Discriminator> negativeDiscriminators;
 
-        public LinearSolution solution() {
+        public ExprRepresentation solution() {
             return solution;
         }
 
@@ -32,7 +37,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
             return negativeDiscriminators;
         }
 
-        public PartialSolution(LinearSolution solution, Classification application,
+        public PartialSolution(ExprRepresentation solution, Classification application,
                 List<Discriminator> positiveDiscriminators, List<Discriminator> negativeDiscriminators) {
             this.solution = solution;
             this.application = application;
@@ -41,35 +46,34 @@ public class VoltronSynthesizer extends SynthesizerBase {
         }
     }
 
-    private LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(2), 10);
+    private LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(3), 40);
 
     private Set<Example> allExamples;
-    private Map<LinearSolution, Classification> linearSolutions;
+    private Map<? extends ExprRepresentation, Classification> trialSolutions;
     private List<Discriminator> discriminatorPool;
     private List<PartialSolution> approximatePartialSolutions;
 
     private void reset() {
         allExamples = null;
-        linearSolutions = null;
+        trialSolutions = null;
         discriminatorPool = null;
         approximatePartialSolutions = null;
     }
 
     private List<Discriminator> generateDiscriminatorPool() throws InterruptedException {
         var discriminators = new ArrayList<Discriminator>();
-        for (var sol : linearSolutions.entrySet()) {
+        for (var sol : trialSolutions.entrySet()) {
             var classification = sol.getValue();
 
             var positive = generateImperfectDiscriminator(
                     new Classification(classification.included(), classification.excluded()));
+            discriminators.add(positive);
             if (positive.classification().included().equals(classification.included())) {
                 // If this one is perfect already, don't keep generating!
-                discriminators.add(positive);
                 continue;
             }
             var negative = generateImperfectDiscriminator(
                     new Classification(classification.excluded(), classification.included()));
-            discriminators.add(positive);
             discriminators.add(negative);
         }
 
@@ -87,8 +91,8 @@ public class VoltronSynthesizer extends SynthesizerBase {
 
     private Discriminator generateImperfectDiscriminator(Classification desiredClassification)
             throws InterruptedException {
-        McmcProgramOptimizer discriminatorOptimizer = new McmcProgramOptimizer(2532,
-                McmcProgramOptimizer.classificationCostFunction(desiredClassification),
+        McmcProgramOptimizer discriminatorOptimizer = new McmcProgramOptimizer(2531,
+                McmcProgramOptimizer.confusionCostFunction(desiredClassification, new Xoshiro256SS(8383), 50),
                 McmcProgramOptimizer.CONDITION_SYMBOLS);
 
         var result = discriminatorOptimizer.optimize(new Symbol[20], 0.5f, 10000);
@@ -99,18 +103,16 @@ public class VoltronSynthesizer extends SynthesizerBase {
         return new Discriminator(condition, allExamples);
     }
 
-    // public int scoreProgram(AstNode program);
-
     private class RankedSolutions implements Comparable<RankedSolutions> {
         private int ranking;
-        private LinearSolution solution;
+        private ExprRepresentation solution;
         private HashSet<Example> coveredExamples;
 
         // public int ranking() {
         // return ranking;
         // }
 
-        public LinearSolution solution() {
+        public ExprRepresentation solution() {
             return solution;
         }
 
@@ -118,7 +120,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
             return coveredExamples;
         }
 
-        public RankedSolutions(LinearSolution solution, HashSet<Example> coveredExamples) {
+        public RankedSolutions(ExprRepresentation solution, HashSet<Example> coveredExamples) {
             this.solution = solution;
             this.coveredExamples = coveredExamples;
             ranking = coveredExamples.size();
@@ -174,7 +176,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
      */
     private List<PartialSolution> chooseApproximatePartialSolutions() {
         assert !allExamples.isEmpty();
-        assert !linearSolutions.isEmpty();
+        assert !trialSolutions.isEmpty();
         assert !discriminatorPool.isEmpty();
 
         var choice = new ArrayList<PartialSolution>();
@@ -185,7 +187,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
         var usedDiscrims = new ArrayList<Discriminator>();
 
         // Initialize useful solutions with all available solutions
-        for (var sol : linearSolutions.entrySet()) {
+        for (var sol : trialSolutions.entrySet()) {
             usefulSols.add(new RankedSolutions(sol.getKey(), new HashSet<>(sol.getValue().included())));
         }
         for (var discrim : discriminatorPool) {
@@ -221,7 +223,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
 
             // Remove the solution we found, and all the examples it covers
             var partial = new PartialSolution(bestCoveredSolutions.solution(),
-                    linearSolutions.get(bestCoveredSolutions.solution()), List.of(bestDiscrim),
+                    trialSolutions.get(bestCoveredSolutions.solution()), List.of(bestDiscrim),
                     List.copyOf(usedDiscrims));
             choice.add(partial);
 
@@ -291,9 +293,9 @@ public class VoltronSynthesizer extends SynthesizerBase {
 
     private ExprNode synthesizeAst(List<Example> examples) throws InterruptedException {
         allExamples = Set.copyOf(examples);
-        linearSolutions = linSolv.computeSolutionSets(examples);
+        trialSolutions = linSolv.computeSolutionSets(examples);
         // Check if any of our solution sets cover the whole space, and early-out if so!
-        for (var e : linearSolutions.entrySet()) {
+        for (var e : trialSolutions.entrySet()) {
             if (e.getValue().excluded().isEmpty()) {
                 // Trivial solution!
                 return e.getKey().reifyAsExprAst();
@@ -319,11 +321,11 @@ public class VoltronSynthesizer extends SynthesizerBase {
                 assert validate(examples, program);
                 return program;
             } catch (InterruptedException e) {
+                logger.log(Level.INFO, "Interrupted during synthesize()");
                 return null;
             }
         } finally {
             reset();
-            linSolv.close();
         }
     }
 

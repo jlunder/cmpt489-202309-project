@@ -1,17 +1,19 @@
 package synth.algorithms;
 
 import synth.algorithms.mcmc.McmcProgramOptimizer;
+import synth.algorithms.rng.Xoshiro256SS;
 import synth.core.*;
 import synth.dsl.*;
 
 import java.util.*;
+import java.util.logging.*;
 
 public class Mcmc1Synthesizer extends SynthesizerBase {
+    private static Logger logger = Logger.getLogger(Mcmc1Synthesizer.class.getName());
 
     private long seed = 2390845;
     private int maxProgramLength = 50;
-    private int maxExamples = 100;
-    private int maxIterations = 1000000;
+    private int maxIterations = 10000000;
 
     public Mcmc1Synthesizer() {
     }
@@ -28,24 +30,22 @@ public class Mcmc1Synthesizer extends SynthesizerBase {
      */
     @Override
     public Program synthesize(List<Example> examples) {
-        List<Example> limitedExamples = examples;
-        if (examples.size() > maxExamples) {
-            limitedExamples = examples.subList(0, maxExamples);
-        }
-        McmcProgramOptimizer optimizer = new McmcProgramOptimizer(seed,
-                McmcProgramOptimizer.examplesCostFunction(limitedExamples), McmcProgramOptimizer.GENERAL_SYMBOLS);
+        var rng = new Xoshiro256SS(seed);
+        McmcProgramOptimizer optimizer = new McmcProgramOptimizer(rng,
+                McmcProgramOptimizer.examplesCostFunction(examples, rng.nextSubsequence(), 100),
+                McmcProgramOptimizer.GENERAL_SYMBOLS);
 
         try {
             var result = optimizer.optimize(new Symbol[maxProgramLength], 0.5f, maxIterations);
             if (result.reachedTargetCost()) {
                 return new Program(Semantics.makeExprParseTreeFromPostOrder(result.bestX()));
             } else {
-                System.out.println(
-                        String.format("Best cost: %g after %d iterations", result.bestCost(), result.iterations()));
+                logger.log(Level.INFO, "Best cost: {0} after {1} iterations",
+                        new Object[] { result.bestCost(), result.iterations() });
                 return null;
             }
         } catch (InterruptedException e) {
-            System.out.println(e);
+            logger.log(Level.INFO, "Interrupted during synthesize()");
             return null;
         }
     }

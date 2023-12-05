@@ -2,18 +2,46 @@ package synth.algorithms;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.*;
 
 import synth.core.*;
 
 public class MultiStrategySynthesizer extends SynthesizerBase {
-    LinkedBlockingDeque<Program> candidateFifo;
+    private static Logger logger = Logger.getLogger(MultiStrategySynthesizer.class.getName());
+
+    LinkedBlockingDeque<ProgramCandidate> candidateFifo;
+
+    private static class ProgramCandidate {
+        private Strategy source;
+        private Program program;
+
+        public Strategy source() {
+            return source;
+        }
+
+        public Program program() {
+            return program;
+        }
+
+        public ProgramCandidate(Strategy source, Program program) {
+            this.source = source;
+            this.program = program;
+        }
+
+    }
 
     private class Strategy {
+        private String name;
         private Synthesizer synthesizer;
-        private LinkedBlockingDeque<Program> fifo;
+        private LinkedBlockingDeque<ProgramCandidate> fifo;
         private Thread thread;
 
-        public Strategy(Synthesizer synthesizer) {
+        public String name() {
+            return name;
+        }
+
+        public Strategy(String name, Synthesizer synthesizer) {
+            this.name = name;
             this.synthesizer = synthesizer;
         }
 
@@ -25,7 +53,7 @@ public class MultiStrategySynthesizer extends SynthesizerBase {
                 public void run() {
                     var program = synthesizer.synthesize(examples);
                     if (program != null) {
-                        fifo.offer(program);
+                        fifo.offer(new ProgramCandidate(Strategy.this, program));
                     }
                 }
             });
@@ -55,13 +83,12 @@ public class MultiStrategySynthesizer extends SynthesizerBase {
     // If after softWaitMs we still don't have any candidates, we will wait up to
     // hardWaitMs for at least one candidate. After that we interrupt threads and
     // abort.
-    private int hardWaitMs = 10000;
+    private int hardWaitMs = 30000;
 
     List<Strategy> strategies = List.of(
-            new Strategy(new Mcmc1Synthesizer(293874)),
-            new Strategy(new Mcmc1Synthesizer(950862)),
-            new Strategy(new Mcmc1Synthesizer(342981)),
-            new Strategy(new BFSEnum2Synthesizer()));
+            new Strategy("MCMC", new Mcmc1Synthesizer(293874)),
+            new Strategy("Voltron", new VoltronSynthesizer()),
+            new Strategy("Enum", new BFSEnum2Synthesizer()));
 
     @Override
     public Program synthesize(List<Example> examples) {
@@ -83,7 +110,7 @@ public class MultiStrategySynthesizer extends SynthesizerBase {
         long startNs = System.nanoTime();
         long nextWaitMs = softWaitMs;
         while (nextWaitMs > 0 && runningStrategies.size() > 0) {
-            Program nextCand = null;
+            ProgramCandidate nextCand = null;
             try {
                 nextCand = candidateFifo.poll(nextWaitMs, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
@@ -91,7 +118,9 @@ public class MultiStrategySynthesizer extends SynthesizerBase {
             }
 
             if (nextCand != null) {
-                candidates.add(nextCand);
+                logger.log(Level.INFO, "Candidate received from {0}, size {1}",
+                        new Object[] { nextCand.source().name(), sizeCost(nextCand.program().getRoot()) });
+                candidates.add(nextCand.program());
             }
             if (candidates.size() >= softCandidateCount) {
                 break;

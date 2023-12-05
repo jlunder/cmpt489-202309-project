@@ -64,7 +64,7 @@ public abstract class AstNode {
             // Round towards making the list left heavy for no particular reason
             int split = fromIndex + (size + 1) / 2;
             return new ParseNode(opSym, List.of(makeReifiedAssociativeBinaryOperator(opSym, fromIndex, split),
-                    makeReifiedAssociativeBinaryOperator(opSym, split, size)));
+                    makeReifiedAssociativeBinaryOperator(opSym, split, toIndex)));
         }
     }
 

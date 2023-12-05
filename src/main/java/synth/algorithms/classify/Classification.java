@@ -2,7 +2,7 @@ package synth.algorithms.classify;
 
 import java.util.*;
 
-import synth.algorithms.ast.*;
+import synth.algorithms.representation.*;
 import synth.core.*;
 
 public class Classification {
@@ -10,7 +10,21 @@ public class Classification {
     private Set<Example> excluded;
     private int cachedHashCode;
 
-    public static Classification makeFromCondition(BoolNode condition, Collection<Example> examples) {
+    public static Classification makeFromExamples(ExprRepresentation expr, Collection<Example> examples) {
+        var included = new HashSet<Example>(examples.size());
+        var excluded = new HashSet<Example>(examples.size());
+        for (var ex : examples) {
+            if (expr.evalExpr(ex.input()) == ex.output()) {
+                included.add(ex);
+            } else {
+                excluded.add(ex);
+            }
+        }
+
+        return new Classification(included, excluded);
+    }
+
+    public static Classification makeFromCondition(BoolRepresentation condition, Collection<Example> examples) {
         var included = new HashSet<Example>(examples.size());
         var excluded = new HashSet<Example>(examples.size());
         for (var ex : examples) {
