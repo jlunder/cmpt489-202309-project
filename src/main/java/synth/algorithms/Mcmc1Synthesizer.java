@@ -13,7 +13,7 @@ public class Mcmc1Synthesizer extends SynthesizerBase {
 
     private long seed = 2390845;
     private int maxProgramLength = 50;
-    private int maxIterations = 10000000;
+    private int maxIterations = 100000000;
 
     public Mcmc1Synthesizer() {
     }

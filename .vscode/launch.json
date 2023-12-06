@@ -21,7 +21,7 @@
         },
         {
             "type": "java",
-            "name": "Main (ITE, phase2/0208.txt)",
+            "name": "Main (ITE, phase2/0204.txt)",
             "request": "launch",
             "mainClass": "synth.Main",
             "projectName": "synth",
@@ -30,12 +30,12 @@
                 "-Xmx4096m"
             ],
             "args": [
-                "test-data/phase2/0208.txt",
+                "test-data/phase2/0204.txt",
             ]
         },
         {
             "type": "java",
-            "name": "Main (ITE, phase2/0502.txt)",
+            "name": "Main (ITE, phase2/0500.txt)",
             "request": "launch",
             "mainClass": "synth.Main",
             "projectName": "synth",
@@ -44,7 +44,7 @@
                 "-Xmx4096m"
             ],
             "args": [
-                "test-data/phase2/0502.txt",
+                "test-data/phase2/0500.txt",
             ]
         },
         {

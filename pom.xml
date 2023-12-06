@@ -31,6 +31,11 @@
             <artifactId>z3-turnkey</artifactId>
             <version>4.12.2.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.ortools</groupId>
+            <artifactId>ortools-java</artifactId>
+            <version>9.8.3296</version>
+        </dependency>
     </dependencies>
 
     <build>

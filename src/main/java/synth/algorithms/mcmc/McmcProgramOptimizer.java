@@ -132,7 +132,7 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         return x -> {
             int failures = 0;
             for (var e : excluded) {
-                if (!Semantics.evaluateBoolPostOrder(x, e.input())) {
+                if (Semantics.evaluateBoolPostOrder(x, e.input())) {
                     ++failures;
                 }
             }
@@ -146,7 +146,7 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
             int failures = 0;
             for (int i = 0; i < sampleCount; ++i) {
                 var e = excluded.get(rng.nextInt(excluded.size()));
-                if (!Semantics.evaluateBoolPostOrder(x, e.input())) {
+                if (Semantics.evaluateBoolPostOrder(x, e.input())) {
                     ++failures;
                 }
             }
@@ -155,7 +155,7 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
     }
 
     @Override
-    protected float computeCost(Symbol[] x) {
+    public float computeCost(Symbol[] x) {
         return costFunction.apply(x);
     }
 

@@ -1,6 +1,8 @@
 package synth.algorithms.lia;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import synth.core.Environment;
 
@@ -16,26 +18,25 @@ public final class Term implements Comparable<Term> {
     public static final Term TERM_Y = make(0, 1, 0);
     public static final Term TERM_Z = make(0, 0, 1);
 
+    /**
+     * Return a Term by canonical index. The index is designed such that for Terms t
+     * and u, if t.xPower() < u.xPower(), then t.index() < u.index(), and the same
+     * holds for yPower and zPower; at the same time, as index increases, the
+     * increase in xOrder, yOrder, and zOrder is relatively evenly distributed. This
+     * has the nice property that you can synthesize a list of Terms by increasing
+     * index, and their orders will all be low at the beginning of the list, and
+     * increase in a reasonable way as you progress. The technique used is known as
+     * z-space curves (or swizzling if you're an older graphics programmer); it has
+     * a bunch of other names as well).
+     */
     public static Term fromIndex(int index) {
         assert index >= 0 && index < MAX_INDEX;
-        // if (index < arrayCache.length) {
-        // Term term = arrayCache[index];
-        // if (term == null) {
-        // int xPower = contractBitsBy3(index >> 0);
-        // int yPower = contractBitsBy3(index >> 1);
-        // int zPower = contractBitsBy3(index >> 2);
-        // term = new Term(xPower, yPower, zPower, index);
-        // arrayCache[index] = term;
-        // }
-        // return term;
-        // } else {
         return hashCache.computeIfAbsent(index, cacheIndex -> {
             int xPower = contractBitsBy3(index >> 0);
             int yPower = contractBitsBy3(index >> 1);
             int zPower = contractBitsBy3(index >> 2);
             return new Term(xPower, yPower, zPower, cacheIndex);
         });
-        // }
     }
 
     public static int computeIndex(int xPower, int yPower, int zPower) {
@@ -64,6 +65,21 @@ public final class Term implements Comparable<Term> {
                 | (i >> (15 - 5)) & (1 << 5) | (i >> (12 - 4)) & (1 << 4)
                 | (i >> (9 - 3)) & (1 << 3) | (i >> (6 - 2)) & (1 << 2)
                 | (i >> (3 - 1)) & (1 << 1) | (i >> (0 - 0)) & (1 << 0);
+    }
+
+    public static List<Term> makeUpToOrder(int maxOrder) {
+        var newTerms = new ArrayList<Term>();
+        // See notes in fromIndex() to understand why this shouldn't be too inefficient.
+        for (int i = 0;; ++i) {
+            var t = Term.fromIndex(i);
+            if (t.xPower() > maxOrder && t.yPower() > maxOrder && t.zPower() > maxOrder) {
+                break;
+            }
+            if (t.xPower() <= maxOrder && t.yPower() <= maxOrder && t.zPower() <= maxOrder) {
+                newTerms.add(t);
+            }
+        }
+        return newTerms;
     }
 
     private final String name;

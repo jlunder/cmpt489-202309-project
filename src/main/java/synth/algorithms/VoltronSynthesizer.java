@@ -3,7 +3,7 @@ package synth.algorithms;
 import synth.algorithms.ast.*;
 import synth.algorithms.classify.*;
 import synth.algorithms.lia.*;
-import synth.algorithms.mcmc.McmcProgramOptimizer;
+import synth.algorithms.mcmc.*;
 import synth.algorithms.representation.*;
 import synth.algorithms.rng.Xoshiro256SS;
 import synth.core.*;
@@ -15,38 +15,8 @@ import java.util.logging.*;
 public class VoltronSynthesizer extends SynthesizerBase {
     private static Logger logger = Logger.getLogger(VoltronSynthesizer.class.getName());
 
-    private static class PartialSolution {
-        private ExprRepresentation solution;
-        private Classification application;
-        private List<Discriminator> positiveDiscriminators;
-        private List<Discriminator> negativeDiscriminators;
-
-        public ExprRepresentation solution() {
-            return solution;
-        }
-
-        public Classification application() {
-            return application;
-        }
-
-        public List<Discriminator> positiveDiscriminators() {
-            return positiveDiscriminators;
-        }
-
-        public List<Discriminator> negativeDiscriminators() {
-            return negativeDiscriminators;
-        }
-
-        public PartialSolution(ExprRepresentation solution, Classification application,
-                List<Discriminator> positiveDiscriminators, List<Discriminator> negativeDiscriminators) {
-            this.solution = solution;
-            this.application = application;
-            this.positiveDiscriminators = positiveDiscriminators;
-            this.negativeDiscriminators = negativeDiscriminators;
-        }
-    }
-
-    private LinearSolver linSolv = new LinearSolver(LinearSolver.makeAllTerms(3), 40);
+    private Xoshiro256SS rng = new Xoshiro256SS(8383);
+    private LinearSolver linSolv = new ORToolsCPLinearSolver(rng.nextSubsequence());
 
     private Set<Example> allExamples;
     private Map<? extends ExprRepresentation, Classification> trialSolutions;
@@ -91,8 +61,8 @@ public class VoltronSynthesizer extends SynthesizerBase {
 
     private Discriminator generateImperfectDiscriminator(Classification desiredClassification)
             throws InterruptedException {
-        McmcProgramOptimizer discriminatorOptimizer = new McmcProgramOptimizer(2531,
-                McmcProgramOptimizer.confusionCostFunction(desiredClassification, new Xoshiro256SS(8383), 50),
+        McmcProgramOptimizer discriminatorOptimizer = new McmcProgramOptimizer(rng.nextSubsequence(),
+                McmcProgramOptimizer.confusionCostFunction(desiredClassification, rng.nextSubsequence(), 50),
                 McmcProgramOptimizer.CONDITION_SYMBOLS);
 
         var result = discriminatorOptimizer.optimize(new Symbol[20], 0.5f, 10000);
@@ -286,14 +256,42 @@ public class VoltronSynthesizer extends SynthesizerBase {
      * 2. is distinguishable with minimum exact matching, and
      * 3. minimizes the number of distinct solutions.
      */
-    private ExprNode buildDecisionTreeAstFromPartialSolutions() {
-        assert "Not ready yet!" == null;
+    private ExprNode buildDecisionTreeAstFromPartialSolutions() throws InterruptedException {
+        McmcDecisionTreeOptimizer decisionTreeOptimizer = new McmcDecisionTreeOptimizer(rng.nextSubsequence(),
+                approximatePartialSolutions.size() * 2, approximatePartialSolutions.toArray(PartialSolution[]::new),
+                allExamples);
+        var x = decisionTreeOptimizer.new FlatDecisionTree();
+        x.randomize();
+        var lastCost = decisionTreeOptimizer.computeCost(x);
+        var languishCount = 0;
+        for (int i = 0; i < 100; ++i) {
+            var res = decisionTreeOptimizer.optimize(x, 0.5f, 100000);
+            var curCost = res.bestCost();
+            x = res.bestX();
+            logger.log(Level.INFO, "Decision tree optimization pass {0}, cost={1}", new Object[] { i, curCost });
+            if (res.reachedTargetCost()) {
+                logger.log(Level.INFO, "Decision tree optimization pass {0}, cost={1}", new Object[] { i, curCost });
+            }
+            if (curCost / lastCost > 0.97f) {
+                ++languishCount;
+                if (languishCount > 5) {
+                    logger.log(Level.INFO, "Decision tree persistently not improving, giving up");
+                    break;
+                }
+            } else {
+                // Made new progress, reset
+                languishCount = 0;
+            }
+        }
         return null;
     }
 
     private ExprNode synthesizeAst(List<Example> examples) throws InterruptedException {
         allExamples = Set.copyOf(examples);
         trialSolutions = linSolv.computeSolutionSets(examples);
+        if (trialSolutions == null) {
+            return null;
+        }
         // Check if any of our solution sets cover the whole space, and early-out if so!
         for (var e : trialSolutions.entrySet()) {
             if (e.getValue().excluded().isEmpty()) {
@@ -317,6 +315,9 @@ public class VoltronSynthesizer extends SynthesizerBase {
         try {
             try {
                 var ast = synthesizeAst(examples);
+                if (ast == null) {
+                    return null;
+                }
                 var program = new Program(ast.reify());
                 assert validate(examples, program);
                 return program;

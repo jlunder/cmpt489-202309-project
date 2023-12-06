@@ -7,6 +7,8 @@ import synth.algorithms.representation.ExprRepresentation;
 import synth.core.*;
 
 public class LinearSolution implements Comparable<LinearSolution>, ExprRepresentation {
+    public static final LinearSolution NO_SOLUTION = new LinearSolution(Map.of());
+
     private final Map<Term, Integer> coefficientMap;
 
     // A packed map of the terms and their values; negative values are (negated)

@@ -42,20 +42,23 @@ public class ExprConstNode extends ExprNode {
 
     private static ParseNode computeReified(int value) {
         assert value > 0;
-        return reifiedCache.computeIfAbsent(value, val -> {
+        var reified = reifiedCache.get(value);
+        if(reified == null) {
             // Should already be seeded with 1-3, < 1 is impossible
-            if (val <= REIFY_SMALL_VALUE_MAX)
+            if (value <= REIFY_SMALL_VALUE_MAX)
                 return reifySmallValue(value);
-            int divVal = val / REIFY_BASE;
-            int modVal = val % REIFY_BASE;
+            int divVal = value / REIFY_BASE;
+            int modVal = value % REIFY_BASE;
             assert divVal > 0;
             if (modVal == 0) {
                 return new ParseNode(Symbol.Multiply, List.of(
                         reifySmallValue(REIFY_BASE), computeReified(divVal)));
             }
-            return new ParseNode(Symbol.Add, List.of(reifySmallValue(modVal),
+            reified = new ParseNode(Symbol.Add, List.of(reifySmallValue(modVal),
                     new ParseNode(Symbol.Multiply, List.of(reifySmallValue(REIFY_BASE), computeReified(divVal)))));
-        });
+            reifiedCache.put(value, reified);
+        }
+        return reified;
     }
 
     private static ParseNode reifySmallValue(int value) {

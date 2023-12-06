@@ -18,7 +18,9 @@ public class Main {
         // Logger.getLogger("").addHandler(new ConsoleHandler());
         Logger.getLogger("").setLevel(Level.WARNING);
         Logger.getLogger("synth.Main").setLevel(Level.ALL);
-        Logger.getLogger("synth.algorithms.lia.LinearSolver").setLevel(Level.ALL);
+        // Logger.getLogger("synth.algorithms.lia.LinearSolver").setLevel(Level.ALL);
+        // Logger.getLogger("synth.algorithms.lia.ORToolsCPLinearSolver").setLevel(Level.ALL);
+        //Logger.getLogger("synth.algorithms").setLevel(Level.ALL);
 
         logger = Logger.getLogger("synth.Main");
     }
@@ -61,7 +63,6 @@ public class Main {
                     }
                 }
                 if (program != null) {
-                    logger.log(Level.INFO, "Program accepted: {0}", new Object[] { program });
                     break;
                 }
             }

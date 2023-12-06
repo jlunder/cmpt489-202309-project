@@ -1,8 +1,12 @@
 package synth.algorithms.mcmc;
 
+import java.util.logging.*;
+
 import synth.algorithms.rng.Xoshiro256SS;
 
 public abstract class McmcOptimizer<T> {
+    private static Logger logger = Logger.getLogger(McmcOptimizer.class.getName());
+
     public static class OptimizationResult<U> {
         private boolean reachedTargetCost;
         private U bestX;
@@ -50,7 +54,7 @@ public abstract class McmcOptimizer<T> {
         // ALWAYS discard, this is best effort basis!
     }
 
-    protected abstract float computeCost(T x);
+    public abstract float computeCost(T x);
 
     protected float acceptProbability(float curCost, float candidateCost) {
         // if checks probably make this faster by skipping exp, also if the cost value
@@ -69,14 +73,26 @@ public abstract class McmcOptimizer<T> {
 
     public OptimizationResult<T> optimize(T initialX, float targetCost, long maxIterations)
             throws InterruptedException {
+        logger.log(Level.INFO, "Begin MCMC optimize of {0}, target cost {1}, max iterations {2}",
+                new Object[] { initialX.getClass().getSimpleName(), targetCost, maxIterations });
         T curX = initialX;
         float curCost = computeCost(curX);
 
         T bestX = curX;
         float bestCost = curCost;
 
+        final long giga = 1000000000;
         long i;
+        long startNs = System.nanoTime();
+        long lastNs = startNs;
         for (i = 0; i < maxIterations && bestCost > targetCost; ++i) {
+            long nowNs = System.nanoTime();
+            if (nowNs - lastNs > giga) {
+                lastNs = nowNs - (nowNs - startNs) % giga;
+                logger.log(Level.INFO, "MCMC heartbeat: best cost {0}, {1} iterations ({2}/s)",
+                        new Object[] { bestCost, i, i * giga / (nowNs - startNs) });
+            }
+
             if (Thread.interrupted()) {
                 throw new InterruptedException("Thread interrupted during McmcOptimizer::optimize()");
             }
