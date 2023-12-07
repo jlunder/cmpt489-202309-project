@@ -59,7 +59,7 @@ public class ORToolsCPLinearSolver extends LinearSolver {
 
     protected LinearSolution trySolveSubset(SolveLimits limits, Collection<Example> exampleSubset) {
         logger.log(Level.INFO, "Trying solve with {0} terms, max const {1}",
-                new Object[] { limits.terms(), limits.maxConst() });
+                new Object[] { limits.terms().size(), limits.maxConst() });
         CpModel model = new CpModel();
 
         var termVars = new HashMap<Term, IntVar>();

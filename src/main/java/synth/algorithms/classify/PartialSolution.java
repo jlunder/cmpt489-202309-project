@@ -1,14 +1,13 @@
 package synth.algorithms.classify;
 
-import java.util.List;
-
+import synth.algorithms.ast.ExprNode;
 import synth.algorithms.representation.*;
+import synth.core.Environment;
+import synth.core.ParseNode;
 
-public class PartialSolution {
+public class PartialSolution implements ExprRepresentation {
     private ExprRepresentation solution;
     private Classification application;
-    private List<Discriminator> positiveDiscriminators;
-    private List<Discriminator> negativeDiscriminators;
 
     public ExprRepresentation solution() {
         return solution;
@@ -18,19 +17,23 @@ public class PartialSolution {
         return application;
     }
 
-    public List<Discriminator> positiveDiscriminators() {
-        return positiveDiscriminators;
-    }
-
-    public List<Discriminator> negativeDiscriminators() {
-        return negativeDiscriminators;
-    }
-
-    public PartialSolution(ExprRepresentation solution, Classification application,
-            List<Discriminator> positiveDiscriminators, List<Discriminator> negativeDiscriminators) {
+    public PartialSolution(ExprRepresentation solution, Classification application) {
         this.solution = solution;
         this.application = application;
-        this.positiveDiscriminators = positiveDiscriminators;
-        this.negativeDiscriminators = negativeDiscriminators;
+    }
+
+    @Override
+    public ExprNode reifyAsExprAst() {
+        return solution.reifyAsExprAst();
+    }
+
+    @Override
+    public ParseNode reifyAsExprParse() {
+        return solution.reifyAsExprParse();
+    }
+
+    @Override
+    public int evalExpr(Environment env) {
+        return solution.evalExpr(env);
     }
 }

@@ -12,7 +12,7 @@ public class NotNode extends BoolNode {
     }
 
     public boolean evalBool(Environment env) {
-        return child(0).evalBool(env);
+        return !child(0).evalBool(env);
     }
 
     protected ParseNode makeReified() {

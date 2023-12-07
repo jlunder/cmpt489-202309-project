@@ -3,6 +3,7 @@ package synth.algorithms.mcmc;
 import java.util.*;
 
 import synth.algorithms.classify.*;
+import synth.algorithms.representation.*;
 import synth.algorithms.rng.Xoshiro256SS;
 import synth.core.*;
 
@@ -50,7 +51,7 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
             System.arraycopy(other.solutions, 0, solutions, 0, solutions.length);
         }
 
-        public void generate() {
+        public void mutate() {
             var r = rng();
             switch (r.nextInt(6)) {
                 case 0:
@@ -74,11 +75,11 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
                     break;
                 }
                 case 4:
-                    jumpTable[r.nextInt(treeSize())] = (r.nextBoolean() ? -1 : 1) * r.nextInt(treeSize());
+                    jumpTable[r.nextInt(treeSize())] = r.nextInt(treeSize()) * 2 - treeSize();
                     break;
                 case 5: {
                     int i = r.nextInt(treeSize());
-                    jumpTable[i] = -jumpTable[i];
+                    jumpTable[i] = ~jumpTable[i];
                     break;
                 }
                 default:
@@ -92,51 +93,92 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
             int i;
             for (i = 0; i < treeSize(); ++i) {
                 var jump = jumpTable[index];
-                var d = discriminators[index];
-                var c = d.classification();
-                var inc = c.included();
-                var selected = inc.contains(e);
-                if (selected) {
-                    if (jump > 0) {
-                        ++index;
-                        if (index >= treeSize()) {
-                            index -= treeSize();
-                        }
-                    } else {
-                        break;
-                    }
+                if (jump == index || jump < 0) {
+                    break;
+                } else if (discriminators[index].classification().included().contains(e)) {
+                    index = jump;
                 } else {
-                    index = Math.abs(jump);
+                    index = (jump + 1) % treeSize();
                 }
             }
             if (!solutions[index].application().included().contains(e)) {
-                cost += 100;
+                cost += misclassifyCost;
             }
-            cost += i * i;
+            cost += i;
+            if (i == treeSize()) {
+                cost += dawdleCost;
+            }
             return (float) cost;
+        }
+
+        public ExprRepresentation reifyAsDecisionTree() {
+            // The behaviour of this function has to match the cost function precisely -- I
+            // have minor regrets about writing the two in such different styles (recursive
+            // vs. imperative) but here we are. The least obvious consequence of them
+            // differing will be failure to converge on a working decision tree.
+            return reifyAsDecisionTreeRecurse(0, treeSize());
+        }
+
+        ExprRepresentation reifyAsDecisionTreeRecurse(int index, int maxSteps) {
+            var jump = jumpTable[index];
+            if (maxSteps == 0 || jump == index || jump < 0) {
+                return solutions[index];
+            } else {
+                return new DecisionTree(discriminators[index], reifyAsDecisionTreeRecurse(jump, maxSteps - 1),
+                        reifyAsDecisionTreeRecurse((jump + 1) % treeSize(), maxSteps - 1));
+            }
         }
     }
 
     private int treeSize;
+
     private PartialSolution[] solutionPool;
     private Discriminator[] discriminatorPool;
     private Collection<Example> examples;
 
+    private int misclassifyCost;
+    private int dawdleCost;
+
     private FlatDecisionTree spare;
 
-    public McmcDecisionTreeOptimizer(Xoshiro256SS rng, int treeSize, PartialSolution[] solutionPool,
-            Collection<Example> examples) {
+    public FlatDecisionTree makeRandomized() {
+        var x = new FlatDecisionTree();
+        x.randomize();
+        return x;
+    }
+
+    public McmcDecisionTreeOptimizer(Xoshiro256SS rng, int treeSize, Collection<PartialSolution> solutionPool,
+            Collection<Discriminator> discriminatorPool, Collection<Example> examples) {
         super(rng);
         assert (treeSize & (treeSize - 1)) == 0;
         this.treeSize = treeSize;
-        this.solutionPool = solutionPool;
-        var discriminators = new HashSet<Discriminator>();
-        for (var sol : solutionPool) {
-            discriminators.addAll(sol.positiveDiscriminators());
-            discriminators.addAll(sol.negativeDiscriminators());
-        }
-        this.discriminatorPool = discriminators.toArray(Discriminator[]::new);
-        this.examples = examples;
+
+        this.solutionPool = solutionPool.toArray(PartialSolution[]::new);
+        this.discriminatorPool = discriminatorPool.toArray(Discriminator[]::new);
+        this.examples = List.copyOf(examples);
+
+        this.misclassifyCost = 10 * examples.size();
+        this.dawdleCost = 10;
+    }
+
+    public OptimizationResult<FlatDecisionTree> optimize(int maxIterations) throws InterruptedException {
+        return super.optimize(makeRandomized(), dawdleCost / 2 * examples.size(), (dt) -> {
+            var d = dt.reifyAsDecisionTree();
+            if (d instanceof PartialSolution) {
+                // Degenerate case
+                return ((PartialSolution) d).application().included().containsAll(examples);
+            } else {
+                // Classify examples using the decision tree, and check they ended up in a
+                // compatible solution
+                for (var e : examples) {
+                    var ps = (PartialSolution) ((DecisionTree) d).classify(e);
+                    if (!ps.application().included().contains(e)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }, maxIterations);
     }
 
     @Override
@@ -157,7 +199,7 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
         }
 
         newX.copyFrom(x);
-        newX.generate();
+        newX.mutate();
 
         return newX;
     }

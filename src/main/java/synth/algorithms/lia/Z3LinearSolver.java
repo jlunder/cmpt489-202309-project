@@ -6,6 +6,7 @@ import java.util.logging.*;
 import com.microsoft.z3.*;
 
 import synth.algorithms.classify.Classification;
+import synth.algorithms.classify.PartialSolution;
 import synth.algorithms.rng.Xoshiro256SS;
 import synth.core.Example;
 
@@ -30,7 +31,7 @@ public class Z3LinearSolver extends LinearSolver {
      * For each example, compute a solution set using the linear solver.
      */
     @Override
-    public Map<LinearSolution, Classification> computeSolutionSets(List<Example> examples) throws InterruptedException {
+    public Collection<PartialSolution> computeSolutionSets(List<Example> examples) throws InterruptedException {
         try (var z3Managed = new Context()) {
             z3 = z3Managed;
 
@@ -72,12 +73,9 @@ public class Z3LinearSolver extends LinearSolver {
                 }
             }
 
-            assert ungroupedExamples.isEmpty();
-            var solsClassifications = new HashMap<LinearSolution, Classification>();
-            for (var sol : solutions) {
-                solsClassifications.put(sol, Classification.makeFromExamples(sol, examples));
-            }
-            return solsClassifications;
+            return Set.of(solutions.stream()
+                    .map(sol -> new PartialSolution(sol, Classification.makeFromExamples(sol, examples)))
+                    .toArray(PartialSolution[]::new));
         }
     }
 

@@ -2,23 +2,23 @@ package synth.algorithms.classify;
 
 import java.util.Collection;
 
-import synth.algorithms.ast.*;
+import synth.algorithms.representation.BoolRepresentation;
 import synth.core.Example;
 
 public class Discriminator {
     private Classification classification;
-    private BoolNode condition;
+    private BoolRepresentation condition;
     // complexity metric?
 
     public Classification classification() {
         return classification;
     }
 
-    public BoolNode condition() {
+    public BoolRepresentation condition() {
         return condition;
     }
 
-    public Discriminator(BoolNode condition, Collection<Example> examples) {
+    public Discriminator(BoolRepresentation condition, Collection<Example> examples) {
         this.classification = Classification.makeFromCondition(condition, examples);
         this.condition = condition;
     }

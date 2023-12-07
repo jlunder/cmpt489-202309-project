@@ -1,6 +1,7 @@
 package synth.algorithms.mcmc;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import synth.algorithms.classify.Classification;
@@ -9,8 +10,8 @@ import synth.core.*;
 import synth.dsl.*;
 
 public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
-    public static final Symbol[] GENERAL_SYMBOLS = new Symbol[32];
-    public static final Symbol[] CONDITION_SYMBOLS = new Symbol[16];
+    public static final Symbol[] GENERAL_SYMBOLS = new Symbol[64];
+    public static final Symbol[] CONDITION_SYMBOLS = new Symbol[32];
 
     static {
         int i = 0;
@@ -49,6 +50,14 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
 
     private Symbol[] spare;
 
+    public Symbol[] makeRandomized(int length) {
+        var x = new Symbol[length];
+        for (int i = 0; i < length; ++i) {
+            x[i] = symbolPool[rng().nextInt(symbolPool.length)];
+        }
+        return x;
+    }
+
     public McmcProgramOptimizer(Xoshiro256SS rng, Function<Symbol[], Float> costFunction, Symbol[] symbolPool) {
         super(rng);
         this.costFunction = costFunction;
@@ -61,29 +70,41 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         this.symbolPool = symbolPool;
     }
 
+    @Override
+    public OptimizationResult<Symbol[]> optimize(Symbol[] initialX, float targetCost,
+            Function<Symbol[], Boolean> validate, long maxIterations) throws InterruptedException {
+        return super.optimize(initialX, targetCost, validate, maxIterations);
+    }
+
     public static Function<Symbol[], Float> examplesCostFunction(Collection<Example> examples) {
         return x -> {
-            int failures = 0;
+            int cost = 0;
             for (var e : examples) {
-                if (Semantics.evaluateExprPostOrder(x, e.input()) != e.output()) {
-                    ++failures;
+                int eval = Semantics.evaluateExprPostOrder(x, e.input());
+                if (eval > e.output()) {
+                    cost += 20;
+                } else {
+                    cost += Math.min(20, e.output() - eval);
                 }
             }
-            return (float) failures;
+            return (float) cost;
         };
     }
 
     public static Function<Symbol[], Float> examplesCostFunction(List<Example> examples, Xoshiro256SS rng,
             int sampleCount) {
         return x -> {
-            int failures = 0;
+            int cost = 0;
             for (int i = 0; i < sampleCount; ++i) {
                 var e = examples.get(rng.nextInt(examples.size()));
-                if (Semantics.evaluateExprPostOrder(x, e.input()) != e.output()) {
-                    ++failures;
+                int eval = Semantics.evaluateExprPostOrder(x, e.input());
+                if (eval > e.output()) {
+                    cost += 40;
+                } else if (eval < e.output()) {
+                    cost += 20 + Math.min(20, e.output() - eval);
                 }
             }
-            return (float) failures;
+            return (float) cost * examples.size() / sampleCount;
         };
     }
 
@@ -159,6 +180,72 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         return costFunction.apply(x);
     }
 
+    Map<Symbol, Symbol> rotateLeftMap = Map.of(
+            Symbol.Const1, Symbol.Const2,
+            Symbol.Const2, Symbol.Const3,
+            Symbol.Const3, Symbol.VarX,
+            Symbol.VarX, Symbol.VarY,
+            Symbol.VarY, Symbol.VarZ,
+            Symbol.VarZ, Symbol.Const1);
+
+    Map<Symbol, Symbol> rotateRightMap = Map.of(
+            Symbol.Const1, Symbol.VarZ,
+            Symbol.Const2, Symbol.Const1,
+            Symbol.Const3, Symbol.Const2,
+            Symbol.VarX, Symbol.Const3,
+            Symbol.VarY, Symbol.VarX,
+            Symbol.VarZ, Symbol.VarY);
+
+    private Map<Symbol, Symbol> swapMap = Map.of(
+            Symbol.Add, Symbol.Multiply,
+            Symbol.Multiply, Symbol.Add,
+            Symbol.Lt, Symbol.Eq,
+            Symbol.Eq, Symbol.Lt,
+            Symbol.And, Symbol.Or,
+            Symbol.Or, Symbol.And);
+
+    private List<Consumer<Symbol[]>> mutators = List.of(
+            (Symbol[] x) -> {
+                int a = rng().nextInt(x.length), b = rng().nextInt(x.length);
+                if (a != b) {
+                    int i = Math.min(a, b), j = Math.max(a, b);
+                    var tmp = rng().nextBoolean() ? x[j] : null;
+                    System.arraycopy(x, i, x, i + 1, j - i - 1);
+                    x[i] = tmp;
+                }
+            },
+            (Symbol[] x) -> {
+                int a = rng().nextInt(x.length), b = rng().nextInt(x.length);
+                if (a != b) {
+                    int i = Math.min(a, b), j = Math.max(a, b);
+                    var tmp = rng().nextBoolean() ? x[j] : null;
+                    System.arraycopy(x, i + 1, x, i, j - i - 1);
+                    x[j] = tmp;
+                }
+            },
+            (Symbol[] x) -> {
+                int i = rng().nextInt(x.length);
+                var xi = x[i];
+                if (xi == null) {
+                } else if (xi == Symbol.Not) {
+                    xi = null;
+                } else if (xi == Symbol.Ite) {
+                    // same
+                } else if (swapMap.containsKey(xi)) {
+                    xi = swapMap.get(xi);
+                } else if (rng().nextBoolean()) {
+                    xi = rotateLeftMap.get(xi);
+                } else {
+                    xi = rotateRightMap.get(xi);
+                }
+                x[i] = xi;
+            },
+            (Symbol[] x) -> {
+                int i = rng().nextInt(x.length);
+                int sym = rng().nextInt(symbolPool.length);
+                x[i] = symbolPool[sym];
+            });
+
     @Override
     protected Symbol[] generateFrom(Symbol[] x) {
         Symbol[] newX = spare;
@@ -167,14 +254,7 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
             newX = new Symbol[x.length];
         }
         System.arraycopy(x, 0, newX, 0, x.length);
-
-        float f = rng().nextFloat();
-        int num = (int) (1f / (0.1f + 1.9f * f)) + 1;
-        for (int i = 0; i < num; ++i) {
-            int index = rng().nextInt(x.length);
-            int sym = rng().nextInt(symbolPool.length);
-            newX[index] = symbolPool[sym];
-        }
+        mutators.get(rng().nextInt(mutators.size())).accept(newX);
         return newX;
     }
 

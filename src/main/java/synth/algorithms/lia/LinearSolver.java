@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.logging.*;
 
 import synth.algorithms.classify.Classification;
+import synth.algorithms.classify.PartialSolution;
 import synth.algorithms.rng.Xoshiro256SS;
 import synth.core.Example;
 
@@ -55,9 +56,9 @@ public abstract class LinearSolver {
     /**
      * For each example, compute a solution set using the linear solver.
      */
-    public Map<LinearSolution, Classification> computeSolutionSets(List<Example> examples) throws InterruptedException {
+    public Collection<PartialSolution> computeSolutionSets(List<Example> examples) throws InterruptedException {
         var uncoveredExamples = new HashSet<Example>(examples);
-        var solutions = new HashMap<LinearSolution, Classification>();
+        var solutions = new HashSet<PartialSolution>();
 
         while (uncoveredExamples.size() > 0) {
             logger.log(Level.INFO, "Discovering sub-solutions: {0} examples not covered yet",
@@ -88,7 +89,7 @@ public abstract class LinearSolver {
                 if (seedExample.output() > 0) {
                     sol = new LinearSolution(Map.of(Term.TERM_1, seedExample.output()));
                     logger.log(Level.WARNING, "Degenerate solution for example: {0}", new Object[] { seedExample });
-                    solutions.put(sol, Classification.makeFromExamples(sol, examples));
+                    solutions.add(new PartialSolution(sol, Classification.makeFromExamples(sol, examples)));
                 } else {
                     // Something is fishy, anyway, we probably just can't solve this one?
                     logger.log(Level.WARNING, "Unable to find solution for example: {0}", new Object[] { seedExample });
@@ -99,7 +100,7 @@ public abstract class LinearSolver {
                 var subset = new HashSet<Example>();
                 completeGroupUsingSolutions(List.of(sol), examples, subset);
                 uncoveredExamples.removeAll(subset);
-                solutions.put(sol, Classification.makeFromExamples(sol, examples));
+                solutions.add(new PartialSolution(sol, Classification.makeFromExamples(sol, examples)));
             }
         }
         return solutions;

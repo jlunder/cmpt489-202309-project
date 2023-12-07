@@ -20,7 +20,7 @@ public class Main {
         Logger.getLogger("synth.Main").setLevel(Level.ALL);
         // Logger.getLogger("synth.algorithms.lia.LinearSolver").setLevel(Level.ALL);
         // Logger.getLogger("synth.algorithms.lia.ORToolsCPLinearSolver").setLevel(Level.ALL);
-        //Logger.getLogger("synth.algorithms").setLevel(Level.ALL);
+        Logger.getLogger("synth.algorithms").setLevel(Level.ALL);
 
         logger = Logger.getLogger("synth.Main");
     }
@@ -30,9 +30,9 @@ public class Main {
         // String examplesFilePath = "examples.txt";
 
         var synthesizers = List.of(
-                new BFSEnum2Synthesizer(),
-                new VoltronSynthesizer(),
-                new Mcmc1Synthesizer());
+                //new BFSEnum2Synthesizer(),
+                new VoltronSynthesizer());
+                //new Mcmc1Synthesizer());
         // Synthesizer synthesizer = new MultiStrategySynthesizer();
 
         for (var examplesFilePath : args) {

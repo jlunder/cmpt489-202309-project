@@ -1,5 +1,6 @@
 package synth.algorithms.mcmc;
 
+import java.util.function.Function;
 import java.util.logging.*;
 
 import synth.algorithms.rng.Xoshiro256SS;
@@ -11,6 +12,7 @@ public abstract class McmcOptimizer<T> {
         private boolean reachedTargetCost;
         private U bestX;
         private float bestCost;
+        private boolean bestIsValid;
         private long iterations;
 
         public boolean reachedTargetCost() {
@@ -25,14 +27,20 @@ public abstract class McmcOptimizer<T> {
             return bestCost;
         }
 
+        public boolean bestIsValid() {
+            return bestIsValid;
+        }
+
         public long iterations() {
             return iterations;
         }
 
-        public OptimizationResult(boolean reachedTargetCost, U bestX, float bestCost, long iterations) {
+        public OptimizationResult(boolean reachedTargetCost, U bestX, float bestCost, boolean bestIsValid,
+                long iterations) {
             this.reachedTargetCost = reachedTargetCost;
             this.bestX = bestX;
             this.bestCost = bestCost;
+            this.bestIsValid = bestIsValid;
             this.iterations = iterations;
         }
     }
@@ -71,8 +79,8 @@ public abstract class McmcOptimizer<T> {
         return (float) Math.exp(-beta * candidateCost / curCost);
     }
 
-    public OptimizationResult<T> optimize(T initialX, float targetCost, long maxIterations)
-            throws InterruptedException {
+    protected OptimizationResult<T> optimize(T initialX, float targetCost, Function<T, Boolean> validate,
+            long maxIterations) throws InterruptedException {
         logger.log(Level.INFO, "Begin MCMC optimize of {0}, target cost {1}, max iterations {2}",
                 new Object[] { initialX.getClass().getSimpleName(), targetCost, maxIterations });
         T curX = initialX;
@@ -80,6 +88,7 @@ public abstract class McmcOptimizer<T> {
 
         T bestX = curX;
         float bestCost = curCost;
+        boolean bestIsValid = false;
 
         final long giga = 1000000000;
         long i;
@@ -89,8 +98,8 @@ public abstract class McmcOptimizer<T> {
             long nowNs = System.nanoTime();
             if (nowNs - lastNs > giga) {
                 lastNs = nowNs - (nowNs - startNs) % giga;
-                logger.log(Level.INFO, "MCMC heartbeat: best cost {0}, {1} iterations ({2}/s)",
-                        new Object[] { bestCost, i, i * giga / (nowNs - startNs) });
+                logger.log(Level.INFO, "MCMC heartbeat: cost {0} (best {1}), {2} iterations ({3}/s)",
+                        new Object[] { curCost, bestCost, i, i * giga / (nowNs - startNs) });
             }
 
             if (Thread.interrupted()) {
@@ -101,6 +110,19 @@ public abstract class McmcOptimizer<T> {
             float candidateCost = computeCost(candidateX);
             boolean accepted = (rng.nextFloat() < acceptProbability(curCost, candidateCost));
             boolean best = (candidateCost < bestCost);
+
+            // If this is a better solution, or it's just as good and we don't already have
+            // a validated solution, check this solution
+            if (validate != null && (best || (candidateCost == bestCost && !bestIsValid))) {
+                if (validate.apply(candidateX)) {
+                    // The solution validated! Keep it
+                    best = true;
+                    bestIsValid = true;
+                    break;
+                }
+                // If we didn't break above, we would have to check whether any new best that
+                // doesn't validate is overwriting one that does...
+            }
 
             if (accepted && (best || curX != bestX)) {
                 discard(curX);
@@ -118,7 +140,7 @@ public abstract class McmcOptimizer<T> {
             }
         }
 
-        return new OptimizationResult<T>(bestCost <= targetCost, bestX, bestCost, i);
+        return new OptimizationResult<T>(bestCost <= targetCost, bestX, bestCost, bestIsValid, i);
     }
 
 }
