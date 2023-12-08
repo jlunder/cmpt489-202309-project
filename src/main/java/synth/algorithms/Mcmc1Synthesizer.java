@@ -3,10 +3,12 @@ package synth.algorithms;
 import synth.algorithms.mcmc.McmcProgramOptimizer;
 import synth.algorithms.mcmc.McmcOptimizer.OptimizationResult;
 import synth.algorithms.rng.Xoshiro256SS;
-import synth.core.*;
+import synth.core.Example;
+import synth.core.Program;
 import synth.dsl.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.*;
 
 public class Mcmc1Synthesizer extends SynthesizerBase {
@@ -32,31 +34,30 @@ public class Mcmc1Synthesizer extends SynthesizerBase {
     @Override
     public Program synthesize(List<Example> examples) {
         var rng = new Xoshiro256SS(seed);
-        McmcProgramOptimizer optimizer = new McmcProgramOptimizer(rng.nextSubsequence(),
-                McmcProgramOptimizer.examplesCostFunction(examples),
-                McmcProgramOptimizer.GENERAL_SYMBOLS);
+        McmcProgramOptimizer optimizer = new McmcProgramOptimizer(rng.nextSubsequence());
+        var cost = McmcProgramOptimizer.examplesCostFunction(examples);
+        var generateFrom = optimizer.generateFromFunction(McmcProgramOptimizer.GENERAL_SYMBOLS);
+        Function<Symbol[], Boolean> validate = (x) -> {
+            for (var e : examples) {
+                var programOutput = Semantics.evaluateExprPostOrder(x, e.input());
+                if (programOutput != e.output()) {
+                    return false;
+                }
+            }
+            return true;
+        };
 
         try {
-            var x = optimizer.makeRandomized(maxProgramLength);
+            var x = optimizer.makeRandomized(maxProgramLength, McmcProgramOptimizer.GENERAL_SYMBOLS);
             OptimizationResult<Symbol[]> result = null;
             for (int i = 3; i > 0; --i) {
-                McmcProgramOptimizer roughOptimizer = new McmcProgramOptimizer(rng.nextSubsequence(),
-                        McmcProgramOptimizer.examplesCostFunction(examples.subList(0, examples.size() >> i)),
-                        McmcProgramOptimizer.GENERAL_SYMBOLS);
-                result = roughOptimizer.optimize(x, (examples.size() >> i) / 4, null, 10000000);
+                result = optimizer.optimize(x, generateFrom, cost, (examples.size() >> i) / 4, someX -> true, 10000000);
                 x = result.bestX();
                 logger.log(Level.INFO, "Best result: {0}",
                         new Object[] { Semantics.makeExprParseTreeFromPostOrder(result.bestX()) });
             }
-            result = optimizer.optimize(result.bestX(), 10f, expr -> {
-                for (var e : examples) {
-                    if (Semantics.evaluateExprPostOrder(expr, e.input()) != e.output()) {
-                        return false;
-                    }
-                }
-                return true;
-            }, maxIterations);
-            if (result != null && !result.reachedTargetCost()) {
+            result = optimizer.optimize(result.bestX(), generateFrom, cost, 10f, validate, maxIterations);
+            if (result != null && !result.bestIsValid()) {
                 logger.log(Level.INFO, "Best cost: {0} after {1} iterations",
                         new Object[] { result.bestCost(), result.iterations() });
                 return null;

@@ -1,7 +1,8 @@
 package synth.algorithms.ast;
 
-import synth.core.*;
-import synth.dsl.Symbol;
+import synth.core.Environment;
+import synth.core.ParseNode;
+import synth.dsl.*;
 
 public class VariableNode extends ExprNode {
     public static final ParseNode REIFIED_X = ParseNode.VAR_X;

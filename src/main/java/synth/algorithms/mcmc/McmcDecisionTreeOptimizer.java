@@ -5,7 +5,7 @@ import java.util.*;
 import synth.algorithms.classify.*;
 import synth.algorithms.representation.*;
 import synth.algorithms.rng.Xoshiro256SS;
-import synth.core.*;
+import synth.core.Example;
 
 public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOptimizer.FlatDecisionTree> {
     public class FlatDecisionTree {
@@ -161,8 +161,13 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
         this.dawdleCost = 10;
     }
 
+    @Override
+    protected void discard(FlatDecisionTree x) {
+        spare = x;
+    }
+
     public OptimizationResult<FlatDecisionTree> optimize(int maxIterations) throws InterruptedException {
-        return super.optimize(makeRandomized(), dawdleCost / 2 * examples.size(), (dt) -> {
+        return super.optimize(makeRandomized(), this::generateFrom, this::computeCost, dawdleCost / 2 * examples.size(), (dt) -> {
             var d = dt.reifyAsDecisionTree();
             if (d instanceof PartialSolution) {
                 // Degenerate case
@@ -181,8 +186,7 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
         }, maxIterations);
     }
 
-    @Override
-    public float computeCost(FlatDecisionTree x) {
+    protected float computeCost(FlatDecisionTree x) {
         float cost = 0f;
         for (var e : examples) {
             cost += x.cost(e);
@@ -190,7 +194,6 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
         return cost;
     }
 
-    @Override
     protected FlatDecisionTree generateFrom(FlatDecisionTree x) {
         var newX = spare;
         spare = null;
@@ -202,10 +205,5 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
         newX.mutate();
 
         return newX;
-    }
-
-    @Override
-    protected void discard(FlatDecisionTree x) {
-        spare = x;
     }
 }

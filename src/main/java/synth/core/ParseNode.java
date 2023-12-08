@@ -21,6 +21,12 @@ public class ParseNode {
     private final Symbol symbol;
     private final List<ParseNode> children;
 
+    public ParseNode(Symbol symbol) {
+        assert symbol.operatorArguments().size() == 0;
+        this.symbol = symbol;
+        this.children = NO_CHILDREN;
+    }
+
     public ParseNode(Symbol symbol, List<ParseNode> children) {
         assert children.size() == symbol.operatorArguments().size();
         this.symbol = symbol;

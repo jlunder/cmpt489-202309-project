@@ -4,7 +4,9 @@ import java.util.List;
 
 import synth.algorithms.ast.*;
 import synth.algorithms.representation.*;
-import synth.core.*;
+import synth.core.Environment;
+import synth.core.Example;
+import synth.core.ParseNode;
 import synth.dsl.*;
 
 public class DecisionTree implements ExprRepresentation {

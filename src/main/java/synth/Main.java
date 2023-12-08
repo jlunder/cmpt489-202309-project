@@ -1,8 +1,9 @@
 package synth;
 
 import synth.algorithms.*;
-import synth.core.*;
-import synth.dsl.Semantics;
+import synth.core.Example;
+import synth.core.Program;
+import synth.dsl.*;
 import synth.util.*;
 
 import java.util.*;

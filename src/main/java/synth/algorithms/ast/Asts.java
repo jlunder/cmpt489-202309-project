@@ -1,6 +1,6 @@
 package synth.algorithms.ast;
 
-import synth.core.*;
+import synth.core.ParseNode;
 import synth.dsl.*;
 
 public class Asts {

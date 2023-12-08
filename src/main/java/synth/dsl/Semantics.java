@@ -211,9 +211,11 @@ public class Semantics {
 
         private int[] exprStack = new int[MAX_STACK];
         private ParseNode[] exprNodeStack = new ParseNode[MAX_STACK];
+        private int[] exprSizeStack = new int[MAX_STACK];
         private int exprTop;
         private boolean[] boolStack = new boolean[MAX_STACK];
         private ParseNode[] boolNodeStack = new ParseNode[MAX_STACK];
+        private int[] boolSizeStack = new int[MAX_STACK];
         private int boolTop;
 
         public int evaluateExpr(Symbol[] program, Environment env) {
@@ -371,6 +373,67 @@ public class Semantics {
             }
         }
 
+        public int measureExprParseTree(Symbol[] program) {
+            measureParseTree(program);
+            return popExprSize();
+        }
+
+        public int measureBoolParseTree(Symbol[] program) {
+            measureParseTree(program);
+            return popBoolSize();
+        }
+
+        private void measureParseTree(Symbol[] program) {
+            reset(program);
+            for (int i = 0; i < program.length; ++i) {
+                var s = program[i];
+                if (s == null) {
+                    continue;
+                }
+                int c, x, y;
+                switch (s) {
+                    case Const1:
+                    case Const2:
+                    case Const3:
+                    case VarX:
+                    case VarY:
+                    case VarZ:
+                        pushExprSize(1);
+                        break;
+                    case Ite:
+                        c = popBoolSize();
+                        x = popExprSize();
+                        y = popExprSize();
+                        pushExprSize(1 + c + x + y);
+                        break;
+                    case Add:
+                    case Multiply:
+                        x = popExprSize();
+                        y = popExprSize();
+                        pushExprSize(1 + x + y);
+                        break;
+                    case Lt:
+                    case Eq:
+                        x = popExprSize();
+                        y = popExprSize();
+                        pushBoolSize(1 + x + y);
+                        break;
+                    case And:
+                    case Or:
+                        x = popBoolSize();
+                        y = popBoolSize();
+                        pushBoolSize(1 + x + y);
+                        break;
+                    case Not:
+                        x = popBoolSize();
+                        pushBoolSize(1 + x);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Cannot evaluate expression " + s);
+                }
+            }
+        }
+
         private void reset(Symbol[] program) {
             if (program.length > MAX_STACK) {
                 throw new UnsupportedOperationException("Program too long");
@@ -426,6 +489,31 @@ public class Semantics {
                 return ParseNode.CONST_FALSE;
             }
         }
+
+        private void pushExprSize(int size) {
+            exprSizeStack[exprTop++] = size;
+        }
+
+        private int popExprSize() {
+            if (exprTop > 0) {
+                return exprSizeStack[--exprTop];
+            } else {
+                return 1;
+            }
+        }
+
+        private void pushBoolSize(int size) {
+            boolSizeStack[boolTop++] = size;
+        }
+
+        private int popBoolSize() {
+            if (boolTop > 0) {
+                return boolSizeStack[--boolTop];
+            } else {
+                // CONST_FALSE is Eq(1, 2) -- actually 3 nodes
+                return 3;
+            }
+        }
     }
 
     private static ThreadLocal<PostOrderEvaluator> postOrderEvaluator = new ThreadLocal<>();
@@ -448,6 +536,16 @@ public class Semantics {
     public static ParseNode makeBoolParseTreeFromPostOrder(Symbol[] program) {
         ensureThreadLocals();
         return postOrderEvaluator.get().makeBoolParseTree(program);
+    }
+
+    public static int measureExprParseTreeFromPostOrder(Symbol[] program) {
+        ensureThreadLocals();
+        return postOrderEvaluator.get().measureExprParseTree(program);
+    }
+
+    public static int measureBoolParseTreeFromPostOrder(Symbol[] program) {
+        ensureThreadLocals();
+        return postOrderEvaluator.get().measureBoolParseTree(program);
     }
 
     private static void ensureThreadLocals() {

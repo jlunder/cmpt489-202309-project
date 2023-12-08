@@ -2,7 +2,8 @@ package synth.algorithms.mcmc;
 
 import synth.algorithms.ast.*;
 import synth.algorithms.representation.*;
-import synth.core.*;
+import synth.core.Environment;
+import synth.core.ParseNode;
 import synth.dsl.*;
 
 public class McmcProgramRepresentation implements ExprRepresentation, BoolRepresentation{

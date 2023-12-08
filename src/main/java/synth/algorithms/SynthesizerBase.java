@@ -1,6 +1,10 @@
 package synth.algorithms;
 
-import synth.core.*;
+import synth.core.Environment;
+import synth.core.Example;
+import synth.core.ParseNode;
+import synth.core.Program;
+import synth.core.Synthesizer;
 import synth.dsl.*;
 
 import java.util.*;

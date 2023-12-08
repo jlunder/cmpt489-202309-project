@@ -2,8 +2,9 @@ package synth.algorithms.ast;
 
 import java.util.Arrays;
 
-import synth.core.*;
-import synth.dsl.Symbol;
+import synth.core.Environment;
+import synth.core.ParseNode;
+import synth.dsl.*;
 
 public class AndNode extends BoolNode {
     public AndNode(AstNode... children) {

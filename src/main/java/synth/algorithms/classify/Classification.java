@@ -4,7 +4,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 
 import synth.algorithms.representation.*;
-import synth.core.*;
+import synth.core.Example;
 
 public class Classification {
     private HashSet<Example> included;

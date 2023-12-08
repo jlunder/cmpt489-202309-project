@@ -2,8 +2,9 @@ package synth.algorithms.ast;
 
 import java.util.*;
 
-import synth.core.*;
-import synth.dsl.Symbol;
+import synth.core.Environment;
+import synth.core.ParseNode;
+import synth.dsl.*;
 
 public class EqNode extends BoolNode {
     public EqNode(AstNode... children) {

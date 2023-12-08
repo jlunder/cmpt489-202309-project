@@ -55,14 +55,10 @@ public abstract class McmcOptimizer<T> {
         this.rng = rng;
     }
 
-    protected abstract T generateFrom(T x);
-
     protected void discard(T x) {
         // In case you want to implement a resource reuse policy -- we don't promise to
         // ALWAYS discard, this is best effort basis!
     }
-
-    public abstract float computeCost(T x);
 
     protected float acceptProbability(float curCost, float candidateCost) {
         // if checks probably make this faster by skipping exp, also if the cost value
@@ -79,12 +75,12 @@ public abstract class McmcOptimizer<T> {
         return (float) Math.exp(-beta * candidateCost / curCost);
     }
 
-    protected OptimizationResult<T> optimize(T initialX, float targetCost, Function<T, Boolean> validate,
-            long maxIterations) throws InterruptedException {
+    public OptimizationResult<T> optimize(T initialX, Function<T, T> generateFrom, Function<T, Float> computeCost,
+            float targetCost, Function<T, Boolean> validate, long maxIterations) throws InterruptedException {
         logger.log(Level.INFO, "Begin MCMC optimize of {0}, target cost {1}, max iterations {2}",
                 new Object[] { initialX.getClass().getSimpleName(), targetCost, maxIterations });
         T curX = initialX;
-        float curCost = computeCost(curX);
+        float curCost = computeCost.apply(curX);
 
         T bestX = curX;
         float bestCost = curCost;
@@ -106,8 +102,8 @@ public abstract class McmcOptimizer<T> {
                 throw new InterruptedException("Thread interrupted during McmcOptimizer::optimize()");
             }
 
-            T candidateX = generateFrom(curX);
-            float candidateCost = computeCost(candidateX);
+            T candidateX = generateFrom.apply(curX);
+            float candidateCost = computeCost.apply(candidateX);
             boolean accepted = (rng.nextFloat() < acceptProbability(curCost, candidateCost));
             boolean best = (candidateCost < bestCost);
 

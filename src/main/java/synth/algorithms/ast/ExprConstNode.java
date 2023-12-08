@@ -2,8 +2,9 @@ package synth.algorithms.ast;
 
 import java.util.*;
 
-import synth.core.*;
-import synth.dsl.Symbol;
+import synth.core.Environment;
+import synth.core.ParseNode;
+import synth.dsl.*;
 
 public class ExprConstNode extends ExprNode {
     public static final ExprConstNode CONST_1 = new ExprConstNode(1);

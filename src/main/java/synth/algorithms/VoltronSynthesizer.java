@@ -6,10 +6,12 @@ import synth.algorithms.lia.*;
 import synth.algorithms.mcmc.*;
 import synth.algorithms.representation.ExprRepresentation;
 import synth.algorithms.rng.Xoshiro256SS;
-import synth.core.*;
+import synth.core.Example;
+import synth.core.Program;
 import synth.dsl.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.*;
 
 public class VoltronSynthesizer extends SynthesizerBase {
@@ -22,19 +24,32 @@ public class VoltronSynthesizer extends SynthesizerBase {
             Collection<PartialSolution> partialSolutions)
             throws InterruptedException {
         var suggestions = new ArrayList<Discriminator>();
-        for (var sol : partialSolutions) {
+        nextSolution: for (var sol : partialSolutions) {
             var classification = sol.application();
 
-            var positive = generateImperfectDiscriminator(allExamples, classification);
-            suggestions.add(positive);
-            // If this one is perfect already, don't keep generating!
-            if (positive.classification().equals(classification)) {
-                continue;
+            var positive = generateDiscriminatorsMcmc(allExamples, classification);
+            // Check if one of our generated discriminators happens to be perfect
+            for (var d : positive) {
+                if (d.classification().equals(classification)) {
+                    // This one is perfect, just add it and stop now! No point in keeping any others
+                    suggestions.add(d);
+                    continue nextSolution;
+                }
             }
             // Try generating the discriminator in the negative, in case that synthesis is
             // easier and generates a better or at least different partition
-            var negative = generateImperfectDiscriminator(allExamples, classification.inverted());
-            suggestions.add(negative);
+            var negative = generateDiscriminatorsMcmc(allExamples, classification.inverted());
+            // Again, check if one of our generated discriminators happens to be perfect
+            for (var d : negative) {
+                if (d.classification().equalsInverted(classification)) {
+                    // This one is perfect, just add it and stop now
+                    suggestions.add(d);
+                    continue nextSolution;
+                }
+            }
+            // None of the discriminators is perfect, save them all and proceed
+            suggestions.addAll(positive);
+            suggestions.addAll(negative);
         }
 
         var minimal = new ArrayList<Discriminator>();
@@ -72,20 +87,87 @@ public class VoltronSynthesizer extends SynthesizerBase {
         return minimal;
     }
 
-    private Discriminator generateImperfectDiscriminator(Set<Example> allExamples, Classification desiredClassification)
-            throws InterruptedException {
-        McmcProgramOptimizer discriminatorOptimizer = new McmcProgramOptimizer(rng.nextSubsequence(),
-                McmcProgramOptimizer.confusionCostFunction(desiredClassification, rng.nextSubsequence(), 50),
-                McmcProgramOptimizer.CONDITION_SYMBOLS);
+    private static final Function<Symbol[], Boolean> validateFunction(Classification desiredClassification) {
+        return (x) -> {
+            boolean falsePositive = false;
+            boolean truePositive = false;
+            boolean falseNegative = false;
+            boolean trueNegative = false;
+            for (var e : desiredClassification.included()) {
+                if (Semantics.evaluateBoolPostOrder(x, e.input())) {
+                    truePositive = true;
+                } else {
+                    falseNegative = true;
+                }
+            }
+            for (var e : desiredClassification.excluded()) {
+                if (Semantics.evaluateBoolPostOrder(x, e.input())) {
+                    truePositive = true;
+                } else {
+                    falseNegative = true;
+                }
+            }
 
-        var result = discriminatorOptimizer.optimize(discriminatorOptimizer.makeRandomized(20), 10, (x) -> {
-            return true;
-        }, 1000000);
-        var boolParse = Semantics.makeBoolParseTreeFromPostOrder(result.bestX());
-        var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
+            // Discriminator must be over- or under-approximate: it has to identify at
+            // least one category of things, and provide some information about the other,
+            // to be useful.
+            return truePositive && trueNegative && (falsePositive != falseNegative);
+        };
+    }
+
+    private Collection<Discriminator> generateDiscriminatorsMcmc(Set<Example> allExamples,
+            Classification desiredClassification)
+            throws InterruptedException {
+        McmcProgramOptimizer discriminatorOptimizer = new McmcProgramOptimizer(rng.nextSubsequence());
+
+        final var maxProgramSize = 20;
+
+        var initialX = discriminatorOptimizer.makeRandomized(20, McmcProgramOptimizer.CONDITION_SYMBOLS);
+        var generateFrom = discriminatorOptimizer.generateFromFunction(McmcProgramOptimizer.CONDITION_SYMBOLS);
+        var validate = validateFunction(desiredClassification);
+        var approximateCost = McmcProgramOptimizer.boolSizeCostDecoratorFunction(
+                McmcProgramOptimizer.confusionCostFunction(desiredClassification, 1f, 1f), 1f / 20f);
+        var overApproximateCost = McmcProgramOptimizer.boolSizeCostDecoratorFunction(
+                McmcProgramOptimizer.confusionCostFunction(desiredClassification, 0.1f, 1f), 1f / maxProgramSize);
+        var underApproximateCost = McmcProgramOptimizer.boolSizeCostDecoratorFunction(
+                McmcProgramOptimizer.confusionCostFunction(desiredClassification, 1f, 0.1f), 1f / maxProgramSize);
+        var overApproximateResult = discriminatorOptimizer.optimize(initialX, generateFrom, overApproximateCost, 0.5f,
+                validate, 1000000);
+        var underApproximateResult = discriminatorOptimizer.optimize(initialX, generateFrom, underApproximateCost, 0.5f,
+                validate, 1000000);
+
+        // Update initialX to the over-approximate or under-approximate optimized result
+        // if they're clearly at least an okay starting point
+        if (overApproximateResult.bestIsValid() && (!underApproximateResult.bestIsValid()
+                || (overApproximateResult.bestCost() < underApproximateResult.bestCost()))) {
+            initialX = overApproximateResult.bestX();
+        }
+        if (underApproximateResult.bestIsValid() && (!overApproximateResult.bestIsValid()
+                || (underApproximateResult.bestCost() < overApproximateResult.bestCost()))) {
+            initialX = overApproximateResult.bestX();
+        }
+
+        var result = discriminatorOptimizer.optimize(initialX, generateFrom, approximateCost, 0.5f, validate, 1000000);
+
+        var discriminators = new ArrayList<Discriminator>();
+        if (overApproximateResult.bestIsValid()) {
+            var boolParse = Semantics.makeBoolParseTreeFromPostOrder(result.bestX());
+            var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
+            discriminators.add(new Discriminator(condition, allExamples));
+        }
+        if (underApproximateResult.bestIsValid()) {
+            var boolParse = Semantics.makeBoolParseTreeFromPostOrder(result.bestX());
+            var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
+            discriminators.add(new Discriminator(condition, allExamples));
+        }
+        if (result.bestIsValid()) {
+            var boolParse = Semantics.makeBoolParseTreeFromPostOrder(result.bestX());
+            var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
+            discriminators.add(new Discriminator(condition, allExamples));
+        }
 
         // Discriminator computes the actual classification
-        return new Discriminator(condition, allExamples);
+        return discriminators;
     }
 
     private ExprRepresentation buildDecisionTreeAstFromPartialSolutions(Set<Example> allExamples,

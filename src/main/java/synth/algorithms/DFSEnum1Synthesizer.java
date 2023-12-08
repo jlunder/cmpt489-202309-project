@@ -1,6 +1,8 @@
 package synth.algorithms;
 
-import synth.core.*;
+import synth.core.Example;
+import synth.core.ParseNode;
+import synth.core.Program;
 import synth.dsl.*;
 import synth.util.ArraySliceList;
 

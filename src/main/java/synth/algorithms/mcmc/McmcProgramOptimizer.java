@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 import synth.algorithms.classify.Classification;
 import synth.algorithms.rng.Xoshiro256SS;
-import synth.core.*;
+import synth.core.Example;
 import synth.dsl.*;
 
 public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
@@ -45,35 +45,23 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         // The rest of the symbols in the table are null, i.e. no-op
     }
 
-    private Function<Symbol[], Float> costFunction;
-    private Symbol[] symbolPool;
-
     private Symbol[] spare;
 
-    public Symbol[] makeRandomized(int length) {
+    public McmcProgramOptimizer(Xoshiro256SS rng) {
+        super(rng);
+    }
+
+    @Override
+    protected void discard(Symbol[] x) {
+        spare = x;
+    }
+
+    public Symbol[] makeRandomized(int length, Symbol[] symbolPool) {
         var x = new Symbol[length];
         for (int i = 0; i < length; ++i) {
             x[i] = symbolPool[rng().nextInt(symbolPool.length)];
         }
         return x;
-    }
-
-    public McmcProgramOptimizer(Xoshiro256SS rng, Function<Symbol[], Float> costFunction, Symbol[] symbolPool) {
-        super(rng);
-        this.costFunction = costFunction;
-        this.symbolPool = symbolPool;
-    }
-
-    public McmcProgramOptimizer(long seed, Function<Symbol[], Float> costFunction, Symbol[] symbolPool) {
-        super(new Xoshiro256SS(seed));
-        this.costFunction = costFunction;
-        this.symbolPool = symbolPool;
-    }
-
-    @Override
-    public OptimizationResult<Symbol[]> optimize(Symbol[] initialX, float targetCost,
-            Function<Symbol[], Boolean> validate, long maxIterations) throws InterruptedException {
-        return super.optimize(initialX, targetCost, validate, maxIterations);
     }
 
     public static Function<Symbol[], Float> examplesCostFunction(Collection<Example> examples) {
@@ -108,19 +96,48 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         };
     }
 
-    public static Function<Symbol[], Float> confusionCostFunction(Classification classification) {
-        var infn = inclusionsCostFunction(classification.included());
-        var exfn = exclusionsCostFunction(classification.excluded());
-        return x -> infn.apply(x) + exfn.apply(x);
+    public static Function<Symbol[], Float> exprSizeCostDecoratorFunction(Function<Symbol[], Float> otherCost,
+            float sizeBias) {
+        return (x) -> {
+            return otherCost.apply(x) + sizeBias * Semantics.measureExprParseTreeFromPostOrder(x);
+        };
     }
 
-    public static Function<Symbol[], Float> confusionCostFunction(Classification classification, Xoshiro256SS rng,
-            int sampleCount) {
-        var infn = (classification.included().size() < sampleCount) ? inclusionsCostFunction(classification.included())
-                : inclusionsCostFunction(List.copyOf(classification.included()), rng, sampleCount);
-        var exfn = (classification.excluded().size() < sampleCount) ? exclusionsCostFunction(classification.excluded())
-                : exclusionsCostFunction(List.copyOf(classification.excluded()), rng, sampleCount);
-        return x -> infn.apply(x) + exfn.apply(x);
+    public static Function<Symbol[], Float> boolSizeCostDecoratorFunction(Function<Symbol[], Float> otherCost,
+            float sizeBias) {
+        return (x) -> {
+            return otherCost.apply(x) + sizeBias * Semantics.measureBoolParseTreeFromPostOrder(x);
+        };
+    }
+
+    public static Function<Symbol[], Float> confusionCostFunction(Classification classification,
+            float falsePositiveBias, float falseNegativeBias) {
+        var inSize = classification.included().size();
+        var exSize = classification.excluded().size();
+        if (inSize == 0 && exSize == 0) {
+            throw new IllegalArgumentException("classification is empty");
+        }
+        // Optimize degenerate cases, just 'cause
+        if (inSize == 0) {
+            return inclusionsCostFunction(classification.included());
+        } else if (exSize == 0) {
+            return exclusionsCostFunction(classification.excluded());
+        }
+        var infn = inclusionsCostFunction(classification.included());
+        var exfn = exclusionsCostFunction(classification.excluded());
+
+        // Scale the cost of errors so that really lopsided classifications don't
+        // generate trivial classifiers that always classify things the same way.
+        
+        // Inclusion cost is incurred when something that was supposed to be included
+        // wasn't, i.e. false negative.
+        float inScale = falseNegativeBias * (float) Math.max(inSize, exSize) / inSize;
+        
+        // Exclusion cost is incurred when something that was supposed to be excluded
+        // wasn't, i.e. false positive.
+        float exScale = falsePositiveBias * (float) Math.max(inSize, exSize) / exSize;
+        
+        return x -> infn.apply(x) * inScale + exfn.apply(x) * exScale;
     }
 
     public static Function<Symbol[], Float> inclusionsCostFunction(Collection<Example> included) {
@@ -175,12 +192,7 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         };
     }
 
-    @Override
-    public float computeCost(Symbol[] x) {
-        return costFunction.apply(x);
-    }
-
-    Map<Symbol, Symbol> rotateLeftMap = Map.of(
+    private static final Map<Symbol, Symbol> ROTATE_LEFT_MAP = Map.of(
             Symbol.Const1, Symbol.Const2,
             Symbol.Const2, Symbol.Const3,
             Symbol.Const3, Symbol.VarX,
@@ -188,7 +200,7 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
             Symbol.VarY, Symbol.VarZ,
             Symbol.VarZ, Symbol.Const1);
 
-    Map<Symbol, Symbol> rotateRightMap = Map.of(
+    private static final Map<Symbol, Symbol> ROTATE_RIGHT_MAP = Map.of(
             Symbol.Const1, Symbol.VarZ,
             Symbol.Const2, Symbol.Const1,
             Symbol.Const3, Symbol.Const2,
@@ -196,7 +208,7 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
             Symbol.VarY, Symbol.VarX,
             Symbol.VarZ, Symbol.VarY);
 
-    private Map<Symbol, Symbol> swapMap = Map.of(
+    private static final Map<Symbol, Symbol> SWAP_MAP = Map.of(
             Symbol.Add, Symbol.Multiply,
             Symbol.Multiply, Symbol.Add,
             Symbol.Lt, Symbol.Eq,
@@ -204,62 +216,58 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
             Symbol.And, Symbol.Or,
             Symbol.Or, Symbol.And);
 
-    private List<Consumer<Symbol[]>> mutators = List.of(
-            (Symbol[] x) -> {
-                int a = rng().nextInt(x.length), b = rng().nextInt(x.length);
-                if (a != b) {
-                    int i = Math.min(a, b), j = Math.max(a, b);
-                    var tmp = rng().nextBoolean() ? x[j] : null;
-                    System.arraycopy(x, i, x, i + 1, j - i - 1);
-                    x[i] = tmp;
-                }
-            },
-            (Symbol[] x) -> {
-                int a = rng().nextInt(x.length), b = rng().nextInt(x.length);
-                if (a != b) {
-                    int i = Math.min(a, b), j = Math.max(a, b);
-                    var tmp = rng().nextBoolean() ? x[j] : null;
-                    System.arraycopy(x, i + 1, x, i, j - i - 1);
-                    x[j] = tmp;
-                }
-            },
-            (Symbol[] x) -> {
-                int i = rng().nextInt(x.length);
-                var xi = x[i];
-                if (xi == null) {
-                } else if (xi == Symbol.Not) {
-                    xi = null;
-                } else if (xi == Symbol.Ite) {
-                    // same
-                } else if (swapMap.containsKey(xi)) {
-                    xi = swapMap.get(xi);
-                } else if (rng().nextBoolean()) {
-                    xi = rotateLeftMap.get(xi);
-                } else {
-                    xi = rotateRightMap.get(xi);
-                }
-                x[i] = xi;
-            },
-            (Symbol[] x) -> {
-                int i = rng().nextInt(x.length);
-                int sym = rng().nextInt(symbolPool.length);
-                x[i] = symbolPool[sym];
-            });
+    public Function<Symbol[], Symbol[]> generateFromFunction(Symbol[] symbolPool) {
+        final List<Consumer<Symbol[]>> mutators = List.of(
+                (Symbol[] x) -> {
+                    int a = rng().nextInt(x.length), b = rng().nextInt(x.length);
+                    if (a != b) {
+                        int i = Math.min(a, b), j = Math.max(a, b);
+                        var tmp = rng().nextBoolean() ? x[j] : null;
+                        System.arraycopy(x, i, x, i + 1, j - i - 1);
+                        x[i] = tmp;
+                    }
+                },
+                (Symbol[] x) -> {
+                    int a = rng().nextInt(x.length), b = rng().nextInt(x.length);
+                    if (a != b) {
+                        int i = Math.min(a, b), j = Math.max(a, b);
+                        var tmp = rng().nextBoolean() ? x[j] : null;
+                        System.arraycopy(x, i + 1, x, i, j - i - 1);
+                        x[j] = tmp;
+                    }
+                },
+                (Symbol[] x) -> {
+                    int i = rng().nextInt(x.length);
+                    var xi = x[i];
+                    if (xi == null) {
+                    } else if (xi == Symbol.Not) {
+                        xi = null;
+                    } else if (xi == Symbol.Ite) {
+                        // same
+                    } else if (SWAP_MAP.containsKey(xi)) {
+                        xi = SWAP_MAP.get(xi);
+                    } else if (rng().nextBoolean()) {
+                        xi = ROTATE_LEFT_MAP.get(xi);
+                    } else {
+                        xi = ROTATE_RIGHT_MAP.get(xi);
+                    }
+                    x[i] = xi;
+                },
+                (Symbol[] x) -> {
+                    int i = rng().nextInt(x.length);
+                    int sym = rng().nextInt(symbolPool.length);
+                    x[i] = symbolPool[sym];
+                });
 
-    @Override
-    protected Symbol[] generateFrom(Symbol[] x) {
-        Symbol[] newX = spare;
-        spare = null;
-        if (newX == null || newX.length != x.length) {
-            newX = new Symbol[x.length];
-        }
-        System.arraycopy(x, 0, newX, 0, x.length);
-        mutators.get(rng().nextInt(mutators.size())).accept(newX);
-        return newX;
-    }
-
-    @Override
-    protected void discard(Symbol[] x) {
-        spare = x;
+        return (x) -> {
+            Symbol[] newX = spare;
+            spare = null;
+            if (newX == null || newX.length != x.length) {
+                newX = new Symbol[x.length];
+            }
+            System.arraycopy(x, 0, newX, 0, x.length);
+            mutators.get(rng().nextInt(mutators.size())).accept(newX);
+            return newX;
+        };
     }
 }
