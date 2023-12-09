@@ -36,13 +36,20 @@ public class Tests {
     }
 
     public static void fuzzWithEnvs(Random rng, int count, Consumer<Environment> test) {
-        for (int n = 0; n < count; ++n) {
-            var env = new Environment(
-                    rng.nextInt(2 * n + 2) - n - 1,
-                    rng.nextInt(2 * n + 2) - n - 1,
-                    rng.nextInt(2 * n + 2) - n - 1);
+        for (var env : makeRandomEnvs(rng, count)) {
             test.accept(env);
         }
+    }
+
+    public static List<Environment> makeRandomEnvs(Random rng, int count) {
+        var envs = new ArrayList<Environment>(count);
+        for (int n = 0; n < count; ++n) {
+            envs.add(new Environment(
+                    rng.nextInt(2 * n + 2) - n - 1,
+                    rng.nextInt(2 * n + 2) - n - 1,
+                    rng.nextInt(2 * n + 2) - n - 1));
+        }
+        return envs;
     }
 
     public static void assertProgramSatisfiesExamples(Program testProgram, Example[] testExamples) {

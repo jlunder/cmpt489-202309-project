@@ -33,16 +33,13 @@ public class DecisionTree implements ExprRepresentation {
     }
 
     public ExprRepresentation classify(Example example) {
-        if (discriminator.classification().included().contains(example)) {
-            assert discriminator.condition().evalBool(example.input());
+        if (discriminator.evalBool(example.input())) {
             if (thenBranch instanceof DecisionTree) {
                 return ((DecisionTree) thenBranch).classify(example);
             } else {
                 return thenBranch;
             }
         } else {
-            assert discriminator.classification().excluded().contains(example);
-            assert !discriminator.condition().evalBool(example.input());
             if (elseBranch instanceof DecisionTree) {
                 return ((DecisionTree) elseBranch).classify(example);
             } else {
@@ -53,13 +50,13 @@ public class DecisionTree implements ExprRepresentation {
 
     @Override
     public ExprNode reifyAsExprAst() {
-        return new IteNode(discriminator.condition().reifyAsBoolAst(), thenBranch.reifyAsExprAst(),
+        return new IteNode(discriminator.reifyAsBoolAst(), thenBranch.reifyAsExprAst(),
                 elseBranch.reifyAsExprAst());
     }
 
     @Override
     public ParseNode reifyAsExprParse() {
-        return new ParseNode(Symbol.Ite, List.of(discriminator.condition().reifyAsBoolParse(),
+        return new ParseNode(Symbol.Ite, List.of(discriminator.reifyAsBoolParse(),
                 thenBranch.reifyAsExprParse(), elseBranch.reifyAsExprParse()));
     }
 

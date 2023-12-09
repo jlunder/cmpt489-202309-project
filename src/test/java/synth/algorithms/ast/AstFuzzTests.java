@@ -66,7 +66,7 @@ public class AstFuzzTests {
     }
 
     @Test
-    public void testExprAstParseTreeEquivalence() {
+    public void testReifyExprAstEquivalence() {
         var rng = Tests.makeRng(-1);
         for (int n = 0; n < 1000; ++n) {
             Symbol[] postOrder = Tests.makeRandomProgram(rng, programLength);
@@ -80,7 +80,7 @@ public class AstFuzzTests {
     }
 
     @Test
-    public void testBoolAstParseTreeEquivalence() {
+    public void testReifyBoolAstEquivalence() {
         var rng = Tests.makeRng(-1);
         for (int n = 0; n < 1000; ++n) {
             Symbol[] postOrder = Tests.makeRandomProgram(rng, programLength);

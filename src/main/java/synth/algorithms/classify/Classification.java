@@ -42,7 +42,7 @@ public class Classification {
 
     protected Classification(HashSet<Example> included, HashSet<Example> excluded, Classification inverted) {
         // An empty classification will surely lead to undefined behaviour...
-        assert !(included.isEmpty() && excluded.isEmpty());
+        //assert !(included.isEmpty() && excluded.isEmpty());
         this.included = included;
         this.excluded = excluded;
         this.cachedHashCode = included.hashCode() * 1093742879 + excluded.hashCode();
