@@ -17,12 +17,12 @@ public class McmcProgramRepresentation implements ExprRepresentation, BoolRepres
 
     @Override
     public BoolNode reifyAsBoolAst() {
-        return Asts.makeBoolAstFromParse(Semantics.makeBoolParseTreeFromPostOrder(program));
+        return Asts.makeBoolAstFromParse(Semantics.makeParseTreeFromBoolPostOrder(program));
     }
 
     @Override
     public ParseNode reifyAsBoolParse() {
-        return Semantics.makeBoolParseTreeFromPostOrder(program);
+        return Semantics.makeParseTreeFromBoolPostOrder(program);
     }
 
     @Override
@@ -32,12 +32,12 @@ public class McmcProgramRepresentation implements ExprRepresentation, BoolRepres
 
     @Override
     public ExprNode reifyAsExprAst() {
-        return Asts.makeExprAstFromParse(Semantics.makeExprParseTreeFromPostOrder(program));
+        return Asts.makeExprAstFromParse(Semantics.makeParseTreeFromExprPostOrder(program));
     }
 
     @Override
     public ParseNode reifyAsExprParse() {
-        return Semantics.makeExprParseTreeFromPostOrder(program);
+        return Semantics.makeParseTreeFromExprPostOrder(program);
     }
 
     @Override

@@ -54,7 +54,7 @@ public class Mcmc1Synthesizer extends SynthesizerBase {
                 result = optimizer.optimize(x, generateFrom, cost, (examples.size() >> i) / 4, someX -> true, 10000000);
                 x = result.bestX();
                 logger.log(Level.INFO, "Best result: {0}",
-                        new Object[] { Semantics.makeExprParseTreeFromPostOrder(result.bestX()) });
+                        new Object[] { Semantics.makeParseTreeFromExprPostOrder(result.bestX()) });
             }
             result = optimizer.optimize(result.bestX(), generateFrom, cost, 10f, validate, maxIterations);
             if (result != null && !result.bestIsValid()) {
@@ -62,7 +62,7 @@ public class Mcmc1Synthesizer extends SynthesizerBase {
                         new Object[] { result.bestCost(), result.iterations() });
                 return null;
             }
-            return new Program(Semantics.makeExprParseTreeFromPostOrder(result.bestX()));
+            return new Program(Semantics.makeParseTreeFromExprPostOrder(result.bestX()));
         } catch (InterruptedException e) {
             logger.log(Level.INFO, "Interrupted during synthesize()");
             return null;

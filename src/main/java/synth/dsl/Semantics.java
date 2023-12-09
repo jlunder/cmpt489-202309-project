@@ -373,12 +373,12 @@ public class Semantics {
             }
         }
 
-        public int measureExprParseTree(Symbol[] program) {
+        public int measureExprSize(Symbol[] program) {
             measureParseTree(program);
             return popExprSize();
         }
 
-        public int measureBoolParseTree(Symbol[] program) {
+        public int measureBoolSize(Symbol[] program) {
             measureParseTree(program);
             return popBoolSize();
         }
@@ -528,24 +528,32 @@ public class Semantics {
         return postOrderEvaluator.get().evaluateBool(program, env);
     }
 
-    public static ParseNode makeExprParseTreeFromPostOrder(Symbol[] program) {
+    public static ParseNode makeParseTreeFromExprPostOrder(Symbol[] program) {
         ensureThreadLocals();
         return postOrderEvaluator.get().makeExprParseTree(program);
     }
 
-    public static ParseNode makeBoolParseTreeFromPostOrder(Symbol[] program) {
+    public static ParseNode makeParseTreeFromBoolPostOrder(Symbol[] program) {
         ensureThreadLocals();
         return postOrderEvaluator.get().makeBoolParseTree(program);
     }
 
-    public static int measureExprParseTreeFromPostOrder(Symbol[] program) {
+    public static int measureExprPostOrderSize(Symbol[] program) {
         ensureThreadLocals();
-        return postOrderEvaluator.get().measureExprParseTree(program);
+        return postOrderEvaluator.get().measureExprSize(program);
     }
 
-    public static int measureBoolParseTreeFromPostOrder(Symbol[] program) {
+    public static int measureBoolPostOrderSize(Symbol[] program) {
         ensureThreadLocals();
-        return postOrderEvaluator.get().measureBoolParseTree(program);
+        return postOrderEvaluator.get().measureBoolSize(program);
+    }
+
+    public static int measureParseTreeSize(ParseNode node) {
+        int sum = 1;
+        for (var c : node.getChildren()) {
+            sum += measureParseTreeSize(c);
+        }
+        return sum;
     }
 
     private static void ensureThreadLocals() {

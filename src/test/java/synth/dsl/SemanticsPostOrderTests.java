@@ -3,6 +3,8 @@ package synth.dsl;
 import org.junit.*;
 
 import synth.core.*;
+import synth.util.TestData;
+import synth.util.Tests;
 
 public class SemanticsPostOrderTests {
     @Test
@@ -18,147 +20,187 @@ public class SemanticsPostOrderTests {
     }
 
     @Test
-    public void testExprPostOrderConst1() {
-        Symbol[] program = new Symbol[] { Symbol.Const1 };
-        Assert.assertEquals(1, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
+    public void testPostOrderConst1() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.const1TestPostOrder, TestData.const1TestExamples);
     }
 
     @Test
-    public void testExprPostOrderConst2() {
-        Symbol[] program = new Symbol[] { Symbol.Const2 };
-        Assert.assertEquals(2, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
+    public void testPostOrderConst2() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.const2TestPostOrder, TestData.const2TestExamples);
     }
 
     @Test
-    public void testExprPostOrderConst3() {
-        Symbol[] program = new Symbol[] { Symbol.Const3 };
-        Assert.assertEquals(3, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
+    public void testPostOrderConst3() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.const3TestPostOrder, TestData.const3TestExamples);
     }
 
     @Test
-    public void testExprPostOrderVarX() {
-        Symbol[] program = new Symbol[] { Symbol.VarX };
-        Assert.assertEquals(10, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
+    public void testPostOrderVarX() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.varXTestPostOrder, TestData.varXTestExamples);
     }
 
     @Test
-    public void testExprPostOrderVarY() {
-        Symbol[] program = new Symbol[] { Symbol.VarY };
-        Assert.assertEquals(15, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
+    public void testPostOrderVarY() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.varYTestPostOrder, TestData.varYTestExamples);
     }
 
     @Test
-    public void testExprPostOrderVarZ() {
-        Symbol[] program = new Symbol[] { Symbol.VarZ };
-        Assert.assertEquals(20, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
+    public void testPostOrderVarZ() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.varZTestPostOrder, TestData.varZTestExamples);
     }
 
     @Test
-    public void testExprPostOrderAdd() {
-        Symbol[] program = new Symbol[] { Symbol.VarY, Symbol.VarX, Symbol.Add };
-        Assert.assertEquals(25, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
+    public void testPostOrderAdd() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.addTestPostOrder, TestData.addTestExamples);
     }
 
     @Test
-    public void testExprPostOrderMultiply() {
-        Symbol[] program = new Symbol[] { Symbol.Const2, Symbol.VarZ, Symbol.Multiply };
-        Assert.assertEquals(40, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
+    public void testPostOrderMultiply() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.multiplyTestPostOrder, TestData.multiplyTestExamples);
     }
 
     @Test
-    public void testExprPostOrderLt() {
-        Symbol[] program = new Symbol[] { Symbol.Const2, Symbol.Const1, Symbol.VarY, Symbol.VarX, Symbol.Lt,
-                Symbol.Ite };
-        Assert.assertEquals(1, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(2, Semantics.evaluateExprPostOrder(program, new Environment(15, 15, 20)));
-        Assert.assertEquals(2, Semantics.evaluateExprPostOrder(program, new Environment(20, 15, 20)));
+    public void testPostOrderIteLt() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.iteLtTestPostOrder, TestData.iteLtTestExamples);
     }
 
     @Test
-    public void testExprPostOrderEq() {
-        Symbol[] program = new Symbol[] { Symbol.Const2, Symbol.Const1, Symbol.VarY, Symbol.VarX, Symbol.Eq,
-                Symbol.Ite };
-        Assert.assertEquals(2, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(1, Semantics.evaluateExprPostOrder(program, new Environment(15, 15, 20)));
-        Assert.assertEquals(2, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
+    public void testPostOrderIteEq() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.iteEqTestPostOrder, TestData.iteEqTestExamples);
     }
 
     @Test
-    public void testExprPostOrderAnd() {
-        Symbol[] program = new Symbol[] { Symbol.Const2, Symbol.Const1, Symbol.VarZ, Symbol.VarX, Symbol.Eq,
-                Symbol.VarY, Symbol.VarX, Symbol.Eq, Symbol.And, Symbol.Ite };
-        Assert.assertEquals(1, Semantics.evaluateExprPostOrder(program, new Environment(1, 1, 1)));
-        Assert.assertEquals(2, Semantics.evaluateExprPostOrder(program, new Environment(1, 1, 2)));
-        Assert.assertEquals(2, Semantics.evaluateExprPostOrder(program, new Environment(1, 2, 1)));
-        Assert.assertEquals(2, Semantics.evaluateExprPostOrder(program, new Environment(1, 2, 2)));
+    public void testPostOrderIteAnd() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.iteAndTestPostOrder, TestData.iteAndTestExamples);
     }
 
     @Test
-    public void testExprPostOrderOr() {
-        Symbol[] program = new Symbol[] { Symbol.Const2, Symbol.Const1, Symbol.VarZ, Symbol.VarX, Symbol.Eq,
-                Symbol.VarY, Symbol.VarX, Symbol.Eq, Symbol.Or, Symbol.Ite };
-        Assert.assertEquals(1, Semantics.evaluateExprPostOrder(program, new Environment(1, 1, 1)));
-        Assert.assertEquals(1, Semantics.evaluateExprPostOrder(program, new Environment(1, 1, 2)));
-        Assert.assertEquals(1, Semantics.evaluateExprPostOrder(program, new Environment(1, 2, 1)));
-        Assert.assertEquals(2, Semantics.evaluateExprPostOrder(program, new Environment(1, 2, 2)));
+    public void testPostOrderIteOr() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.iteOrTestPostOrder, TestData.iteOrTestExamples);
     }
 
     @Test
-    public void testExprPostOrderNot() {
-        Symbol[] program = new Symbol[] { Symbol.Const2, Symbol.Const1, Symbol.VarY, Symbol.VarX, Symbol.Eq, Symbol.Not,
-                Symbol.Ite };
-        Assert.assertEquals(1, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(2, Semantics.evaluateExprPostOrder(program, new Environment(15, 15, 20)));
+    public void testPostOrderIteNot() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.iteNotTestPostOrder, TestData.iteNotTestExamples);
     }
 
     @Test
-    public void testBoolPostOrderLt() {
-        Symbol[] program = new Symbol[] { Symbol.VarY, Symbol.VarX, Symbol.Lt };
-        Assert.assertEquals(true, Semantics.evaluateBoolPostOrder(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(false, Semantics.evaluateBoolPostOrder(program, new Environment(15, 15, 20)));
-        Assert.assertEquals(false, Semantics.evaluateBoolPostOrder(program, new Environment(20, 15, 20)));
+    public void testPostOrderComposition() {
+        Tests.assertExprPostOrderSatisfiesExamples(TestData.compositionTestPostOrder,
+                TestData.compositionTestExamples);
     }
 
     @Test
-    public void testBoolPostOrderEq() {
-        Symbol[] program = new Symbol[] { Symbol.VarY, Symbol.VarX, Symbol.Eq };
-        Assert.assertEquals(false, Semantics.evaluateBoolPostOrder(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(true, Semantics.evaluateBoolPostOrder(program, new Environment(15, 15, 20)));
-        Assert.assertEquals(false, Semantics.evaluateBoolPostOrder(program, new Environment(10, 15, 20)));
+    public void testPostOrderLt() {
+        Tests.assertBoolPostOrderSatisfiesExamples(TestData.ltTestBoolPostOrder, TestData.ltTestIncluded,
+                TestData.ltTestExcluded);
     }
 
     @Test
-    public void testBoolPostOrderAnd() {
-        Symbol[] program = new Symbol[] { Symbol.VarZ, Symbol.VarX, Symbol.Eq, Symbol.VarY, Symbol.VarX, Symbol.Eq,
-                Symbol.And };
-        Assert.assertEquals(true, Semantics.evaluateBoolPostOrder(program, new Environment(1, 1, 1)));
-        Assert.assertEquals(false, Semantics.evaluateBoolPostOrder(program, new Environment(1, 1, 2)));
-        Assert.assertEquals(false, Semantics.evaluateBoolPostOrder(program, new Environment(1, 2, 1)));
-        Assert.assertEquals(false, Semantics.evaluateBoolPostOrder(program, new Environment(1, 2, 2)));
+    public void testPostOrderEq() {
+        Tests.assertBoolPostOrderSatisfiesExamples(TestData.eqTestBoolPostOrder, TestData.eqTestIncluded,
+                TestData.eqTestExcluded);
     }
 
     @Test
-    public void testBoolPostOrderOr() {
-        Symbol[] program = new Symbol[] { Symbol.VarZ, Symbol.VarX, Symbol.Eq, Symbol.VarY, Symbol.VarX, Symbol.Eq,
-                Symbol.Or };
-        Assert.assertEquals(true, Semantics.evaluateBoolPostOrder(program, new Environment(1, 1, 1)));
-        Assert.assertEquals(true, Semantics.evaluateBoolPostOrder(program, new Environment(1, 1, 2)));
-        Assert.assertEquals(true, Semantics.evaluateBoolPostOrder(program, new Environment(1, 2, 1)));
-        Assert.assertEquals(false, Semantics.evaluateBoolPostOrder(program, new Environment(1, 2, 2)));
+    public void testPostOrderAnd() {
+        Tests.assertBoolPostOrderSatisfiesExamples(TestData.andTestBoolPostOrder, TestData.andTestIncluded,
+                TestData.andTestExcluded);
     }
 
     @Test
-    public void testBoolPostOrderNot() {
-        Symbol[] program = new Symbol[] { Symbol.VarY, Symbol.VarX, Symbol.Eq, Symbol.Not };
-        Assert.assertEquals(true, Semantics.evaluateBoolPostOrder(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(false, Semantics.evaluateBoolPostOrder(program, new Environment(15, 15, 20)));
+    public void testPostOrderOr() {
+        Tests.assertBoolPostOrderSatisfiesExamples(TestData.orTestBoolPostOrder, TestData.orTestIncluded,
+                TestData.orTestExcluded);
     }
 
     @Test
-    public void testComposition() {
-        Symbol[] program = new Symbol[] { Symbol.VarZ, Symbol.VarY, Symbol.Multiply, Symbol.VarZ, Symbol.VarY,
-                Symbol.Add, Symbol.Const3, Symbol.VarX, Symbol.Lt, Symbol.Ite };
-        Assert.assertEquals(300, Semantics.evaluateExprPostOrder(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(35, Semantics.evaluateExprPostOrder(program, new Environment(0, 15, 20)));
+    public void testPostOrderNot() {
+        Tests.assertBoolPostOrderSatisfiesExamples(TestData.notTestBoolPostOrder, TestData.notTestIncluded,
+                TestData.notTestExcluded);
+    }
+
+    @Test
+    public void testPostOrderConst1Size() {
+        Assert.assertEquals(TestData.const1TestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.const1TestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderConst2Size() {
+        Assert.assertEquals(TestData.const2TestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.const2TestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderConst3Size() {
+        Assert.assertEquals(TestData.const3TestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.const3TestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderVarXSize() {
+        Assert.assertEquals(TestData.varXTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.varXTestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderVarYSize() {
+        Assert.assertEquals(TestData.varYTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.varYTestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderVarZSize() {
+        Assert.assertEquals(TestData.varZTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.varZTestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderAddSize() {
+        Assert.assertEquals(TestData.addTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.addTestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderMultiplySize() {
+        Assert.assertEquals(TestData.multiplyTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.multiplyTestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderLtSize() {
+        Assert.assertEquals(TestData.iteLtTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.iteLtTestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderEqSize() {
+        Assert.assertEquals(TestData.iteEqTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.iteEqTestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderAndSize() {
+        Assert.assertEquals(TestData.iteAndTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.iteAndTestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderOrSize() {
+        Assert.assertEquals(TestData.iteOrTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.iteOrTestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderNotSize() {
+        Assert.assertEquals(TestData.iteNotTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.iteNotTestPostOrder));
+    }
+
+    @Test
+    public void testPostOrderCompositionSize() {
+        Assert.assertEquals(TestData.compositionTestParseNodeSize,
+                Semantics.measureExprPostOrderSize(TestData.compositionTestPostOrder));
     }
 }

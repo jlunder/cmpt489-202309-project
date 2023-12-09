@@ -99,14 +99,14 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
     public static Function<Symbol[], Float> exprSizeCostDecoratorFunction(Function<Symbol[], Float> otherCost,
             float sizeBias) {
         return (x) -> {
-            return otherCost.apply(x) + sizeBias * Semantics.measureExprParseTreeFromPostOrder(x);
+            return otherCost.apply(x) + sizeBias * Semantics.measureExprPostOrderSize(x);
         };
     }
 
     public static Function<Symbol[], Float> boolSizeCostDecoratorFunction(Function<Symbol[], Float> otherCost,
             float sizeBias) {
         return (x) -> {
-            return otherCost.apply(x) + sizeBias * Semantics.measureBoolParseTreeFromPostOrder(x);
+            return otherCost.apply(x) + sizeBias * Semantics.measureBoolPostOrderSize(x);
         };
     }
 

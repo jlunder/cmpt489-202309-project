@@ -151,17 +151,17 @@ public class VoltronSynthesizer extends SynthesizerBase {
 
         var discriminators = new ArrayList<Discriminator>();
         if (overApproximateResult.bestIsValid()) {
-            var boolParse = Semantics.makeBoolParseTreeFromPostOrder(result.bestX());
+            var boolParse = Semantics.makeParseTreeFromBoolPostOrder(result.bestX());
             var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
             discriminators.add(new Discriminator(condition, allExamples));
         }
         if (underApproximateResult.bestIsValid()) {
-            var boolParse = Semantics.makeBoolParseTreeFromPostOrder(result.bestX());
+            var boolParse = Semantics.makeParseTreeFromBoolPostOrder(result.bestX());
             var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
             discriminators.add(new Discriminator(condition, allExamples));
         }
         if (result.bestIsValid()) {
-            var boolParse = Semantics.makeBoolParseTreeFromPostOrder(result.bestX());
+            var boolParse = Semantics.makeParseTreeFromBoolPostOrder(result.bestX());
             var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
             discriminators.add(new Discriminator(condition, allExamples));
         }

@@ -2,159 +2,158 @@ package synth.dsl;
 
 import org.junit.*;
 
-import synth.core.*;
-
-import java.util.*;
+import synth.util.TestData;
+import synth.util.Tests;
 
 public class SemanticsParseTreeTests {
     @Test
     public void testParseTreeConst1() {
-        Program program = new Program(new ParseNode(Symbol.Const1));
-        Assert.assertEquals(1, Semantics.evaluate(program, new Environment(10, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.const1TestParseTree, TestData.const1TestExamples);
     }
 
     @Test
     public void testParseTreeConst2() {
-        Program program = new Program(new ParseNode(Symbol.Const2));
-        Assert.assertEquals(2, Semantics.evaluate(program, new Environment(10, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.const2TestParseTree, TestData.const2TestExamples);
     }
 
     @Test
     public void testParseTreeConst3() {
-        Program program = new Program(new ParseNode(Symbol.Const3));
-        Assert.assertEquals(3, Semantics.evaluate(program, new Environment(10, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.const3TestParseTree, TestData.const3TestExamples);
     }
 
     @Test
     public void testParseTreeVarX() {
-        Program program = new Program(new ParseNode(Symbol.VarX));
-        Assert.assertEquals(10, Semantics.evaluate(program, new Environment(10, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.varXTestParseTree, TestData.varXTestExamples);
     }
 
     @Test
     public void testParseTreeVarY() {
-        Program program = new Program(new ParseNode(Symbol.VarY));
-        Assert.assertEquals(15, Semantics.evaluate(program, new Environment(10, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.varYTestParseTree, TestData.varYTestExamples);
     }
 
     @Test
     public void testParseTreeVarZ() {
-        Program program = new Program(new ParseNode(Symbol.VarZ));
-        Assert.assertEquals(20, Semantics.evaluate(program, new Environment(10, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.varZTestParseTree, TestData.varZTestExamples);
     }
 
     @Test
     public void testParseTreeAdd() {
-        Program program = new Program(
-                new ParseNode(Symbol.Add,
-                        List.of(new ParseNode(Symbol.VarX),
-                                new ParseNode(Symbol.VarY))));
-        Assert.assertEquals(25, Semantics.evaluate(program, new Environment(10, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.addTestParseTree, TestData.addTestExamples);
     }
 
     @Test
     public void testParseTreeMultiply() {
-        Program program = new Program(
-                new ParseNode(Symbol.Multiply,
-                        List.of(new ParseNode(Symbol.VarZ),
-                                new ParseNode(Symbol.Const2))));
-        Assert.assertEquals(40, Semantics.evaluate(program, new Environment(10, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.multiplyTestParseTree, TestData.multiplyTestExamples);
     }
 
     @Test
     public void testParseTreeLt() {
-        Program program = new Program(
-                new ParseNode(Symbol.Ite,
-                        List.of(new ParseNode(Symbol.Lt,
-                                List.of(new ParseNode(Symbol.VarX),
-                                        new ParseNode(Symbol.VarY))),
-                                new ParseNode(Symbol.Const1),
-                                new ParseNode(Symbol.Const2))));
-        Assert.assertEquals(1, Semantics.evaluate(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(2, Semantics.evaluate(program, new Environment(15, 15, 20)));
-        Assert.assertEquals(2, Semantics.evaluate(program, new Environment(20, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.iteLtTestParseTree, TestData.iteLtTestExamples);
     }
 
     @Test
     public void testParseTreeEq() {
-        Program program = new Program(
-                new ParseNode(Symbol.Ite,
-                        List.of(new ParseNode(Symbol.Eq,
-                                List.of(new ParseNode(Symbol.VarX),
-                                        new ParseNode(Symbol.VarY))),
-                                new ParseNode(Symbol.Const1),
-                                new ParseNode(Symbol.Const2))));
-        Assert.assertEquals(2, Semantics.evaluate(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(1, Semantics.evaluate(program, new Environment(15, 15, 20)));
-        Assert.assertEquals(2, Semantics.evaluate(program, new Environment(10, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.iteEqTestParseTree, TestData.iteEqTestExamples);
     }
 
     @Test
     public void testParseTreeAnd() {
-        Program program = new Program(
-                new ParseNode(Symbol.Ite,
-                        List.of(new ParseNode(Symbol.And,
-                                List.of(new ParseNode(Symbol.Eq,
-                                        List.of(new ParseNode(Symbol.VarX),
-                                                new ParseNode(Symbol.VarY))),
-                                        new ParseNode(Symbol.Eq,
-                                                List.of(new ParseNode(Symbol.VarX),
-                                                        new ParseNode(Symbol.VarZ))))),
-                                new ParseNode(Symbol.Const1),
-                                new ParseNode(Symbol.Const2))));
-        Assert.assertEquals(1, Semantics.evaluate(program, new Environment(1, 1, 1)));
-        Assert.assertEquals(2, Semantics.evaluate(program, new Environment(1, 1, 2)));
-        Assert.assertEquals(2, Semantics.evaluate(program, new Environment(1, 2, 1)));
-        Assert.assertEquals(2, Semantics.evaluate(program, new Environment(1, 2, 2)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.iteAndTestParseTree, TestData.iteAndTestExamples);
     }
 
     @Test
     public void testParseTreeOr() {
-        Program program = new Program(
-                new ParseNode(Symbol.Ite,
-                        List.of(new ParseNode(Symbol.Or,
-                                List.of(new ParseNode(Symbol.Eq,
-                                        List.of(new ParseNode(Symbol.VarX),
-                                                new ParseNode(Symbol.VarY))),
-                                        new ParseNode(Symbol.Eq,
-                                                List.of(new ParseNode(Symbol.VarX),
-                                                        new ParseNode(Symbol.VarZ))))),
-                                new ParseNode(Symbol.Const1),
-                                new ParseNode(Symbol.Const2))));
-        Assert.assertEquals(1, Semantics.evaluate(program, new Environment(1, 1, 1)));
-        Assert.assertEquals(1, Semantics.evaluate(program, new Environment(1, 1, 2)));
-        Assert.assertEquals(1, Semantics.evaluate(program, new Environment(1, 2, 1)));
-        Assert.assertEquals(2, Semantics.evaluate(program, new Environment(1, 2, 2)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.iteOrTestParseTree, TestData.iteOrTestExamples);
     }
 
     @Test
     public void testParseTreeNot() {
-        Program program = new Program(
-                new ParseNode(Symbol.Ite,
-                        List.of(new ParseNode(Symbol.Not,
-                                List.of(new ParseNode(Symbol.Eq,
-                                        List.of(new ParseNode(Symbol.VarX),
-                                                new ParseNode(Symbol.VarY))))),
-                                new ParseNode(Symbol.Const1),
-                                new ParseNode(Symbol.Const2))));
-        Assert.assertEquals(1, Semantics.evaluate(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(2, Semantics.evaluate(program, new Environment(15, 15, 20)));
+        Tests.assertParseTreeSatisfiesExamples(TestData.iteNotTestParseTree, TestData.iteNotTestExamples);
     }
 
     @Test
-    public void testComposition() {
-        Program program = new Program(
-                new ParseNode(Symbol.Ite,
-                        List.of(new ParseNode(Symbol.Lt,
-                                List.of(new ParseNode(Symbol.VarX),
-                                        new ParseNode(Symbol.Const3))),
-                                new ParseNode(Symbol.Add,
-                                        List.of(new ParseNode(Symbol.VarY),
-                                                new ParseNode(Symbol.VarZ))),
-                                new ParseNode(Symbol.Multiply,
-                                        List.of(new ParseNode(Symbol.VarY),
-                                                new ParseNode(Symbol.VarZ))))));
-        Assert.assertEquals(300, Semantics.evaluate(program, new Environment(10, 15, 20)));
-        Assert.assertEquals(35, Semantics.evaluate(program, new Environment(0, 15, 20)));
+    public void testParseTreeComposition() {
+        Tests.assertParseTreeSatisfiesExamples(TestData.compositionTestParseTree,
+                TestData.compositionTestExamples);
+    }
+
+    @Test
+    public void testParseTreeConst1Size() {
+        Assert.assertEquals(TestData.const1TestParseNodeSize,
+                Semantics.measureParseTreeSize(TestData.const1TestParseTree));
+    }
+
+    @Test
+    public void testParseTreeConst2Size() {
+        Assert.assertEquals(TestData.const2TestParseNodeSize,
+                Semantics.measureParseTreeSize(TestData.const2TestParseTree));
+    }
+
+    @Test
+    public void testParseTreeConst3Size() {
+        Assert.assertEquals(TestData.const3TestParseNodeSize,
+                Semantics.measureParseTreeSize(TestData.const3TestParseTree));
+    }
+
+    @Test
+    public void testParseTreeVarXSize() {
+        Assert.assertEquals(TestData.varXTestParseNodeSize, Semantics.measureParseTreeSize(TestData.varXTestParseTree));
+    }
+
+    @Test
+    public void testParseTreeVarYSize() {
+        Assert.assertEquals(TestData.varYTestParseNodeSize, Semantics.measureParseTreeSize(TestData.varYTestParseTree));
+    }
+
+    @Test
+    public void testParseTreeVarZSize() {
+        Assert.assertEquals(TestData.varZTestParseNodeSize, Semantics.measureParseTreeSize(TestData.varZTestParseTree));
+    }
+
+    @Test
+    public void testParseTreeAddSize() {
+        Assert.assertEquals(TestData.addTestParseNodeSize, Semantics.measureParseTreeSize(TestData.addTestParseTree));
+    }
+
+    @Test
+    public void testParseTreeMultiplySize() {
+        Assert.assertEquals(TestData.multiplyTestParseNodeSize,
+                Semantics.measureParseTreeSize(TestData.multiplyTestParseTree));
+    }
+
+    @Test
+    public void testParseTreeLtSize() {
+        Assert.assertEquals(TestData.iteLtTestParseNodeSize,
+                Semantics.measureParseTreeSize(TestData.iteLtTestParseTree));
+    }
+
+    @Test
+    public void testParseTreeEqSize() {
+        Assert.assertEquals(TestData.iteEqTestParseNodeSize,
+                Semantics.measureParseTreeSize(TestData.iteEqTestParseTree));
+    }
+
+    @Test
+    public void testParseTreeAndSize() {
+        Assert.assertEquals(TestData.iteAndTestParseNodeSize,
+                Semantics.measureParseTreeSize(TestData.iteAndTestParseTree));
+    }
+
+    @Test
+    public void testParseTreeOrSize() {
+        Assert.assertEquals(TestData.iteOrTestParseNodeSize,
+                Semantics.measureParseTreeSize(TestData.iteOrTestParseTree));
+    }
+
+    @Test
+    public void testParseTreeNotSize() {
+        Assert.assertEquals(TestData.iteNotTestParseNodeSize,
+                Semantics.measureParseTreeSize(TestData.iteNotTestParseTree));
+    }
+
+    @Test
+    public void testParseTreeCompositionSize() {
+        Assert.assertEquals(TestData.compositionTestParseNodeSize,
+                Semantics.measureParseTreeSize(TestData.compositionTestParseTree));
     }
 }

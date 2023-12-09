@@ -1,14 +1,15 @@
-package synth.algorithms.ast;
+package synth.algorithms.classify;
 
 import java.util.*;
 
 import org.junit.*;
 
+import synth.algorithms.ast.*;
 import synth.core.*;
 import synth.dsl.*;
 import synth.util.Tests;
 
-public class AstFuzzTests {
+public class DecisionTreeFuzzTests {
     private static int programLength = 100;
 
     @Test
