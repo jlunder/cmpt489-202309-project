@@ -129,15 +129,15 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
 
         // Scale the cost of errors so that really lopsided classifications don't
         // generate trivial classifiers that always classify things the same way.
-        
+
         // Inclusion cost is incurred when something that was supposed to be included
         // wasn't, i.e. false negative.
         float inScale = falseNegativeBias * (float) Math.max(inSize, exSize) / inSize;
-        
+
         // Exclusion cost is incurred when something that was supposed to be excluded
         // wasn't, i.e. false positive.
         float exScale = falsePositiveBias * (float) Math.max(inSize, exSize) / exSize;
-        
+
         return x -> infn.apply(x) * inScale + exfn.apply(x) * exScale;
     }
 
@@ -219,24 +219,24 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
 
     public Function<Symbol[], Symbol[]> generateFromFunction(Symbol[] symbolPool) {
         final List<Consumer<Symbol[]>> mutators = List.of(
-                (Symbol[] x) -> {
-                    int a = rng().nextInt(x.length), b = rng().nextInt(x.length);
-                    if (a != b) {
-                        int i = Math.min(a, b), j = Math.max(a, b);
-                        var tmp = rng().nextBoolean() ? x[j] : null;
-                        System.arraycopy(x, i, x, i + 1, j - i - 1);
-                        x[i] = tmp;
-                    }
-                },
-                (Symbol[] x) -> {
-                    int a = rng().nextInt(x.length), b = rng().nextInt(x.length);
-                    if (a != b) {
-                        int i = Math.min(a, b), j = Math.max(a, b);
-                        var tmp = rng().nextBoolean() ? x[j] : null;
-                        System.arraycopy(x, i + 1, x, i, j - i - 1);
-                        x[j] = tmp;
-                    }
-                },
+                // (Symbol[] x) -> {
+                //     int a = rng().nextInt(x.length), b = rng().nextInt(x.length);
+                //     if (a != b) {
+                //         int i = Math.min(a, b), j = Math.max(a, b);
+                //         var tmp = rng().nextBoolean() ? x[j] : null;
+                //         System.arraycopy(x, i, x, i + 1, j - i - 1);
+                //         x[i] = tmp;
+                //     }
+                // },
+                // (Symbol[] x) -> {
+                //     int a = rng().nextInt(x.length), b = rng().nextInt(x.length);
+                //     if (a != b) {
+                //         int i = Math.min(a, b), j = Math.max(a, b);
+                //         var tmp = rng().nextBoolean() ? x[j] : null;
+                //         System.arraycopy(x, i + 1, x, i, j - i - 1);
+                //         x[j] = tmp;
+                //     }
+                // },
                 (Symbol[] x) -> {
                     int i = rng().nextInt(x.length);
                     var xi = x[i];
@@ -255,6 +255,16 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
                     x[i] = xi;
                 },
                 (Symbol[] x) -> {
+                    var tmp = x[x.length - 1];
+                    System.arraycopy(x, 0, x, 1, x.length - 1);
+                    x[0] = tmp;
+                },
+                (Symbol[] x) -> {
+                    var tmp = x[0];
+                    System.arraycopy(x, 1, x, 0, x.length - 1);
+                    x[x.length - 1] = tmp;
+                },
+                (Symbol[] x) -> {
                     int i = rng().nextInt(x.length);
                     int sym = rng().nextInt(symbolPool.length);
                     x[i] = symbolPool[sym];
@@ -267,7 +277,15 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
                 newX = new Symbol[x.length];
             }
             System.arraycopy(x, 0, newX, 0, x.length);
-            mutators.get(rng().nextInt(mutators.size())).accept(newX);
+            int n = 1;
+            var mut = mutators.get(rng().nextInt(mutators.size()));
+            while ((n < x.length / 2) && (rng().nextInt(4) < 1)) {
+                n *= rng().nextInt(4) + 1;
+            }
+            while (n > 0) {
+                mut.accept(newX);
+                --n;
+            }
             return newX;
         };
     }
