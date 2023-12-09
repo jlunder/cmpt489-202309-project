@@ -22,10 +22,10 @@ public class DecisionTreeFuzzTests {
         return LinearSolutionFuzzTests.makeRandomLinearSolution(rng).reifyAsExprAst();
     }
 
-    public static DecisionTree makeRandomDecisionTree(Random rng, Collection<Example> examples) {
+    public static DecisionTree makeRandomDecisionTree(Random rng, int depth, Collection<Example> examples) {
         var cond = makeRandomCond(rng);
-        var thenBranch = rng.nextBoolean() ? makeRandomDecisionTree(rng, examples) : makeRandomExpr(rng);
-        var elseBranch = rng.nextBoolean() ? makeRandomDecisionTree(rng, examples) : makeRandomExpr(rng);
+        var thenBranch = (depth > 0 && rng.nextBoolean()) ? makeRandomDecisionTree(rng, depth - 1, examples) : makeRandomExpr(rng);
+        var elseBranch = (depth > 0 && rng.nextBoolean()) ? makeRandomDecisionTree(rng, depth - 1, examples) : makeRandomExpr(rng);
         return new DecisionTree(new Discriminator(cond, examples), thenBranch, elseBranch);
     }
 
@@ -33,7 +33,7 @@ public class DecisionTreeFuzzTests {
     public void testDecisionTreeEquivalence() {
         var rng = Tests.makeRng(-1);
         for (int n = 0; n < 1000; ++n) {
-            var dt = makeRandomDecisionTree(rng, List.of());
+            var dt = makeRandomDecisionTree(rng, 4, List.of());
             var ast = dt.reifyAsExprAst();
 
             Tests.fuzzWithEnvs(rng, 100, (env) -> Assert.assertEquals(dt.evalExpr(env), ast.evalExpr(env)));
