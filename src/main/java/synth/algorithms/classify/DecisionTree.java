@@ -4,9 +4,7 @@ import java.util.List;
 
 import synth.algorithms.ast.*;
 import synth.algorithms.representation.*;
-import synth.core.Environment;
-import synth.core.Example;
-import synth.core.ParseNode;
+import synth.core.*;
 import synth.dsl.*;
 
 public class DecisionTree implements ExprRepresentation {
@@ -32,16 +30,16 @@ public class DecisionTree implements ExprRepresentation {
         return elseBranch;
     }
 
-    public ExprRepresentation classify(Example example) {
-        if (discriminator.evalBool(example.input())) {
+    public ExprRepresentation classify(Environment input) {
+        if (discriminator.evalBool(input)) {
             if (thenBranch instanceof DecisionTree) {
-                return ((DecisionTree) thenBranch).classify(example);
+                return ((DecisionTree) thenBranch).classify(input);
             } else {
                 return thenBranch;
             }
         } else {
             if (elseBranch instanceof DecisionTree) {
-                return ((DecisionTree) elseBranch).classify(example);
+                return ((DecisionTree) elseBranch).classify(input);
             } else {
                 return elseBranch;
             }

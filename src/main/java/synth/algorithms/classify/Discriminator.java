@@ -4,9 +4,7 @@ import java.util.Collection;
 
 import synth.algorithms.ast.BoolNode;
 import synth.algorithms.representation.BoolRepresentation;
-import synth.core.Environment;
-import synth.core.Example;
-import synth.core.ParseNode;
+import synth.core.*;
 
 public class Discriminator implements BoolRepresentation {
     private Classification classification;
@@ -21,7 +19,7 @@ public class Discriminator implements BoolRepresentation {
         return condition;
     }
 
-    public Discriminator(BoolRepresentation condition, Collection<Example> examples) {
+    public Discriminator(BoolRepresentation condition, Collection<Environment> examples) {
         this.classification = Classification.makeFromCondition(condition, examples);
         this.condition = condition;
     }
@@ -38,7 +36,6 @@ public class Discriminator implements BoolRepresentation {
 
     @Override
     public boolean evalBool(Environment env) {
-        // TODO convert use of Example -> Environment!
         if (classification.included().contains(env)) {
             return true;
         } else if(classification.excluded().contains(env)) {

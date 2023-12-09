@@ -6,6 +6,7 @@ import synth.algorithms.lia.*;
 import synth.algorithms.mcmc.*;
 import synth.algorithms.representation.ExprRepresentation;
 import synth.algorithms.rng.Xoshiro256SS;
+import synth.core.Environment;
 import synth.core.Example;
 import synth.core.Program;
 import synth.dsl.*;
@@ -20,14 +21,14 @@ public class VoltronSynthesizer extends SynthesizerBase {
     private Xoshiro256SS rng = new Xoshiro256SS(8383);
     private LinearSolver linSolv = new ORToolsCPLinearSolver(rng.nextSubsequence());
 
-    private Collection<Discriminator> generateDiscriminators(Set<Example> allExamples,
+    private Collection<Discriminator> generateDiscriminators(Set<Environment> allInputs,
             Collection<PartialSolution> partialSolutions)
             throws InterruptedException {
         var suggestions = new ArrayList<Discriminator>();
         nextSolution: for (var sol : partialSolutions) {
             var classification = sol.application();
 
-            var positive = generateDiscriminatorsMcmc(allExamples, classification);
+            var positive = generateDiscriminatorsMcmc(allInputs, classification);
             // Check if one of our generated discriminators happens to be perfect
             for (var d : positive) {
                 if (d.classification().equals(classification)) {
@@ -38,7 +39,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
             }
             // Try generating the discriminator in the negative, in case that synthesis is
             // easier and generates a better or at least different partition
-            var negative = generateDiscriminatorsMcmc(allExamples, classification.inverted());
+            var negative = generateDiscriminatorsMcmc(allInputs, classification.inverted());
             // Again, check if one of our generated discriminators happens to be perfect
             for (var d : negative) {
                 if (d.classification().equalsInverted(classification)) {
@@ -69,7 +70,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
 
             if (!foundPositive || !foundNegative) {
                 var cond = Asts.optimizeBoolAst(trialDiscrim.condition().reifyAsBoolAst());
-                var optimized = new Discriminator(cond, allExamples);
+                var optimized = new Discriminator(cond, allInputs);
                 assert optimized.classification().equals(trialDiscrim.classification());
                 if (!foundPositive) {
                     minimal.add(optimized);
@@ -77,7 +78,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
                 if (!foundNegative) {
                     var inverted = new Discriminator(
                             cond instanceof NotNode ? (BoolNode) cond.child(0) : new NotNode(cond),
-                            allExamples);
+                            allInputs);
                     assert inverted.classification().equalsInverted(optimized.classification());
                     minimal.add(inverted);
                 }
@@ -94,14 +95,14 @@ public class VoltronSynthesizer extends SynthesizerBase {
             boolean falseNegative = false;
             boolean trueNegative = false;
             for (var e : desiredClassification.included()) {
-                if (Semantics.evaluateBoolPostOrder(x, e.input())) {
+                if (Semantics.evaluateBoolPostOrder(x, e)) {
                     truePositive = true;
                 } else {
                     falseNegative = true;
                 }
             }
             for (var e : desiredClassification.excluded()) {
-                if (Semantics.evaluateBoolPostOrder(x, e.input())) {
+                if (Semantics.evaluateBoolPostOrder(x, e)) {
                     truePositive = true;
                 } else {
                     falseNegative = true;
@@ -115,7 +116,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
         };
     }
 
-    private Collection<Discriminator> generateDiscriminatorsMcmc(Set<Example> allExamples,
+    private Collection<Discriminator> generateDiscriminatorsMcmc(Set<Environment> allInputs,
             Classification desiredClassification)
             throws InterruptedException {
         McmcProgramOptimizer discriminatorOptimizer = new McmcProgramOptimizer(rng.nextSubsequence());
@@ -153,17 +154,17 @@ public class VoltronSynthesizer extends SynthesizerBase {
         if (overApproximateResult.bestIsValid()) {
             var boolParse = Semantics.makeParseTreeFromBoolPostOrder(result.bestX());
             var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
-            discriminators.add(new Discriminator(condition, allExamples));
+            discriminators.add(new Discriminator(condition, allInputs));
         }
         if (underApproximateResult.bestIsValid()) {
             var boolParse = Semantics.makeParseTreeFromBoolPostOrder(result.bestX());
             var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
-            discriminators.add(new Discriminator(condition, allExamples));
+            discriminators.add(new Discriminator(condition, allInputs));
         }
         if (result.bestIsValid()) {
             var boolParse = Semantics.makeParseTreeFromBoolPostOrder(result.bestX());
             var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
-            discriminators.add(new Discriminator(condition, allExamples));
+            discriminators.add(new Discriminator(condition, allInputs));
         }
 
         // Discriminator computes the actual classification
@@ -185,6 +186,8 @@ public class VoltronSynthesizer extends SynthesizerBase {
 
     private ExprNode synthesizeAst(List<Example> examples) throws InterruptedException {
         var allExamples = Set.copyOf(examples);
+        var allInputs = Set.of(examples.stream().map(ex -> ex.input()).toArray(Environment[]::new));
+
         var partialSolutions = linSolv.computeSolutionSets(examples);
         if (partialSolutions == null) {
             return null;
@@ -196,7 +199,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
                 return sol.solution().reifyAsExprAst();
             }
         }
-        var discriminators = generateDiscriminators(allExamples, partialSolutions);
+        var discriminators = generateDiscriminators(allInputs, partialSolutions);
         var decisionTree = buildDecisionTreeAstFromPartialSolutions(allExamples, partialSolutions, discriminators);
         if (decisionTree == null) {
             return null;

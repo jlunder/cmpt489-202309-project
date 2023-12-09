@@ -22,11 +22,11 @@ public class DecisionTreeFuzzTests {
         return LinearSolutionFuzzTests.makeRandomLinearSolution(rng).reifyAsExprAst();
     }
 
-    public static DecisionTree makeRandomDecisionTree(Random rng, int depth, Collection<Example> examples) {
+    public static DecisionTree makeRandomDecisionTree(Random rng, int depth, Collection<Environment> inputs) {
         var cond = makeRandomCond(rng);
-        var thenBranch = (depth > 0 && rng.nextBoolean()) ? makeRandomDecisionTree(rng, depth - 1, examples) : makeRandomExpr(rng);
-        var elseBranch = (depth > 0 && rng.nextBoolean()) ? makeRandomDecisionTree(rng, depth - 1, examples) : makeRandomExpr(rng);
-        return new DecisionTree(new Discriminator(cond, examples), thenBranch, elseBranch);
+        var thenBranch = (depth > 0 && rng.nextBoolean()) ? makeRandomDecisionTree(rng, depth - 1, inputs) : makeRandomExpr(rng);
+        var elseBranch = (depth > 0 && rng.nextBoolean()) ? makeRandomDecisionTree(rng, depth - 1, inputs) : makeRandomExpr(rng);
+        return new DecisionTree(new Discriminator(cond, inputs), thenBranch, elseBranch);
     }
 
     @Test

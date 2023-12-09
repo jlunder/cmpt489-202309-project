@@ -4,33 +4,33 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 
 import synth.algorithms.representation.*;
-import synth.core.Example;
+import synth.core.*;
 
 public class Classification {
-    private HashSet<Example> included;
-    private HashSet<Example> excluded;
+    private HashSet<Environment> included;
+    private HashSet<Environment> excluded;
     private WeakReference<Classification> invertedCache;
     private int cachedHashCode;
 
     public static Classification makeFromExamples(ExprRepresentation expr, Collection<Example> examples) {
-        var included = new HashSet<Example>(examples.size());
-        var excluded = new HashSet<Example>(examples.size());
+        var included = new HashSet<Environment>(examples.size());
+        var excluded = new HashSet<Environment>(examples.size());
         for (var ex : examples) {
             if (expr.evalExpr(ex.input()) == ex.output()) {
-                included.add(ex);
+                included.add(ex.input());
             } else {
-                excluded.add(ex);
+                excluded.add(ex.input());
             }
         }
 
         return new Classification(included, excluded, null);
     }
 
-    public static Classification makeFromCondition(BoolRepresentation condition, Collection<Example> examples) {
-        var included = new HashSet<Example>(examples.size());
-        var excluded = new HashSet<Example>(examples.size());
+    public static Classification makeFromCondition(BoolRepresentation condition, Collection<Environment> examples) {
+        var included = new HashSet<Environment>(examples.size());
+        var excluded = new HashSet<Environment>(examples.size());
         for (var ex : examples) {
-            if (condition.evalBool(ex.input())) {
+            if (condition.evalBool(ex)) {
                 included.add(ex);
             } else {
                 excluded.add(ex);
@@ -40,7 +40,7 @@ public class Classification {
         return new Classification(included, excluded, null);
     }
 
-    protected Classification(HashSet<Example> included, HashSet<Example> excluded, Classification inverted) {
+    protected Classification(HashSet<Environment> included, HashSet<Environment> excluded, Classification inverted) {
         // An empty classification will surely lead to undefined behaviour...
         //assert !(included.isEmpty() && excluded.isEmpty());
         this.included = included;
@@ -51,11 +51,11 @@ public class Classification {
         }
     }
 
-    public Set<Example> included() {
+    public Set<Environment> included() {
         return included;
     }
 
-    public Set<Example> excluded() {
+    public Set<Environment> excluded() {
         return excluded;
     }
 

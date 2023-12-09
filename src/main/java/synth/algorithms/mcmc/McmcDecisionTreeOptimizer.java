@@ -1,10 +1,12 @@
 package synth.algorithms.mcmc;
 
 import java.util.*;
+import java.util.function.Function;
 
 import synth.algorithms.classify.*;
 import synth.algorithms.representation.*;
 import synth.algorithms.rng.Xoshiro256SS;
+import synth.core.Environment;
 import synth.core.Example;
 
 public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOptimizer.FlatDecisionTree> {
@@ -95,13 +97,13 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
                 var jump = jumpTable[index];
                 if (jump == index || jump < 0) {
                     break;
-                } else if (discriminators[index].classification().included().contains(e)) {
+                } else if (discriminators[index].classification().included().contains(e.input())) {
                     index = jump;
                 } else {
                     index = (jump + 1) % treeSize();
                 }
             }
-            if (!solutions[index].application().included().contains(e)) {
+            if (!solutions[index].application().included().contains(e.input())) {
                 cost += misclassifyCost;
             }
             cost += i;
@@ -167,23 +169,28 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
     }
 
     public OptimizationResult<FlatDecisionTree> optimize(int maxIterations) throws InterruptedException {
-        return super.optimize(makeRandomized(), this::generateFrom, this::computeCost, dawdleCost / 2 * examples.size(), (dt) -> {
+        var inputs = Set.of(examples.stream().map(ex -> ex.input()).toArray(Environment[]::new));
+
+        Function<FlatDecisionTree, Boolean> validate = (dt) -> {
             var d = dt.reifyAsDecisionTree();
             if (d instanceof PartialSolution) {
                 // Degenerate case
-                return ((PartialSolution) d).application().included().containsAll(examples);
+                return ((PartialSolution) d).application().included().containsAll(inputs);
             } else {
                 // Classify examples using the decision tree, and check they ended up in a
                 // compatible solution
                 for (var e : examples) {
-                    var ps = (PartialSolution) ((DecisionTree) d).classify(e);
-                    if (!ps.application().included().contains(e)) {
+                    var ps = (PartialSolution) ((DecisionTree) d).classify(e.input());
+                    if (!ps.application().included().contains(e.input())) {
                         return false;
                     }
                 }
                 return true;
             }
-        }, maxIterations);
+        };
+
+        return super.optimize(makeRandomized(), this::generateFrom, this::computeCost, dawdleCost / 2 * examples.size(),
+                validate, maxIterations);
     }
 
     protected float computeCost(FlatDecisionTree x) {

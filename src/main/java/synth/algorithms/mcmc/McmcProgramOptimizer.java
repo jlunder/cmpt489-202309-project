@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import synth.algorithms.classify.Classification;
 import synth.algorithms.rng.Xoshiro256SS;
+import synth.core.Environment;
 import synth.core.Example;
 import synth.dsl.*;
 
@@ -140,11 +141,11 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         return x -> infn.apply(x) * inScale + exfn.apply(x) * exScale;
     }
 
-    public static Function<Symbol[], Float> inclusionsCostFunction(Collection<Example> included) {
+    public static Function<Symbol[], Float> inclusionsCostFunction(Collection<Environment> included) {
         return x -> {
             int failures = 0;
             for (var e : included) {
-                if (!Semantics.evaluateBoolPostOrder(x, e.input())) {
+                if (!Semantics.evaluateBoolPostOrder(x, e)) {
                     ++failures;
                 }
             }
@@ -152,13 +153,13 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         };
     }
 
-    public static Function<Symbol[], Float> inclusionsCostFunction(List<Example> included, Xoshiro256SS rng,
+    public static Function<Symbol[], Float> inclusionsCostFunction(List<Environment> included, Xoshiro256SS rng,
             int sampleCount) {
         return x -> {
             int failures = 0;
             for (int i = 0; i < sampleCount; ++i) {
                 var e = included.get(rng.nextInt(included.size()));
-                if (!Semantics.evaluateBoolPostOrder(x, e.input())) {
+                if (!Semantics.evaluateBoolPostOrder(x, e)) {
                     ++failures;
                 }
             }
@@ -166,11 +167,11 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         };
     }
 
-    public static Function<Symbol[], Float> exclusionsCostFunction(Collection<Example> excluded) {
+    public static Function<Symbol[], Float> exclusionsCostFunction(Collection<Environment> excluded) {
         return x -> {
             int failures = 0;
             for (var e : excluded) {
-                if (Semantics.evaluateBoolPostOrder(x, e.input())) {
+                if (Semantics.evaluateBoolPostOrder(x, e)) {
                     ++failures;
                 }
             }
@@ -178,13 +179,13 @@ public class McmcProgramOptimizer extends McmcOptimizer<Symbol[]> {
         };
     }
 
-    public static Function<Symbol[], Float> exclusionsCostFunction(List<Example> excluded, Xoshiro256SS rng,
+    public static Function<Symbol[], Float> exclusionsCostFunction(List<Environment> excluded, Xoshiro256SS rng,
             int sampleCount) {
         return x -> {
             int failures = 0;
             for (int i = 0; i < sampleCount; ++i) {
                 var e = excluded.get(rng.nextInt(excluded.size()));
-                if (Semantics.evaluateBoolPostOrder(x, e.input())) {
+                if (Semantics.evaluateBoolPostOrder(x, e)) {
                     ++failures;
                 }
             }
