@@ -246,37 +246,6 @@ public class VoltronSynthesizer extends SynthesizerBase {
             logger.log(Level.WARNING, "Unable to produce valid decision tree");
             return null;
         }
-        var dt = res.bestX().reifyAsDecisionTree();
-        var program = dt.reifyAsExprParse();
-        for (var ex : allExamples) {
-            if (dt instanceof DecisionTree) {
-                var ps = (PartialSolution) ((DecisionTree) dt).classify(ex.input());
-                if (!ps.application().included().contains(ex.input())) {
-                    logger.log(Level.SEVERE, "example misclassified");
-                    return null;
-                }
-                if (ps.evalExpr(ex.input()) != ex.output()) {
-                    logger.log(Level.SEVERE, "PartialSolution not correct");
-                    return null;
-                }
-                if (Semantics.evaluate(ps.reifyAsExprParse(), ex.input()) != ex.output()) {
-                    logger.log(Level.SEVERE, "PartialSolution does not reify to its definition");
-                    return null;
-                }
-                if (dt.evalExpr(ex.input()) != ex.output()) {
-                    logger.log(Level.SEVERE, "DecisionTree eval doesn't match classify");
-                    return null;
-                }
-            }
-            if (dt.evalExpr(ex.input()) != ex.output()) {
-                logger.log(Level.SEVERE, "bestIsValid() is telling us LIES");
-                return null;
-            }
-            if (Semantics.evaluate(program, ex.input()) != ex.output()) {
-                logger.log(Level.SEVERE, "reifyAsExprParseTree() is SUS");
-                return null;
-            }
-        }
         return res.bestX().reifyAsDecisionTree();
     }
 

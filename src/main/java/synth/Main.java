@@ -18,10 +18,10 @@ public class Main {
 
         // Logger.getLogger("").addHandler(new ConsoleHandler());
         Logger.getLogger("").setLevel(Level.WARNING);
-        Logger.getLogger("synth.Main").setLevel(Level.ALL);
+        Logger.getLogger("synth.Main").setLevel(Level.INFO);
         // Logger.getLogger("synth.algorithms.lia.LinearSolver").setLevel(Level.ALL);
         // Logger.getLogger("synth.algorithms.lia.ORToolsCPLinearSolver").setLevel(Level.ALL);
-        Logger.getLogger("synth.algorithms").setLevel(Level.ALL);
+        Logger.getLogger("synth.algorithms").setLevel(Level.OFF);
 
         logger = Logger.getLogger("synth.Main");
     }
@@ -36,6 +36,7 @@ public class Main {
         // new Mcmc1Synthesizer());
         // Synthesizer synthesizer = new MultiStrategySynthesizer();
 
+        logger.log(Level.INFO, "Batch started");
         for (var examplesFilePath : args) {
             if (args.length > 1) {
                 System.out.println("# " + examplesFilePath);
@@ -54,7 +55,7 @@ public class Main {
                     for (var e : examples) {
                         var evalOutput = Semantics.evaluate(program, e.input());
                         if (evalOutput != e.output()) {
-                            logger.log(Level.WARNING, "Synthesizer generated bad program: {0}",
+                            logger.log(Level.SEVERE, "Synthesizer generated bad program: {0}",
                                     new Object[] { program });
                             logger.log(Level.WARNING, "Failed on example: {0}; produced {1}",
                                     new Object[] { e, evalOutput });
@@ -73,5 +74,6 @@ public class Main {
                 System.out.println(program);
             }
         }
+        logger.log(Level.INFO, "Batch complete");
     }
 }
