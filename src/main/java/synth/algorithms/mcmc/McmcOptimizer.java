@@ -90,7 +90,7 @@ public abstract class McmcOptimizer<T> {
         long i;
         long startNs = System.nanoTime();
         long lastNs = startNs;
-        for (i = 0; i < maxIterations && bestCost > targetCost; ++i) {
+        for (i = 0; (i < maxIterations) && (bestCost > targetCost) && !bestIsValid; ++i) {
             long nowNs = System.nanoTime();
             if (nowNs - lastNs > giga) {
                 lastNs = nowNs - (nowNs - startNs) % giga;
@@ -105,19 +105,18 @@ public abstract class McmcOptimizer<T> {
             T candidateX = generateFrom.apply(curX);
             float candidateCost = computeCost.apply(candidateX);
             boolean accepted = (rng.nextFloat() < acceptProbability(curCost, candidateCost));
-            boolean best = (candidateCost < bestCost);
+            boolean best = false;
 
-            // If this is a better solution, or it's just as good and we don't already have
-            // a validated solution, check this solution
-            if (validate != null && (best || (candidateCost == bestCost && !bestIsValid))) {
-                if (validate.apply(candidateX)) {
-                    // The solution validated! Keep it
+            if (validate == null) {
+                best = (candidateCost < bestCost);
+            } else if (candidateCost <= bestCost) {
+                // If this is a better solution, or it's just as good and we don't already have
+                // a validated solution, check this solution
+                var valid = validate.apply(candidateX);
+                if (!bestIsValid || valid) {
                     best = true;
-                    bestIsValid = true;
-                    break;
+                    bestIsValid = valid;
                 }
-                // If we didn't break above, we would have to check whether any new best that
-                // doesn't validate is overwriting one that does...
             }
 
             if (accepted && (best || curX != bestX)) {
@@ -134,6 +133,10 @@ public abstract class McmcOptimizer<T> {
                 bestX = candidateX;
                 bestCost = candidateCost;
             }
+        }
+
+        if (validate == null) {
+            bestIsValid = (bestCost <= targetCost);
         }
 
         return new OptimizationResult<T>(bestCost <= targetCost, bestX, bestCost, bestIsValid, i);

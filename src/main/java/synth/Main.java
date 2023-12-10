@@ -31,10 +31,9 @@ public class Main {
         // String examplesFilePath = "examples.txt";
 
         var synthesizers = List.of(
-                new DFSEnum2Synthesizer());
-                //new BFSEnum2Synthesizer(),
-                //new VoltronSynthesizer());
-                //new Mcmc1Synthesizer());
+                new DFSEnum2Synthesizer(),
+                new VoltronSynthesizer());
+        // new Mcmc1Synthesizer());
         // Synthesizer synthesizer = new MultiStrategySynthesizer();
 
         for (var examplesFilePath : args) {

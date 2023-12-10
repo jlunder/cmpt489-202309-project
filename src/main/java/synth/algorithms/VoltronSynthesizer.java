@@ -2,17 +2,18 @@ package synth.algorithms;
 
 import synth.algorithms.ast.*;
 import synth.algorithms.classify.*;
+import synth.algorithms.enumeration.ProgramEnumerator;
 import synth.algorithms.lia.*;
 import synth.algorithms.mcmc.*;
 import synth.algorithms.representation.ExprRepresentation;
 import synth.algorithms.rng.Xoshiro256SS;
 import synth.core.Environment;
 import synth.core.Example;
+import synth.core.ParseNode;
 import synth.core.Program;
 import synth.dsl.*;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.logging.*;
 
 public class VoltronSynthesizer extends SynthesizerBase {
@@ -28,7 +29,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
         nextSolution: for (var sol : partialSolutions) {
             var classification = sol.application();
 
-            var positive = generateDiscriminatorsMcmc(allInputs, classification);
+            var positive = generateDiscriminatorsEnum(allInputs, classification);
             // Check if one of our generated discriminators happens to be perfect
             for (var d : positive) {
                 if (d.classification().equals(classification)) {
@@ -39,7 +40,7 @@ public class VoltronSynthesizer extends SynthesizerBase {
             }
             // Try generating the discriminator in the negative, in case that synthesis is
             // easier and generates a better or at least different partition
-            var negative = generateDiscriminatorsMcmc(allInputs, classification.inverted());
+            var negative = generateDiscriminatorsEnum(allInputs, classification.inverted());
             // Again, check if one of our generated discriminators happens to be perfect
             for (var d : negative) {
                 if (d.classification().equalsInverted(classification)) {
@@ -88,98 +89,193 @@ public class VoltronSynthesizer extends SynthesizerBase {
         return minimal;
     }
 
-    private static final Function<Symbol[], Boolean> validateFunction(Classification desiredClassification) {
-        return (x) -> {
-            boolean falsePositive = false;
-            boolean truePositive = false;
-            boolean falseNegative = false;
-            boolean trueNegative = false;
-            for (var e : desiredClassification.included()) {
-                if (Semantics.evaluateBoolPostOrder(x, e)) {
-                    truePositive = true;
-                } else {
-                    falseNegative = true;
-                }
-            }
-            for (var e : desiredClassification.excluded()) {
-                if (Semantics.evaluateBoolPostOrder(x, e)) {
-                    truePositive = true;
-                } else {
-                    falseNegative = true;
-                }
-            }
+    private class QuadrantEvaluation {
+        Classification desiredClassification;
+        private boolean perfect;
+        private boolean overApproximate;
+        private boolean underApproximate;
+        private HashSet<Environment> positiveErrors = new HashSet<>();
+        private HashSet<Environment> negativeErrors = new HashSet<>();
 
-            // Discriminator must be over- or under-approximate: it has to identify at
-            // least one category of things, and provide some information about the other,
-            // to be useful.
-            return truePositive && trueNegative && (falsePositive != falseNegative);
-        };
+        public boolean isPerfect() {
+            return perfect;
+        }
+
+        public boolean isOverApproximate() {
+            return overApproximate;
+        }
+
+        public boolean isUnderApproximate() {
+            return underApproximate;
+        }
+
+        public Set<Environment> positiveErrors() {
+            return positiveErrors;
+        }
+
+        public Set<Environment> negativeErrors() {
+            return negativeErrors;
+        }
+
+        public QuadrantEvaluation(Classification desiredClassification) {
+            this.desiredClassification = desiredClassification;
+        }
+
+        public boolean evaluate(ParseNode condition) {
+            perfect = false;
+            overApproximate = false;
+            underApproximate = false;
+            positiveErrors.clear();
+            negativeErrors.clear();
+            boolean falsePositive = false, truePositive = false, falseNegative = false, trueNegative = false;
+            var e = desiredClassification.included().iterator();
+            var f = desiredClassification.excluded().iterator();
+            while (e.hasNext() || f.hasNext()) {
+                if (e.hasNext()) {
+                    var env = e.next();
+                    if (Semantics.evaluateBool(condition, env)) {
+                        truePositive = true;
+                    } else {
+                        if (falsePositive) {
+                            return false;
+                        }
+                        negativeErrors.add(env);
+                        falseNegative = true;
+                    }
+                } else if (!truePositive) {
+                    // If it hasn't demonstrated truePositive by now it can't
+                    return false;
+                }
+                if (f.hasNext()) {
+                    var env = f.next();
+                    if (Semantics.evaluateBool(condition, env)) {
+                        if (falseNegative) {
+                            return false;
+                        }
+                        positiveErrors.add(env);
+                        falsePositive = true;
+                    } else {
+                        trueNegative = true;
+                    }
+                } else if (!trueNegative) {
+                    // If it hasn't demonstrated trueNegative by now it can't
+                    return false;
+                }
+            }
+            perfect = !falsePositive && !falseNegative;
+            overApproximate = !falseNegative;
+            underApproximate = !falsePositive;
+            return truePositive && trueNegative && !(falsePositive && falseNegative);
+        }
     }
 
-    private Collection<Discriminator> generateDiscriminatorsMcmc(Set<Environment> allInputs,
-            Classification desiredClassification)
-            throws InterruptedException {
-        McmcProgramOptimizer discriminatorOptimizer = new McmcProgramOptimizer(rng.nextSubsequence());
-
-        final var maxProgramSize = 20;
-
-        var initialX = discriminatorOptimizer.makeRandomized(20, McmcProgramOptimizer.CONDITION_SYMBOLS);
-        var generateFrom = discriminatorOptimizer.generateFromFunction(McmcProgramOptimizer.CONDITION_SYMBOLS);
-        var validate = validateFunction(desiredClassification);
-        var approximateCost = McmcProgramOptimizer.boolSizeCostDecoratorFunction(
-                McmcProgramOptimizer.confusionCostFunction(desiredClassification, 1f, 1f), 1f / 20f);
-        var overApproximateCost = McmcProgramOptimizer.boolSizeCostDecoratorFunction(
-                McmcProgramOptimizer.confusionCostFunction(desiredClassification, 0.1f, 1f), 1f / maxProgramSize);
-        var underApproximateCost = McmcProgramOptimizer.boolSizeCostDecoratorFunction(
-                McmcProgramOptimizer.confusionCostFunction(desiredClassification, 1f, 0.1f), 1f / maxProgramSize);
-        var overApproximateResult = discriminatorOptimizer.optimize(initialX, generateFrom, overApproximateCost, 0.5f,
-                validate, 1000000);
-        var underApproximateResult = discriminatorOptimizer.optimize(initialX, generateFrom, underApproximateCost, 0.5f,
-                validate, 1000000);
-
-        // Update initialX to the over-approximate or under-approximate optimized result
-        // if they're clearly at least an okay starting point
-        if (overApproximateResult.bestIsValid() && (!underApproximateResult.bestIsValid()
-                || (overApproximateResult.bestCost() < underApproximateResult.bestCost()))) {
-            initialX = overApproximateResult.bestX();
-        }
-        if (underApproximateResult.bestIsValid() && (!overApproximateResult.bestIsValid()
-                || (underApproximateResult.bestCost() < overApproximateResult.bestCost()))) {
-            initialX = overApproximateResult.bestX();
-        }
-
-        var result = discriminatorOptimizer.optimize(initialX, generateFrom, approximateCost, 0.5f, validate, 1000000);
-
+    private Collection<Discriminator> generateDiscriminatorsEnum(Set<Environment> allInputs,
+            Classification desiredClassification) throws InterruptedException {
         var discriminators = new ArrayList<Discriminator>();
-        if (overApproximateResult.bestIsValid()) {
-            var boolParse = Semantics.makeParseTreeFromBoolPostOrder(result.bestX());
-            var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
-            discriminators.add(new Discriminator(condition, allInputs));
-        }
-        if (underApproximateResult.bestIsValid()) {
-            var boolParse = Semantics.makeParseTreeFromBoolPostOrder(result.bestX());
-            var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
-            discriminators.add(new Discriminator(condition, allInputs));
-        }
-        if (result.bestIsValid()) {
-            var boolParse = Semantics.makeParseTreeFromBoolPostOrder(result.bestX());
-            var condition = Asts.optimizeBoolAst(Asts.makeBoolAstFromParse(boolParse));
-            discriminators.add(new Discriminator(condition, allInputs));
+        var overApproximationErrors = new HashSet<HashSet<Environment>>();
+        var underApproximationErrors = new HashSet<HashSet<Environment>>();
+        var qe = new QuadrantEvaluation(desiredClassification);
+        for (int h = 0; h <= 2; ++h) {
+            ProgramEnumerator pe = new ProgramEnumerator(h, h, ProgramEnumerator.B_SYMBOLS, ProgramEnumerator.E_SYMBOLS,
+                    ProgramEnumerator.B_SYMBOLS);
+            nextCand: while (pe.hasNext()) {
+                var cond = pe.next();
+                if (!qe.evaluate(cond)) {
+                    // It's trivially always true/false, or otherwise deficient
+                    continue;
+                }
+                if (qe.isPerfect()) {
+                    // This one is perfect, return just it and forget everything else
+                    return List.of(new Discriminator(Asts.makeBoolAstFromParse(cond), allInputs));
+                }
+                assert qe.isOverApproximate() || qe.isUnderApproximate();
+                if (qe.isOverApproximate()) {
+                    for (var oe : List.copyOf(overApproximationErrors)) {
+                        if (qe.positiveErrors().size() >= oe.size()) {
+                            if (qe.positiveErrors().containsAll(oe)) {
+                                // Already have one that's at least as good as this
+                                continue nextCand;
+                            }
+                        } else {
+                            if (oe.containsAll(qe.positiveErrors())) {
+                                // This is strictly better than the one we already have, replace that with this
+                                overApproximationErrors.remove(oe);
+                            }
+                        }
+                    }
+                    overApproximationErrors.add(new HashSet<>(qe.positiveErrors()));
+                } else if (qe.isUnderApproximate()) {
+                    for (var ue : underApproximationErrors) {
+                        if (qe.negativeErrors().size() >= ue.size()) {
+                            if (qe.negativeErrors().containsAll(ue)) {
+                                // Already have one that's at least as good as this
+                                continue nextCand;
+                            }
+                        } else {
+                            if (ue.containsAll(qe.negativeErrors())) {
+                                // This is strictly better than the one we already have, replace that with this
+                                overApproximationErrors.remove(ue);
+                            }
+                        }
+                    }
+                    underApproximationErrors.add(new HashSet<>(qe.negativeErrors()));
+                }
+                discriminators.add(new Discriminator(Asts.makeBoolAstFromParse(cond), allInputs));
+            }
         }
 
-        // Discriminator computes the actual classification
         return discriminators;
     }
 
     private ExprRepresentation buildDecisionTreeAstFromPartialSolutions(Set<Example> allExamples,
             Collection<PartialSolution> partialSolutions, Collection<Discriminator> discriminators)
             throws InterruptedException {
+        for (var ps : partialSolutions) {
+            for (var ex : allExamples) {
+                if (ps.application().included().contains(ex.input())) {
+                    assert ps.evalExpr(ex.input()) == ex.output();
+                } else if (ps.application().excluded().contains(ex.input())) {
+                    assert ps.evalExpr(ex.input()) != ex.output();
+                }
+            }
+        }
         McmcDecisionTreeOptimizer decisionTreeOptimizer = new McmcDecisionTreeOptimizer(rng.nextSubsequence(),
-                partialSolutions.size() * 4, partialSolutions, discriminators, allExamples);
-        var res = decisionTreeOptimizer.optimize(1000000);
+                partialSolutions.size(), partialSolutions, discriminators, allExamples);
+        var res = decisionTreeOptimizer.optimize(10000000);
         if (!res.bestIsValid()) {
             logger.log(Level.WARNING, "Unable to produce valid decision tree");
             return null;
+        }
+        var dt = res.bestX().reifyAsDecisionTree();
+        var program = dt.reifyAsExprParse();
+        for (var ex : allExamples) {
+            if (dt instanceof DecisionTree) {
+                var ps = (PartialSolution) ((DecisionTree) dt).classify(ex.input());
+                if (!ps.application().included().contains(ex.input())) {
+                    logger.log(Level.SEVERE, "example misclassified");
+                    return null;
+                }
+                if (ps.evalExpr(ex.input()) != ex.output()) {
+                    logger.log(Level.SEVERE, "PartialSolution not correct");
+                    return null;
+                }
+                if (Semantics.evaluate(ps.reifyAsExprParse(), ex.input()) != ex.output()) {
+                    logger.log(Level.SEVERE, "PartialSolution does not reify to its definition");
+                    return null;
+                }
+                if (dt.evalExpr(ex.input()) != ex.output()) {
+                    logger.log(Level.SEVERE, "DecisionTree eval doesn't match classify");
+                    return null;
+                }
+            }
+            if (dt.evalExpr(ex.input()) != ex.output()) {
+                logger.log(Level.SEVERE, "bestIsValid() is telling us LIES");
+                return null;
+            }
+            if (Semantics.evaluate(program, ex.input()) != ex.output()) {
+                logger.log(Level.SEVERE, "reifyAsExprParseTree() is SUS");
+                return null;
+            }
         }
         return res.bestX().reifyAsDecisionTree();
     }
@@ -200,6 +296,9 @@ public class VoltronSynthesizer extends SynthesizerBase {
             }
         }
         var discriminators = generateDiscriminators(allInputs, partialSolutions);
+        if (discriminators.size() == 0) {
+            return null;
+        }
         var decisionTree = buildDecisionTreeAstFromPartialSolutions(allExamples, partialSolutions, discriminators);
         if (decisionTree == null) {
             return null;

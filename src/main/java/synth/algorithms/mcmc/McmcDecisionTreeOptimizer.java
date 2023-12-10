@@ -8,6 +8,7 @@ import synth.algorithms.representation.*;
 import synth.algorithms.rng.Xoshiro256SS;
 import synth.core.Environment;
 import synth.core.Example;
+import synth.util.Bits;
 
 public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOptimizer.FlatDecisionTree> {
     public class FlatDecisionTree {
@@ -121,7 +122,7 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
             return reifyAsDecisionTreeRecurse(0, treeSize());
         }
 
-        ExprRepresentation reifyAsDecisionTreeRecurse(int index, int maxSteps) {
+        private ExprRepresentation reifyAsDecisionTreeRecurse(int index, int maxSteps) {
             var jump = jumpTable[index];
             if (maxSteps == 0 || jump == index || jump < 0) {
                 return solutions[index];
@@ -152,8 +153,8 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
     public McmcDecisionTreeOptimizer(Xoshiro256SS rng, int treeSize, Collection<PartialSolution> solutionPool,
             Collection<Discriminator> discriminatorPool, Collection<Example> examples) {
         super(rng);
-        assert (treeSize & (treeSize - 1)) == 0;
-        this.treeSize = treeSize;
+
+        this.treeSize = Bits.nextPower2(treeSize);
 
         this.solutionPool = solutionPool.toArray(PartialSolution[]::new);
         this.discriminatorPool = discriminatorPool.toArray(Discriminator[]::new);
@@ -179,9 +180,9 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
             } else {
                 // Classify examples using the decision tree, and check they ended up in a
                 // compatible solution
-                for (var e : examples) {
-                    var ps = (PartialSolution) ((DecisionTree) d).classify(e.input());
-                    if (!ps.application().included().contains(e.input())) {
+                for (var input : inputs) {
+                    var ps = (PartialSolution) ((DecisionTree) d).classify(input);
+                    if (!ps.application().included().contains(input)) {
                         return false;
                     }
                 }
@@ -189,8 +190,8 @@ public class McmcDecisionTreeOptimizer extends McmcOptimizer<McmcDecisionTreeOpt
             }
         };
 
-        return super.optimize(makeRandomized(), this::generateFrom, this::computeCost, dawdleCost / 2 * examples.size(),
-                validate, maxIterations);
+        return super.optimize(makeRandomized(), this::generateFrom, this::computeCost,
+                examples.size() * treeSize / 2 + 0.5f, validate, maxIterations);
     }
 
     protected float computeCost(FlatDecisionTree x) {

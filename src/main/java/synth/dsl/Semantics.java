@@ -21,6 +21,10 @@ public class Semantics {
         return evalExpr(program, env);
     }
 
+    public static boolean evaluateBool(ParseNode program, Environment env) {
+        return evalPred(program, env);
+    }
+
     private static int evalExpr(ParseNode expr, Environment env) {
         switch (expr.getSymbol()) {
             case Ite:

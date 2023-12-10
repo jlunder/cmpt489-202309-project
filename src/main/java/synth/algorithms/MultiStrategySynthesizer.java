@@ -88,7 +88,7 @@ public class MultiStrategySynthesizer extends SynthesizerBase {
     List<Strategy> strategies = List.of(
             new Strategy("MCMC", new Mcmc1Synthesizer(293874)),
             new Strategy("Voltron", new VoltronSynthesizer()),
-            new Strategy("Enum", new BFSEnum2Synthesizer()));
+            new Strategy("Enum", new DFSEnum2Synthesizer()));
 
     @Override
     public Program synthesize(List<Example> examples) {

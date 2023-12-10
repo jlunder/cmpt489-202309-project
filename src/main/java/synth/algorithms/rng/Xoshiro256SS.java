@@ -14,6 +14,8 @@ package synth.algorithms.rng;
 
 import java.util.Random;
 
+import synth.util.Bits;
+
 /**
  * This is xoshiro256** 1.0, one of our all-purpose, rock-solid
  * generators. It has excellent (sub-ns) speed, a state (256 bits) that is
@@ -89,21 +91,11 @@ public class Xoshiro256SS implements Cloneable {
         return (int) (this.nextLong() >> 32);
     }
 
-    private static int fillBitsRight(int x) {
-        int y = x;
-        y |= y >>> 1;
-        y |= y >>> 2;
-        y |= y >>> 4;
-        y |= y >>> 8;
-        y |= y >>> 16;
-        return y;
-    }
-
     public int nextInt(int bound) {
         if (bound <= 0) {
             throw new IllegalArgumentException("bound must be positive");
         } else {
-            int mask = fillBitsRight(bound - 1);
+            int mask = Bits.fillRight(bound - 1);
             if ((bound & mask) == 0) {
                 return (int) (mask & nextInt());
             } else {
