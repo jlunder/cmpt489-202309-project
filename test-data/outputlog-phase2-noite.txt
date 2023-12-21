@@ -1,0 +1,148 @@
+[2023-12-09 17:51:01.800] INFO: Batch started
+# test-data/phase2-noite/0100.txt
+[2023-12-09 17:51:01.844] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(VarY, Const3)
+# test-data/phase2-noite/0101.txt
+[2023-12-09 17:51:01.866] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(VarX, VarX)
+# test-data/phase2-noite/0102.txt
+[2023-12-09 17:51:01.879] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(VarX, VarX)
+# test-data/phase2-noite/0103.txt
+[2023-12-09 17:51:01.888] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(VarZ, Const1)
+# test-data/phase2-noite/0104.txt
+[2023-12-09 17:51:01.895] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(VarZ, Const2)
+# test-data/phase2-noite/0105.txt
+[2023-12-09 17:51:01.902] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Const3, Const3)
+# test-data/phase2-noite/0106.txt
+[2023-12-09 17:51:01.916] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(VarZ, VarX)
+# test-data/phase2-noite/0107.txt
+[2023-12-09 17:51:01.921] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Const3, Const2)
+# test-data/phase2-noite/0108.txt
+[2023-12-09 17:51:01.926] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Const3, Const3)
+# test-data/phase2-noite/0109.txt
+[2023-12-09 17:51:01.931] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(VarX, Const1)
+# test-data/phase2-noite/0200.txt
+[2023-12-09 17:51:01.936] INFO: Attempting solution with DFSEnum2Synthesizer
+Multiply(Add(VarY, VarX), Add(VarY, Const3))
+# test-data/phase2-noite/0201.txt
+[2023-12-09 17:51:01.944] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Add(VarY, VarY), Add(VarX, VarX))
+# test-data/phase2-noite/0202.txt
+[2023-12-09 17:51:01.949] INFO: Attempting solution with DFSEnum2Synthesizer
+Multiply(Add(VarY, Const3), Add(VarY, Const2))
+# test-data/phase2-noite/0203.txt
+[2023-12-09 17:51:01.955] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Multiply(Const3, Const3), Add(Const3, Const2))
+# test-data/phase2-noite/0204.txt
+[2023-12-09 17:51:01.959] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Add(VarY, Const2), Add(Const1, Const1))
+# test-data/phase2-noite/0205.txt
+[2023-12-09 17:51:01.963] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Multiply(VarZ, Const1), Add(VarZ, VarX))
+# test-data/phase2-noite/0206.txt
+[2023-12-09 17:51:01.970] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Add(VarZ, Const3), Add(Const2, Const1))
+# test-data/phase2-noite/0207.txt
+[2023-12-09 17:51:01.975] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Add(VarZ, VarY), Add(VarY, VarY))
+# test-data/phase2-noite/0208.txt
+[2023-12-09 17:51:01.981] INFO: Attempting solution with DFSEnum2Synthesizer
+Multiply(Add(VarZ, VarX), Add(Const3, Const2))
+# test-data/phase2-noite/0209.txt
+[2023-12-09 17:51:01.988] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Multiply(VarZ, Const3), Multiply(VarZ, Const3))
+# test-data/phase2-noite/0300.txt
+[2023-12-09 17:51:01.994] INFO: Attempting solution with DFSEnum2Synthesizer
+Add(Multiply(VarX, Const3), Add(VarY, Const3))
+# test-data/phase2-noite/0301.txt
+[2023-12-09 17:51:02.000] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:02.175] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Const2, VarX), Add(VarY, Multiply(Const3, VarZ)))
+# test-data/phase2-noite/0302.txt
+[2023-12-09 17:51:02.342] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:02.431] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Add(Const3, Const3), Multiply(Const2, VarX)), Multiply(Const3, VarY)), Add(Multiply(VarX, VarY), Multiply(Multiply(VarX, VarY), VarZ)))
+# test-data/phase2-noite/0303.txt
+[2023-12-09 17:51:02.440] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:02.501] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Multiply(Const3, Const3), Multiply(Add(Const3, Const3), VarX)), Add(Multiply(Add(Const3, Const3), VarY), Multiply(Multiply(Add(Const2, Const2), VarX), VarY)))
+# test-data/phase2-noite/0304.txt
+[2023-12-09 17:51:02.508] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:02.571] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Const1, Multiply(Const3, VarY)), Multiply(Const3, VarZ))
+# test-data/phase2-noite/0305.txt
+[2023-12-09 17:51:02.578] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:02.639] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Multiply(VarZ, VarZ), Multiply(Multiply(VarY, VarZ), VarZ)), Add(Multiply(Const2, VarZ), Multiply(Multiply(Const2, VarY), VarZ)))
+# test-data/phase2-noite/0306.txt
+[2023-12-09 17:51:02.647] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:02.699] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Multiply(Multiply(Const2, VarZ), VarZ), Multiply(Const2, VarY)), Multiply(Const2, VarZ))
+# test-data/phase2-noite/0307.txt
+[2023-12-09 17:51:02.707] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:02.756] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Multiply(VarY, VarY), Multiply(Multiply(Const2, VarX), VarY)), Multiply(Multiply(VarY, VarY), VarZ)), Add(Multiply(Multiply(VarX, VarY), VarZ), Multiply(VarX, VarX)))
+# test-data/phase2-noite/0308.txt
+[2023-12-09 17:51:02.762] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:02.807] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Multiply(Const3, Add(Const3, Const3)), Multiply(Multiply(VarX, VarZ), VarZ)), Add(Multiply(Const3, VarZ), Multiply(Multiply(Add(Const3, Const3), VarX), VarZ)))
+# test-data/phase2-noite/0309.txt
+[2023-12-09 17:51:02.825] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:02.894] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Const3, Const3), Multiply(VarZ, VarZ)), Add(VarX, VarY))
+# test-data/phase2-noite/0400.txt
+[2023-12-09 17:51:02.901] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:02.947] INFO: Attempting solution with VoltronSynthesizer
+Add(Multiply(Multiply(Multiply(Multiply(Const3, Const3), VarX), VarY), Multiply(Multiply(VarY, VarZ), VarZ)), Multiply(Multiply(Multiply(Multiply(Const3, Multiply(Const3, Const3)), VarX), VarY), Multiply(VarZ, VarZ)))
+# test-data/phase2-noite/0401.txt
+[2023-12-09 17:51:02.960] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:03.011] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Add(Multiply(Multiply(Add(Const3, Const3), VarY), VarY), Multiply(VarZ, VarZ)), Multiply(Multiply(VarX, VarZ), VarZ)), Add(Multiply(Multiply(Const3, VarY), Multiply(VarZ, VarZ)), Multiply(Multiply(Const3, VarX), VarY))), Add(Add(Add(Multiply(Multiply(Const2, VarY), Multiply(VarY, VarZ)), Multiply(Multiply(VarZ, VarZ), VarZ)), Multiply(VarX, VarZ)), Add(Multiply(Multiply(Add(Const2, Const3), VarY), VarZ), Multiply(Multiply(VarX, VarY), VarZ))))
+# test-data/phase2-noite/0402.txt
+[2023-12-09 17:51:03.034] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:03.079] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Multiply(Multiply(Multiply(Const3, Const3), VarY), VarY), Multiply(Multiply(Const3, Add(Const3, Const3)), VarX)), Add(Multiply(Multiply(Const3, Add(Const3, Const3)), VarY), Multiply(Multiply(Multiply(Const3, Const3), VarX), VarY))), Add(Add(Multiply(Multiply(Add(Const2, Multiply(Const3, Const2)), VarY), Multiply(VarY, VarZ)), Multiply(Multiply(Add(Const1, Multiply(Const3, Add(Const2, Const3))), VarX), VarZ)), Add(Multiply(Multiply(Add(Const1, Multiply(Const3, Add(Const2, Const3))), VarY), VarZ), Multiply(Multiply(Add(Const2, Multiply(Const3, Const2)), VarX), Multiply(VarY, VarZ)))))
+# test-data/phase2-noite/0403.txt
+[2023-12-09 17:51:32.600] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:32.651] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Multiply(Multiply(Multiply(Const3, VarX), VarY), Multiply(Multiply(VarY, VarY), VarY)), Multiply(Multiply(Multiply(Multiply(Const3, Add(Const1, Multiply(Const3, Const3))), VarX), VarY), Multiply(VarY, VarY))), Add(Multiply(Multiply(Multiply(Const3, VarX), VarY), Multiply(VarY, VarZ)), Multiply(Multiply(Multiply(Multiply(Const3, Add(Const2, Multiply(Const3, Const3))), VarX), VarX), Multiply(VarY, VarY)))), Add(Add(Multiply(Multiply(Multiply(Const3, VarX), VarX), Multiply(Multiply(VarY, VarY), VarY)), Multiply(Multiply(Multiply(Const3, VarX), VarX), Multiply(VarX, VarY))), Multiply(Multiply(Multiply(Const3, VarX), VarX), Multiply(VarY, VarZ))))
+# test-data/phase2-noite/0404.txt
+[2023-12-09 17:51:45.564] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:45.606] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Multiply(Add(Const1, Multiply(Const3, Add(Const2, Const3))), VarZ), Multiply(Multiply(Add(Const2, Const2), VarX), VarZ)), Multiply(Multiply(Multiply(Const3, Add(Const2, Const2)), VarY), VarZ))
+# test-data/phase2-noite/0405.txt
+[2023-12-09 17:51:45.611] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:45.654] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Multiply(Add(Const2, Const2), VarY), Multiply(Multiply(Const2, VarX), VarY)), Multiply(VarY, VarZ))
+# test-data/phase2-noite/0406.txt
+[2023-12-09 17:51:45.660] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:45.710] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Add(Multiply(Const3, Add(Const2, Const2)), Multiply(VarY, VarY)), Multiply(Multiply(Const2, VarZ), VarZ)), Add(Multiply(Add(Const1, Multiply(Const3, Const2)), VarY), Multiply(Add(Const2, Multiply(Const3, Const3)), VarZ))), Add(Add(Multiply(Multiply(Const3, VarY), VarZ), Multiply(Multiply(Add(Const2, Const2), VarX), VarX)), Add(Multiply(Multiply(VarX, VarX), VarY), Multiply(Multiply(VarX, VarX), VarZ))))
+# test-data/phase2-noite/0407.txt
+[2023-12-09 17:51:45.745] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:45.789] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Add(Multiply(Multiply(Add(Const2, Const2), VarX), Multiply(VarY, VarY)), Multiply(Multiply(Const2, VarX), Multiply(VarZ, VarZ))), Multiply(Multiply(Add(Const2, Multiply(Const3, Const2)), VarX), VarY)), Add(Add(Multiply(Multiply(Add(Const2, Const2), VarX), VarZ), Multiply(Multiply(Add(Const3, Const3), VarX), Multiply(VarY, VarZ))), Multiply(Multiply(Multiply(Const2, VarX), VarX), Multiply(VarY, VarY)))), Add(Add(Add(Multiply(Multiply(VarX, VarX), Multiply(VarZ, VarZ)), Multiply(Multiply(Add(Const2, Multiply(Const3, Const2)), VarX), Multiply(VarX, VarY))), Multiply(Multiply(Multiply(Const2, VarX), VarX), Multiply(VarX, VarY))), Add(Add(Multiply(Multiply(Add(Const2, Const2), VarX), Multiply(VarX, VarZ)), Multiply(Multiply(VarX, VarX), Multiply(VarX, VarZ))), Multiply(Multiply(Multiply(Const3, VarX), VarX), Multiply(VarY, VarZ)))))
+# test-data/phase2-noite/0408.txt
+[2023-12-09 17:51:47.675] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:47.727] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Const1, Multiply(Const3, Const3)), Multiply(Add(Const2, Const2), VarY)), Add(Multiply(Const2, VarZ), Multiply(Multiply(Add(Const3, Const3), VarY), VarZ)))
+# test-data/phase2-noite/0409.txt
+[2023-12-09 17:51:47.731] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:47.775] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Add(Multiply(Multiply(Multiply(Const2, VarX), VarX), Multiply(VarX, VarX)), Multiply(Multiply(Const3, Add(Const2, Const2)), VarX)), Multiply(Multiply(Const3, Add(Const2, Const2)), VarY)), Add(Add(Multiply(Multiply(Add(Const2, Const2), VarX), VarY), Multiply(Multiply(Const3, VarX), VarZ)), Multiply(Multiply(Const3, VarY), VarZ))), Add(Add(Add(Multiply(Multiply(VarX, VarY), VarZ), Multiply(Multiply(Add(Const2, Const2), VarX), VarX)), Multiply(Multiply(Add(Const3, Const3), VarX), Multiply(VarX, VarX))), Add(Add(Multiply(Multiply(Add(Const3, Const3), VarX), Multiply(VarX, VarY)), Multiply(Multiply(Multiply(Const2, VarX), VarX), Multiply(VarX, VarY))), Multiply(Multiply(VarX, VarX), VarZ))))
+# test-data/phase2-noite/0500.txt
+[2023-12-09 17:51:48.148] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:48.197] INFO: Attempting solution with VoltronSynthesizer
+Add(Add(Add(Multiply(Multiply(Multiply(Const3, Add(Const3, Const3)), VarZ), VarZ), Multiply(Multiply(Multiply(Const2, VarY), VarY), Multiply(VarZ, VarZ))), Add(VarX, Multiply(Add(Const2, Const3), VarY))), Add(Add(Multiply(Multiply(Multiply(Const3, Add(Const2, Const2)), VarY), Multiply(VarZ, VarZ)), Multiply(Multiply(Multiply(Const3, Add(Const2, Const2)), VarY), Multiply(VarY, VarZ))), Add(Multiply(Multiply(Multiply(Const3, Add(Const3, Const3)), VarY), VarZ), Multiply(Multiply(Multiply(Const2, VarY), VarY), Multiply(VarY, VarZ)))))
+# test-data/phase2-noite/0501.txt
+[2023-12-09 17:51:48.210] INFO: Attempting solution with DFSEnum2Synthesizer
+[2023-12-09 17:51:48.257] INFO: Attempting solution with VoltronSynthesizer
+Killed

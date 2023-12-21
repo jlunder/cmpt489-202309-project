@@ -85,8 +85,8 @@
             "mainClass": "synth.Main",
             "projectName": "synth",
             "vmArgs": [
-                "-ea",
-                "-Xmx4096m"
+                //"-ea",
+                "-Xmx8192m"
             ],
             "args": [
                 "test-data/phase1/0100.txt",
@@ -437,8 +437,8 @@
             "mainClass": "synth.Main",
             "projectName": "synth",
             "vmArgs": [
-                "-ea",
-                "-Xmx4096m"
+                //"-ea",
+                "-Xmx8192m"
             ],
             "args": [
                 "test-data/phase2/0100.txt",
@@ -640,8 +640,8 @@
             "mainClass": "synth.Main",
             "projectName": "synth",
             "vmArgs": [
-                "-ea",
-                "-Xmx4096m"
+                //"-ea",
+                "-Xmx8192m"
             ],
             "args": [
                 "test-data/phase2-noite/0100.txt",
